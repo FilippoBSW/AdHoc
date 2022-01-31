@@ -1,0 +1,8 @@
+# Folders
+build
+.vs
+.vscode
+.cache
+
+# Files
+.DS_Store

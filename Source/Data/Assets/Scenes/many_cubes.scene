@@ -1,0 +1,53 @@
+Scene: many_cubes
+Entities:
+  - Entity: 12884901888
+    Tag:
+      tag: Floor
+    Transform:
+      translate: [0, -76.6999969, 0]
+      rotation: [0, 0, 0]
+      scale: [1000, 1, 1000]
+    Mesh:
+      name: cube.obj
+      draw: true
+    Material:
+      roughness: 0.600000024
+      metallicness: 0
+      albedo: [9.99999997e-07, 9.99989993e-07, 9.99989993e-07]
+    Script:
+      name: cube_spawn.lua
+    RigidBody:
+      mass: 0
+      bounciness: 1
+      friction: 0.5
+      is trigger: false
+      collider type: 0
+      entity: 12884901888
+      velocity: [0, 0, 0]
+      angular velocity: [0, 0, 0]
+  - Entity: 8589934592
+    Tag:
+      tag: Main Camera
+    Camera3D:
+      eye position: [0, 8.60000038, -60.0999985]
+      focus position: [0, -17.7000008, 0]
+      up vector: [0, 1, 0]
+      field of view: 90
+      aspect ratio: 1.54702783
+      nearZ: 1
+      farZ: 10000
+      is runtime camera: false
+      is scene camera: true
+  - Entity: 4294967296
+    Tag:
+      tag: Runtime Camera
+    Camera3D:
+      eye position: [0, 0, -8]
+      focus position: [0, 0, 0]
+      up vector: [0, 1, 0]
+      field of view: 45
+      aspect ratio: 1.54702783
+      nearZ: 1
+      farZ: 100
+      is runtime camera: true
+      is scene camera: false
