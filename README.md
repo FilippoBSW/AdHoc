@@ -13,3 +13,8 @@
   cd AdHoc && chmod +x install.sh && mkdir build && cd build
   ../install.sh Release
 ```
+
+### Pre-compiled binaries ###
+```
+https://bswfilippo.wixsite.com/adhoc
+```
