@@ -69,7 +69,7 @@ namespace adh {
                     Transform* transform = nullptr;
                     xmm::Matrix entityTransform;
                     if (scene->GetWorld().Contains<Transform>(entity)) {
-                        auto [t] = scene->GetWorld().Get<Transform>(entity);
+                        auto [t]        = scene->GetWorld().Get<Transform>(entity);
                         entityTransform = t.GetXmm();
                         transform       = &t;
                     }
@@ -99,9 +99,9 @@ namespace adh {
                             Vector3D t, r, s;
                             entityTransform.Decompose(t, r, s);
                             Vector3D deltaRotation = r - transform->rotation;
-                            transform->translate = t;
+                            transform->translate   = t;
                             transform->rotation += deltaRotation;
-                            transform->scale     = s;
+                            transform->scale = s;
                         }
                     }
                     // End guizmo
@@ -112,6 +112,7 @@ namespace adh {
                             auto type          = strrchr(buffer, '.');
 
                             if (!strcmp(type, ".scene")) {
+                                Event::Dispatch<StatusEvent>(StatusEvent::Type::eStop);
                                 scene->LoadFromFile(buffer);
                             }
 

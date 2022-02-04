@@ -202,6 +202,7 @@ namespace adh {
 
                 if (ImGui::BeginMenu("File")) {
                     if (ImGui::MenuItem("New", "Ctrl+N")) {
+                        Event::Dispatch<StatusEvent>(StatusEvent::Type::eStop);
                         m_CurrentScene->SetTag("Untitled");
                         m_CurrentScene->GetWorld().Reset();
                         m_CurrentScene->GetPhysics().Destroy();

@@ -450,14 +450,16 @@ class AdHoc {
             }
         case StatusEvent::Type::eStop:
             {
-                scene.Load();
-                g_AreScriptsReady = false;
-                g_IsPlaying       = false;
-                g_IsPaused        = false;
+                if (g_IsPlaying) {
+                    scene.Load();
+                    g_AreScriptsReady = false;
+                    g_IsPlaying       = false;
+                    g_IsPaused        = false;
 
-                collisionHash.clear();
+                    collisionHash.clear();
 
-                g_MaximizeOnPlay = maximizeOnPlay2;
+                    g_MaximizeOnPlay = maximizeOnPlay2;
+                }
                 break;
             }
         case StatusEvent::Type::ePause:

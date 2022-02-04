@@ -107,6 +107,7 @@ namespace adh {
 
                         if (ImGui::BeginPopupContextItem(directoryEntry.path().string().data())) {
                             if (ImGui::MenuItem("Open")) {
+                                Event::Dispatch<StatusEvent>(StatusEvent::Type::eStop);
                                 scene->LoadFromFile(directoryEntry.path().string().data());
                             }
 
