@@ -23,7 +23,7 @@
 // *********************************************************************************
 
 #pragma once
-#include "EventTypes.hpp"
+#include <Event/EventTypes.hpp>
 #include <Std/Array.hpp>
 #include <Std/Function.hpp>
 #include <Std/Queue.hpp>

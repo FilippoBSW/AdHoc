@@ -224,7 +224,6 @@ namespace adh {
         }
 
         void Allocator::Emplace(VkMemoryRequirements memoryRequirements, std::uint32_t memoryTypeIndex, MemoryData& memoryData) {
-
             bool allocated  = false;
             auto bufferSize = GetAlignedMemory(memoryRequirements.size, memoryRequirements.alignment);
 
@@ -262,7 +261,6 @@ namespace adh {
                         memoryData.memoryBlock = &i;
                         memoryData.head        = i.freeBlocks[j].head;
                         memoryData.tail        = i.freeBlocks[j].head + bufferSize;
-
                         i.freeBlocks[j].head += bufferSize;
 
                         if (i.freeBlocks[j].head == i.freeBlocks[j].tail) {
@@ -270,17 +268,14 @@ namespace adh {
                             i.freeBlocks.PopBack();
                             i.freeBlocks.Sort();
                         }
-
                         allocated = true;
                         break;
                     }
                 }
-
                 if (allocated) {
                     break;
                 }
             }
-
             if (!allocated) {
                 allocation();
             }
@@ -323,7 +318,6 @@ namespace adh {
                 vkDeviceWaitIdle(device);
                 for (auto&& i : m_Blocks) {
                     for (auto&& j : i.second) {
-
                         vkFreeMemory(device, j.deviceMemory, nullptr);
                     }
                 }
