@@ -27,6 +27,7 @@
 #include <Std/Array.hpp>
 #include <Vertex.hpp>
 
+#include "Math/Math.hpp"
 #include "Transform.hpp"
 
 #include <btBulletDynamicsCommon.h>
@@ -70,6 +71,10 @@ namespace adh {
 
         void OnUpdate(Transform& transform) noexcept;
 
+        void SetTranslation(float x, float y, float z) noexcept;
+
+        void SetRotation(float x, float y, float z) noexcept;
+
         void SetVelocity(float x, float y, float z) noexcept;
 
         void AddVelocity(float x, float y, float z) noexcept;
@@ -89,6 +94,10 @@ namespace adh {
         void SetLinearFactor(float x, float y, float z) noexcept;
 
         void SetAngularFactor(float x, float y, float z) noexcept;
+
+        void ClearGravity() noexcept;
+
+        void ClearForces() noexcept;
 
         void Destroy() noexcept;
 
@@ -112,5 +121,9 @@ namespace adh {
 
         Vector3D velocity{};
         Vector3D angularVelocity{};
+
+        Vector3D translate;
+        Vector3D rotation;
+        Vector3D scale;
     };
 } // namespace adh

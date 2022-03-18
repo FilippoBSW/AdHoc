@@ -134,6 +134,19 @@ namespace adh {
         velocity = Vector3D{ vel.getX(), vel.getY(), vel.getZ() };
         auto avel{ body->getAngularVelocity() };
         angularVelocity = Vector3D{ avel.getX(), avel.getY(), avel.getZ() };
+
+        translate = Vector3D{ origin.getX(), origin.getY(), origin.getZ() };
+        currentRotation.getEulerZYX(rotation.z, rotation.y, rotation.x);
+    }
+
+    void RigidBody::SetTranslation(float x, float y, float z) noexcept {
+        btTransform& transf(body->getWorldTransform());
+        transf.setOrigin(btVector3{ x, y, z });
+    }
+
+    void RigidBody::SetRotation(float x, float y, float z) noexcept {
+        btTransform& transf(body->getWorldTransform());
+        transf.setRotation(btQuaternion{ y, x, z });
     }
 
     void RigidBody::SetVelocity(float x, float y, float z) noexcept {
@@ -205,6 +218,14 @@ namespace adh {
 
     bool RigidBody::GetIsTrigger() const noexcept {
         return isTrigger;
+    }
+
+    void RigidBody::ClearGravity() noexcept {
+        body->clearGravity();
+    }
+
+    void RigidBody::ClearForces() noexcept {
+        body->clearForces();
     }
 
     void RigidBody::Destroy() noexcept {

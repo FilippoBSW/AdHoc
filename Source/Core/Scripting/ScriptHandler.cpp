@@ -43,6 +43,10 @@ namespace adh {
         return 1;
     }
 
+    // int ScriptHandler::DispatchEvent(lua_State* L) {
+    //     return 0;
+    // }
+
     int ScriptHandler::CreateEntity(lua_State* L) {
         auto e{ scene->GetWorld().CreateEntity() };
         auto [tag, transform, mesh, material] =
@@ -290,6 +294,10 @@ namespace adh {
         lua_pushcclosure(state, ScriptHandler::DeltaTime, 1);
         lua_setglobal(state, "DeltaTime");
 
+        // lua_pushstring(state, "DispatchEvent");
+        // lua_pushcclosure(state, ScriptHandler::DispatchEvent, 1);
+        // lua_setglobal(state, "DispatchEvent");
+
         state.RegisterType<Input>("Input");
         state.RegisterTypeFunction<Input>("GetKey", &Input::RepeatGetKey);
         state.RegisterTypeFunction<Input>("GetKeyDown", &Input::GetKeyDown);
@@ -400,5 +408,14 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("GetIsTrigger", &RigidBody::GetIsTrigger);
         state.RegisterTypeFunction<RigidBody>("SetIsTrigger", &RigidBody::SetIsTrigger);
         state.RegisterTypeFunction<RigidBody>("SetGravity", &RigidBody::SetGravity);
+
+        state.RegisterTypeFunction<RigidBody>("SetTranslation", &RigidBody::SetTranslation);
+        state.RegisterTypeVariable<RigidBody>("translate", &RigidBody::translate);
+
+        state.RegisterTypeFunction<RigidBody>("SetRotation", &RigidBody::SetRotation);
+        state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
+
+        state.RegisterTypeFunction<RigidBody>("ClearGravity", &RigidBody::ClearGravity);
+        state.RegisterTypeFunction<RigidBody>("ClearForces", &RigidBody::ClearForces);
     }
 } // namespace adh
