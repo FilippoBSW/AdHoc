@@ -144,9 +144,17 @@ namespace adh {
         transf.setOrigin(btVector3{ x, y, z });
     }
 
+    Vector3D& RigidBody::GetTranslation() noexcept {
+        return translate;
+    }
+
     void RigidBody::SetRotation(float x, float y, float z) noexcept {
         btTransform& transf(body->getWorldTransform());
         transf.setRotation(btQuaternion{ y, x, z });
+    }
+
+    Vector3D& RigidBody::GetRotation() noexcept {
+        return rotation;
     }
 
     void RigidBody::SetVelocity(float x, float y, float z) noexcept {
@@ -161,6 +169,10 @@ namespace adh {
         body->setLinearVelocity(vel);
     }
 
+    Vector3D& RigidBody::GetVelocity() noexcept {
+        return velocity;
+    }
+
     void RigidBody::SetAngularVelocity(float x, float y, float z) noexcept {
         body->setAngularVelocity(btVector3{ x, y, z });
     }
@@ -171,6 +183,10 @@ namespace adh {
         vel.setY(vel.getY() + y);
         vel.setZ(vel.getZ() + z);
         body->setAngularVelocity(vel);
+    }
+
+    Vector3D& RigidBody::GetAngularVelocity() noexcept {
+        return angularVelocity;
     }
 
     void RigidBody::SetGravity(float x, float y, float z) noexcept {

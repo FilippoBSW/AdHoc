@@ -398,7 +398,9 @@ namespace adh {
         state.RegisterTypeVariable<RigidBody>("entity", &RigidBody::entity);
         state.RegisterTypeVariable<RigidBody>("isTrigger", &RigidBody::isTrigger);
         state.RegisterTypeVariable<RigidBody>("velocity", &RigidBody::velocity);
+        state.RegisterTypeFunction<RigidBody>("GetVelocity", &RigidBody::GetVelocity);
         state.RegisterTypeVariable<RigidBody>("angularVelocity", &RigidBody::angularVelocity);
+        state.RegisterTypeFunction<RigidBody>("GetAngularVelocity", &RigidBody::GetAngularVelocity);
         state.RegisterTypeFunction<RigidBody>("SetLinearFactor", &RigidBody::SetLinearFactor);
         state.RegisterTypeFunction<RigidBody>("SetAngularFactor", &RigidBody::SetAngularFactor);
         state.RegisterTypeFunction<RigidBody>("SetVelocity", &RigidBody::SetVelocity);
@@ -410,9 +412,11 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("SetGravity", &RigidBody::SetGravity);
 
         state.RegisterTypeFunction<RigidBody>("SetTranslation", &RigidBody::SetTranslation);
+        state.RegisterTypeFunction<RigidBody>("GetTranslation", &RigidBody::GetTranslation);
         state.RegisterTypeVariable<RigidBody>("translate", &RigidBody::translate);
 
         state.RegisterTypeFunction<RigidBody>("SetRotation", &RigidBody::SetRotation);
+        state.RegisterTypeFunction<RigidBody>("GetRotation", &RigidBody::GetRotation);
         state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
 
         state.RegisterTypeFunction<RigidBody>("ClearGravity", &RigidBody::ClearGravity);

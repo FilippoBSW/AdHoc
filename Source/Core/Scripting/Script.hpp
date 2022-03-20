@@ -353,8 +353,8 @@ namespace adh {
             }
 
             template <typename R, typename... Args>
-            static void AddMethod(const char* key, R (T::*method)(Args...)) {
-                methodsMap[key] = [method](lua_State* L) {
+            static void AddMethod(const char* key, const char* retTable, R (T::*method)(Args...)) {
+                methodsMap[key] = [=](lua_State* L) {
                     std::int32_t index{ GetIndex(L) };
                     R(*declassedFp)
                     (T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
@@ -371,19 +371,24 @@ namespace adh {
                         auto&& retVal = std::apply(
                             declassedFp, std::tuple_cat(std::forward_as_tuple(*p),
                                                         std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
-                        PushValue<R>()(L, retVal);
+
                         if constexpr (std::is_pointer<R>::value || std::is_reference<R>::value) {
-                            luaL_getmetatable(L, metatableName.data());
+                            auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
+                            *ptr       = &retVal;
+                            luaL_getmetatable(L, retTable);
                             lua_setmetatable(L, -2);
+                        } else {
+                            PushValue<R>()(L, retVal);
                         }
+
                         return 1;
                     }
                 };
             }
 
             template <typename R, typename... Args>
-            static void AddMethod(const char* key, R (T::*method)(Args...) const) {
-                methodsMap[key] = [method](lua_State* L) {
+            static void AddMethod(const char* key, const char* retTable, R (T::*method)(Args...) const) {
+                methodsMap[key] = [=](lua_State* L) {
                     std::int32_t index{ GetIndex(L) };
                     R(*declassedFp)
                     (T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
@@ -400,10 +405,14 @@ namespace adh {
                         auto&& retVal = std::apply(
                             declassedFp, std::tuple_cat(std::forward_as_tuple(*p),
                                                         std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
-                        PushValue<R>()(L, retVal);
+
                         if constexpr (std::is_pointer<R>::value || std::is_reference<R>::value) {
-                            luaL_getmetatable(L, metatableName.data());
+                            auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
+                            *ptr       = &retVal;
+                            luaL_getmetatable(L, retTable);
                             lua_setmetatable(L, -2);
+                        } else {
+                            PushValue<R>()(L, retVal);
                         }
                         return 1;
                     }
@@ -612,7 +621,12 @@ namespace adh {
                 lua_pushcfunction(m_State, Type<T>::Dispatch);
                 lua_setfield(m_State, -2, key);
                 lua_pop(m_State, 1);
-                GetPointer<T>()->template AddMethod<R, Args...>(key, method);
+
+                const char* retMetatable{ "Null" };
+                if constexpr (std::is_class<std::decay_t<R>>::value) {
+                    retMetatable = GetPointer<R>()->metatableName.data();
+                }
+                GetPointer<T>()->template AddMethod<R, Args...>(key, retMetatable, method);
             }
 
             template <typename T, class R, typename... Args>
@@ -621,7 +635,12 @@ namespace adh {
                 lua_pushcfunction(m_State, Type<T>::Dispatch);
                 lua_setfield(m_State, -2, key);
                 lua_pop(m_State, 1);
-                GetPointer<T>()->template AddMethod<R, Args...>(key, method);
+
+                const char* retMetatable{ "Null" };
+                if constexpr (std::is_class<std::decay_t<R>>::value) {
+                    retMetatable = GetPointer<R>()->metatableName.data();
+                }
+                GetPointer<T>()->template AddMethod<R, Args...>(key, retMetatable, method);
             }
 
             template <typename T>
