@@ -33,4 +33,8 @@ function Update()
         rigidbody:SetAngularVelocity(0,0,0)
         rigidbody:SetVelocity(0,0,0)
     end
+    
+    local a = rigidbody:GetTranslation()
+    LogMessage(a.x)
+
 end

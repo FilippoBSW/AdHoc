@@ -73,15 +73,23 @@ namespace adh {
 
         void SetTranslation(float x, float y, float z) noexcept;
 
+        Vector3D& GetTranslation() noexcept;
+
         void SetRotation(float x, float y, float z) noexcept;
+
+        Vector3D& GetRotation() noexcept;
 
         void SetVelocity(float x, float y, float z) noexcept;
 
         void AddVelocity(float x, float y, float z) noexcept;
 
+        Vector3D& GetVelocity() noexcept;
+
         void SetAngularVelocity(float x, float y, float z) noexcept;
 
         void AddAngularVelocity(float x, float y, float z) noexcept;
+
+        Vector3D& GetAngularVelocity() noexcept;
 
         void SetGravity(float x, float y, float z) noexcept;
 
