@@ -1356,6 +1356,7 @@ ENTRY_POINT {
 #if defined(ADH_WINDOWS) && defined(ADH_DEBUG)
     ADH_WIN_CONSOLE;
 #endif
+
     AdHoc adhoc;
     adhoc.Initialize(EXE_PATH);
     adhoc.Run();

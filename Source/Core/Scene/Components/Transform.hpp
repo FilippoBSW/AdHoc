@@ -37,6 +37,19 @@ namespace adh {
         Vector3D rotation{};
         Vector3D scale{ 1.0f, 1.0f, 1.0f };
 
+        Vector3D forward{};
+
+        Vector3D& GetForward() noexcept {
+            float pitch{ rotation[0] };
+            float yaw{ rotation[1] + ToRadians(90.0f) };
+
+            forward[0] = -(cos(yaw) * cos(pitch));
+            forward[1] = -(sin(pitch));
+            forward[2] = sin(yaw) * cos(pitch);
+
+            return forward;
+        }
+
         Matrix4D GetPhysics() noexcept {
             Matrix4D ret{ 1.0f };
             ret.Translate(translate);
