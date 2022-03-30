@@ -1,0 +1,90 @@
+Scene: Raycast
+Entities:
+  - Entity: 21474836480
+    Tag:
+      tag: New Entity(4)
+    Transform:
+      translate: [4.58036947, 0, 5.44623137]
+      rotation: [0, 0, 0]
+      scale: [1, 1, 1]
+    Mesh:
+      name: cube.obj
+      draw: true
+    Material:
+      roughness: 0.600000024
+      metallicness: 0
+      albedo: [1, 1, 1]
+    RigidBody:
+      mass: 0
+      bounciness: 1
+      friction: 0.5
+      is trigger: false
+      collider type: 0
+      entity: 21474836480
+      velocity: [0, 0, 0]
+      angular velocity: [0, 0, 0]
+  - Entity: 17179869184
+    Tag:
+      tag: New Entity(3)
+    Transform:
+      translate: [0, 0, 0]
+      rotation: [0, 0, 0]
+      scale: [1, 1, 1]
+    Mesh:
+      name: suzanne.obj
+      draw: true
+    Material:
+      roughness: 0.600000024
+      metallicness: 0
+      albedo: [1, 1, 1]
+    Script:
+      name: Ray.lua
+  - Entity: 12884901888
+    Tag:
+      tag: Main Camera
+    Camera3D:
+      eye position: [-7, 8, -14]
+      focus position: [0, 0, 0]
+      up vector: [0, 1, 0]
+      field of view: 45
+      aspect ratio: 1.54702783
+      nearZ: 1
+      farZ: 100
+      is runtime camera: false
+      is scene camera: true
+  - Entity: 8589934592
+    Tag:
+      tag: Runtime Camera
+    Camera3D:
+      eye position: [0, 0, -8]
+      focus position: [0, 0, 0]
+      up vector: [0, 1, 0]
+      field of view: 45
+      aspect ratio: 1.54702783
+      nearZ: 1
+      farZ: 100
+      is runtime camera: true
+      is scene camera: false
+  - Entity: 4294967296
+    Tag:
+      tag: New Entity(5)
+    Transform:
+      translate: [-3.44096088, 0, 7.48790884]
+      rotation: [0, 0, 0]
+      scale: [1, 1, 1]
+    Mesh:
+      name: cube.obj
+      draw: true
+    Material:
+      roughness: 0.600000024
+      metallicness: 0
+      albedo: [1, 1, 1]
+    RigidBody:
+      mass: 0
+      bounciness: 1
+      friction: 0.5
+      is trigger: false
+      collider type: 0
+      entity: 4294967296
+      velocity: [0, 0, 0]
+      angular velocity: [0, 0, 0]
