@@ -14,9 +14,4 @@
   ../install.sh Release
 ```
 
-### Pre-compiled binaries ###
-```
-https://bswfilippo.wixsite.com/adhoc
-```
-
 ![alt text](Movie/mov_01.gif)
