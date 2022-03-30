@@ -112,6 +112,50 @@ namespace adh {
         m_World->clearForces();
     }
 
+    std::uint64_t Physics::Raycast(const Vector3D& from, const Vector3D& direction, float distance) {
+        Vector3D displacement{ direction * distance };
+        Vector3D to{ from + displacement };
+
+        btVector3 btFrom(from[0], from[1], from[2]);
+        btVector3 btTo(to[0], to[1], to[2]);
+        btCollisionWorld::ClosestRayResultCallback closestResults(btFrom, btTo);
+
+        m_World->rayTest(btFrom, btTo, closestResults);
+
+        if (closestResults.hasHit()) {
+            auto bB = static_cast<RigidBody*>(closestResults.m_collisionObject->getUserPointer());
+            return bB->entity;
+        } else {
+            return 0;
+        }
+    }
+
+    // Array<std::uint64_t> Physics::RaycastAll(const Vector3D& from, const Vector3D& direction, float distance) {
+    //     Vector3D displacement{ direction * distance };
+    //     Vector3D to{ from + displacement };
+
+    //     btVector3 btFrom(from[0], from[1], from[2]);
+    //     btVector3 btTo(to[0], to[1], to[2]);
+    //     btCollisionWorld::AllHitsRayResultCallback allResults(btFrom, btTo);
+
+    //     m_World->rayTest(btFrom, btTo, allResults);
+
+    //     std::cout << "Hit fractions" << allResults.m_hitFractions.size() << std::endl;
+    //     std::cout << "Hit objs" << allResults.m_collisionObjects.size() << std::endl;
+    //     for (int i = 0; i < allResults.m_hitFractions.size(); i++) {
+    //         allResults.m_hitFractions[i];
+    //     }
+
+    //     Array<std::uint64_t> ret;
+    //     if (allResults.hasHit()) {
+    //         for (std::uint32_t i{}; i < allResults.m_collisionObjects.size(); i++) {
+    //             auto bB = static_cast<RigidBody*>(allResults.m_collisionObjects[i]->getUserPointer());
+    //             ret.EmplaceBack(bB->entity);
+    //         }
+    //     }
+    //     return ret;
+    // }
+
     void Physics::MoveConstruct(Physics&& rhs) noexcept {
         m_Broadphase                 = rhs.m_Broadphase;
         m_CollisionConfiguration     = rhs.m_CollisionConfiguration;

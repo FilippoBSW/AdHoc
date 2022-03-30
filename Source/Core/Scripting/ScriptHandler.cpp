@@ -251,6 +251,30 @@ namespace adh {
         return 0;
     }
 
+    int ScriptHandler::Raycast(lua_State* L) {
+        auto from      = static_cast<Vector3D**>(lua_touserdata(L, 1));
+        auto direction = static_cast<Vector3D**>(lua_touserdata(L, 2));
+        auto distance  = lua_tonumber(L, 3);
+        auto e{ scene->GetPhysics().Raycast(**from, **direction, distance) };
+        lua_pushinteger(L, e);
+        return 1;
+    }
+
+    // int ScriptHandler::RaycastAll(lua_State* L) {
+    //     auto from      = static_cast<Vector3D**>(lua_touserdata(L, 1));
+    //     auto direction = static_cast<Vector3D**>(lua_touserdata(L, 2));
+    //     auto distance  = lua_tonumber(L, 3);
+    //     auto e{ scene->GetPhysics().RaycastAll(**from, **direction, distance) };
+    //     std::cout << e.GetSize() << std::endl;
+    //     if (!e.IsEmpty()) {
+    //         for (auto&& i : e) {
+    //             // std::cout << i << std::endl;
+    //             lua_pushinteger(L, i);
+    //         }
+    //     }
+    //     return 1;
+    // }
+
     void ScriptHandler::RegisterBindings() {
         auto& state = scene->GetState();
 
@@ -293,6 +317,14 @@ namespace adh {
         lua_pushstring(state, "DeltaTime");
         lua_pushcclosure(state, ScriptHandler::DeltaTime, 1);
         lua_setglobal(state, "DeltaTime");
+
+        lua_pushstring(state, "Raycast");
+        lua_pushcclosure(state, ScriptHandler::Raycast, 1);
+        lua_setglobal(state, "Raycast");
+
+        // lua_pushstring(state, "RaycastAll");
+        // lua_pushcclosure(state, ScriptHandler::RaycastAll, 1);
+        // lua_setglobal(state, "RaycastAll");
 
         // lua_pushstring(state, "DispatchEvent");
         // lua_pushcclosure(state, ScriptHandler::DispatchEvent, 1);
@@ -353,6 +385,7 @@ namespace adh {
         state.RegisterTypeVariable<Transform>("translate", &Transform::translate);
         state.RegisterTypeVariable<Transform>("scale", &Transform::scale);
         state.RegisterTypeVariable<Transform>("rotation", &Transform::rotation);
+        state.RegisterTypeFunction<Transform>("GetForward", &Transform::GetForward);
 
         state.RegisterType<Material>("Material");
         state.RegisterTypeConstructor<Material>("new");

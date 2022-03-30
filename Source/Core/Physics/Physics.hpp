@@ -24,6 +24,7 @@
 
 #pragma once
 #include <Math/Math.hpp>
+#include <Std/Array.hpp>
 #include <btBulletDynamicsCommon.h>
 
 class btBroadphaseInterface;
@@ -56,6 +57,10 @@ namespace adh {
         void SetGravity(const Vector3D& gravity) noexcept;
 
         void ClearForces() noexcept;
+
+        std::uint64_t Raycast(const Vector3D& from, const Vector3D& direction, float distance);
+
+        // Array<std::uint64_t> RaycastAll(const Vector3D& from, const Vector3D& direction, float distance);
 
       private:
         void StepSimulation(float deltaTime);

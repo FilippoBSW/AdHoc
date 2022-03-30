@@ -56,6 +56,10 @@ namespace adh {
 
         static int LogError(lua_State* L);
 
+        static int Raycast(lua_State* L);
+
+        // static int RaycastAll(lua_State* L);
+
         static void RegisterBindings();
 
         inline static Scene* scene;
