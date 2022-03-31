@@ -18,8 +18,6 @@ local isGrounded = false
 local force = 0
 
 function Start()
-    rigidbody:SetLinearFactor(1,1,1)
-    rigidbody:SetAngularFactor(0,1,0)
 end
 
 function Update()
@@ -45,7 +43,7 @@ function Update()
         transforms[nextId].scale.z = 0.5  
 
         meshes[nextId] = GetComponent(entities[nextId], "Mesh")
-        meshes[nextId]:Load("/Users/filippo-bsw/Repos/AdHoc/build/App/AdHoc.app/Data/Assets/Models/sphere.glb")
+        meshes[nextId]:Load("sphere.glb")
 
         AddComponent(entities[nextId], "RigidBody", "Sphere");
         rigidbodies[nextId] = GetComponent(entities[nextId], "RigidBody")
@@ -57,10 +55,6 @@ function Update()
         nextId = nextId + 1
 
         force = 0
-    end
-
-    if input:GetKeyDown(AdHoc.Key.r) == true then
-
     end
 end
 

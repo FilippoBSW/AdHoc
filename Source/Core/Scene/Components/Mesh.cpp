@@ -25,11 +25,10 @@
 #include "Mesh.hpp"
 #include <Math/Math.hpp>
 #include <Utility.hpp>
+#include <Vulkan/Context.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-
-#include "RigidBody.hpp"
 
 namespace adh {
     // FIXME: Assimp fails with big .obj files
@@ -81,7 +80,7 @@ namespace adh {
         }
     }
 
-    void Mesh::Load2(const char* path) {
-        Load(path);
+    void Mesh::Load2(const char* fileName) {
+        Load(vk::Context::Get()->GetDataDirectory() + "Assets/Models/" + fileName);
     }
 } // namespace adh

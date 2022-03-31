@@ -44,7 +44,7 @@ namespace adh {
 
         void Load(const std::string& meshPath);
 
-        void Load2(const char* path);
+        void Load2(const char* fileName);
 
       public:
         vk::IndexBuffer indexBuffer;
