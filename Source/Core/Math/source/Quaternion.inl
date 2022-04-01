@@ -111,7 +111,7 @@ namespace adh {
     template <typename T>
     template <std::size_t N>
     void Quaternion<T>::Init(T angle, const Vector<N, T>& axis) noexcept {
-        Vector<3, T> temp{Normalize(axis) * -std::sin(angle / T(2))};
+        Vector<3, T> temp{Normalize(axis) * std::sin(angle / T(2))};
         x = temp[0];
         y = temp[1];
         z = temp[2];
@@ -132,10 +132,15 @@ namespace adh {
         s[1] = std::sin(angle[1] * T(0.5));
         s[2] = std::sin(angle[2] * T(0.5));
 
-        w = c.x * c.y * c.z + s.x * s.y * s.z;
-        x = s.x * c.y * c.z - c.x * s.y * s.z;
-        y = c.x * s.y * c.z + s.x * c.y * s.z;
+        // x = s.x * c.y * c.z - c.x * s.y * s.z;
+        // y = c.x * s.y * c.z + s.x * c.y * s.z;
+        // z = c.x * c.y * s.z - s.x * s.y * c.z;
+        // w = c.x * c.y * c.z + s.x * s.y * s.z;
+
+		x = s.x * c.y * c.z + c.x * s.y * s.z;
+        y = c.x * s.y * c.z - s.x * c.y * s.z;
         z = c.x * c.y * s.z - s.x * s.y * c.z;
+        w = c.x * c.y * c.z + s.x * s.y * s.z;
     }
 
     template <typename T>

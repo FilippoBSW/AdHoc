@@ -101,7 +101,10 @@ namespace adh {
         btTransform trans;
         trans.setIdentity();
         trans.setOrigin(btVector3(transform.translate.x, transform.translate.y, transform.translate.z));
-        trans.setRotation(btQuaternion(transform.rotation.y, transform.rotation.x, transform.rotation.z));
+
+        btQuaternion q;
+        q.setEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
+        trans.setRotation(q);
 
         btDefaultMotionState* motionState = new btDefaultMotionState(trans);
 
@@ -127,10 +130,14 @@ namespace adh {
     void RigidBody::OnUpdate(Transform& transform) noexcept {
         const btTransform& transf(body->getWorldTransform());
         const btVector3& origin(transf.getOrigin());
-        const btQuaternion currentRotation(transf.getRotation());
+        const btQuaternion& currentRotation(transf.getRotation());
 
         transform.translate = Vector3D{ origin.getX(), origin.getY(), origin.getZ() };
-        currentRotation.getEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
+        // currentRotation.getEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
+        transform.q.x = currentRotation.getX();
+        transform.q.y = currentRotation.getY();
+        transform.q.z = currentRotation.getZ();
+        transform.q.w = currentRotation.getW();
 
         auto vel{ body->getLinearVelocity() };
         velocity = Vector3D{ vel.getX(), vel.getY(), vel.getZ() };
@@ -138,7 +145,8 @@ namespace adh {
         angularVelocity = Vector3D{ avel.getX(), avel.getY(), avel.getZ() };
 
         translate = Vector3D{ origin.getX(), origin.getY(), origin.getZ() };
-        currentRotation.getEulerZYX(rotation.z, rotation.y, rotation.x);
+        rotation  = transform.rotation;
+        // currentRotation.getEulerZYX(rotation.z, rotation.y, rotation.x);
     }
 
     void RigidBody::SetTranslation(float x, float y, float z) noexcept {
@@ -152,7 +160,10 @@ namespace adh {
 
     void RigidBody::SetRotation(float x, float y, float z) noexcept {
         btTransform& transf(body->getWorldTransform());
-        transf.setRotation(btQuaternion{ y, x, z });
+        btQuaternion q(y, x, z);
+        // btQuaternion q;
+        // q.setEulerZYX(z, y, x);
+        transf.setRotation(q);
     }
 
     Vector3D& RigidBody::GetRotation() noexcept {

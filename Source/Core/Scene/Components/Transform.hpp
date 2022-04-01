@@ -39,6 +39,8 @@ namespace adh {
 
         Vector3D forward{};
 
+        Quaternion<float> q;
+
         Vector3D& GetForward() noexcept {
             float pitch{ rotation[0] };
             float yaw{ rotation[1] + ToRadians(90.0f) };
@@ -53,7 +55,14 @@ namespace adh {
         Matrix4D GetPhysics() noexcept {
             Matrix4D ret{ 1.0f };
             ret.Translate(translate);
-            ret.Rotate(rotation);
+
+            // TODO: Temp
+            auto m = q.GetMatrix4D();
+            Vector3D t, r, s;
+            m.Decompose(t, r, s);
+            rotation = r;
+            ret      = ret * m;
+
             ret.Scale(scale);
             return ret;
         }
@@ -61,12 +70,19 @@ namespace adh {
         xmm::Matrix GetXmmPhysics() noexcept {
             xmm::Matrix ret{ 1.0f };
             ret.Translate(translate);
-            ret.Rotate(rotation);
+
+            // TODO: Temp
+            auto m = q.GetXmmMatrix();
+            Vector3D t, r, s;
+            m.Decompose(t, r, s);
+            rotation = r;
+            ret      = ret * m;
+
             ret.Scale(scale);
             return ret;
         }
 
-        Matrix4D Get() const noexcept {
+        Matrix4D Get() noexcept {
             Matrix4D ret{ 1.0f };
             ret.Translate(translate);
             ret.Rotate(rotation);
@@ -74,7 +90,7 @@ namespace adh {
             return ret;
         }
 
-        xmm::Matrix GetXmm() const noexcept {
+        xmm::Matrix GetXmm() noexcept {
             xmm::Matrix ret{ 1.0f };
             ret.Translate(translate);
             ret.Rotate(rotation);

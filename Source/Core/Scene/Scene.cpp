@@ -93,8 +93,9 @@ namespace adh {
             btTransform& trans = rigidBody.body->getWorldTransform();
             trans.setOrigin(btVector3(transform.translate.x, transform.translate.y, transform.translate.z));
 
-            btQuaternion q;
-            q.setEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
+            btQuaternion q(transform.rotation.y, transform.rotation.x, transform.rotation.z);
+            // btQuaternion q;
+            // q.setEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
             trans.setRotation(q);
 
             rigidBody.body->setWorldTransform(trans);

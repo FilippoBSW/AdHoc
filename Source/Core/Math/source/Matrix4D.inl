@@ -85,7 +85,7 @@ namespace adh {
 
     template <typename T>
     void Matrix<4u, 4u, T>::Decompose(Vector3D& translation, Vector3D& rotation, Vector3D& scale) noexcept {
-        adh::xmm::Decompose(*this, translation, rotation, scale);
+        adh::Decompose(*this, translation, rotation, scale);
     }
 
     template <typename T>
@@ -236,14 +236,23 @@ namespace adh {
         rows[2].Scale(1.0f);
 
         // Rotation
-        rotation.y = std::asin(-rows[0][2]);
-        if (std::cos(rotation.y) != 0) {
-            rotation.x = std::atan2(rows[1][2], rows[2][2]);
-            rotation.z = std::atan2(rows[0][1], rows[0][0]);
-        } else {
-            rotation.x = std::atan2(-rows[2][0], rows[1][1]);
-            rotation.z = 0;
-        }
+        // rotation.y = std::asin(-rows[0][2]);
+        // if (std::cos(rotation.y) != 0) {
+        //     rotation.x = -std::atan2(rows[1][2], rows[2][2]);
+        //     rotation.z = -std::atan2(rows[0][1], rows[0][0]);
+        // } else {
+        //     rotation.x = -std::atan2(-rows[2][0], rows[1][1]);
+        //     rotation.z = 0;
+        // }
+
+		rotation.x = asinf(-rows[2][1]); // Pitch
+		if (cosf(rotation.x) > 0.0001) {
+			rotation.y = atan2f(rows[2][0], rows[2][2]);     // Yaw
+			rotation.z = atan2f(rows[0][1], rows[1][1]);     // Roll
+		} else {
+			rotation.y = 0.0f;                         // Yaw
+			rotation.z = atan2f(-rows[1][0], rows[0][0]);    // Roll
+		}
     }
 
     template <typename T>
