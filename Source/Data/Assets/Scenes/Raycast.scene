@@ -1,10 +1,10 @@
 Scene: Raycast
 Entities:
-  - Entity: 21474836480
+  - Entity: 30064771072
     Tag:
-      tag: New Entity(4)
+      tag: Cube1
     Transform:
-      translate: [4.58036947, 0, 5.44623137]
+      translate: [4.58036947, 0, 6.20431519]
       rotation: [0, 0, 0]
       scale: [1, 1, 1]
     Mesh:
@@ -20,12 +20,12 @@ Entities:
       friction: 0.5
       is trigger: false
       collider type: 0
-      entity: 21474836480
+      entity: 30064771072
       velocity: [0, 0, 0]
       angular velocity: [0, 0, 0]
-  - Entity: 17179869184
+  - Entity: 25769803776
     Tag:
-      tag: New Entity(3)
+      tag: Monkey
     Transform:
       translate: [0, 0, 0]
       rotation: [0, 0, 0]
@@ -39,7 +39,16 @@ Entities:
       albedo: [1, 1, 1]
     Script:
       name: Ray.lua
-  - Entity: 12884901888
+    RigidBody:
+      mass: 0
+      bounciness: 1
+      friction: 0.5
+      is trigger: false
+      collider type: 0
+      entity: 25769803776
+      velocity: [0, 0, 0]
+      angular velocity: [0, 0, 0]
+  - Entity: 21474836480
     Tag:
       tag: Main Camera
     Camera3D:
@@ -47,12 +56,12 @@ Entities:
       focus position: [0, 0, 0]
       up vector: [0, 1, 0]
       field of view: 45
-      aspect ratio: 1.54702783
+      aspect ratio: 1.77777779
       nearZ: 1
       farZ: 100
       is runtime camera: false
       is scene camera: true
-  - Entity: 8589934592
+  - Entity: 17179869184
     Tag:
       tag: Runtime Camera
     Camera3D:
@@ -60,16 +69,62 @@ Entities:
       focus position: [0, 0, 0]
       up vector: [0, 1, 0]
       field of view: 45
-      aspect ratio: 1.54702783
+      aspect ratio: 1.77777779
       nearZ: 1
       farZ: 100
       is runtime camera: true
       is scene camera: false
-  - Entity: 4294967296
+  - Entity: 12884901888
     Tag:
-      tag: New Entity(5)
+      tag: Cube2
     Transform:
       translate: [-3.44096088, 0, 7.48790884]
+      rotation: [0, 0, 0]
+      scale: [1, 1, 1]
+    Mesh:
+      name: cube.obj
+      draw: true
+    Material:
+      roughness: 0.600000024
+      metallicness: 0
+      albedo: [1, 1, 1]
+    RigidBody:
+      mass: 0
+      bounciness: 1
+      friction: 0.5
+      is trigger: false
+      collider type: 0
+      entity: 12884901888
+      velocity: [0, 0, 0]
+      angular velocity: [0, 0, 0]
+  - Entity: 8589934592
+    Tag:
+      tag: Cube3
+    Transform:
+      translate: [-2.98392606, 0, -4.75617981]
+      rotation: [0, 0, 0]
+      scale: [1, 1, 1]
+    Mesh:
+      name: cube.obj
+      draw: true
+    Material:
+      roughness: 0.600000024
+      metallicness: 0
+      albedo: [1, 1, 1]
+    RigidBody:
+      mass: 0
+      bounciness: 1
+      friction: 0.5
+      is trigger: false
+      collider type: 0
+      entity: 8589934592
+      velocity: [0, 0, 0]
+      angular velocity: [0, 0, 0]
+  - Entity: 4294967296
+    Tag:
+      tag: Cube4
+    Transform:
+      translate: [3.6169107, 0, -4.842381]
       rotation: [0, 0, 0]
       scale: [1, 1, 1]
     Mesh:
