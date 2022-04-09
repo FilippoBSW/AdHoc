@@ -30,7 +30,10 @@
 #include "Math/Math.hpp"
 #include "Transform.hpp"
 
+#include <PxPhysicsAPI.h>
 #include <btBulletDynamicsCommon.h>
+
+#include <Physics/Physics.hpp>
 
 class btRigidBody;
 class btCollisionShape;
@@ -69,6 +72,9 @@ namespace adh {
         void Create(btDiscreteDynamicsWorld* world, ColliderType colliderType, std::uint64_t entity, const Transform& transform,
                     float mass, float bounciness, float friction, const Array<Vertex>& vertices = {});
 
+        void Create(Physics* world, ColliderType colliderType, std::uint64_t entity, const Transform& transform,
+                    float mass, float bounciness, float friction, const Array<Vertex>& vertices = {});
+
         void OnUpdate(Transform& transform) noexcept;
 
         void SetTranslation(float x, float y, float z) noexcept;
@@ -76,6 +82,8 @@ namespace adh {
         Vector3D& GetTranslation() noexcept;
 
         void SetRotation(float x, float y, float z) noexcept;
+
+        void AddRotation(float x, float y, float z) noexcept;
 
         Vector3D& GetRotation() noexcept;
 
@@ -115,15 +123,22 @@ namespace adh {
         void Clear() noexcept;
 
       public:
-        btRigidBody* body;
-        btDiscreteDynamicsWorld* m_World;
+        // btRigidBody* body;
+        // btDiscreteDynamicsWorld* m_World;
         float mass;
         float bounciness;
         float friction;
 
+        physx::PxRigidDynamic* mActor;
+        physx::PxMaterial* mMaterial;
+        physx::PxShape* mShape;
+
+        Physics* mPhysics;
+
         std::uint64_t entity;
 
         bool isTrigger{ false };
+        bool isKinematic{ false };
 
         ColliderType colliderType;
 

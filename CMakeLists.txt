@@ -30,6 +30,47 @@ elseif(APPLE)
     )
 endif()
 
+# PhysX
+if(APPLE)
+	set(TARGET_BUILD_PLATFORM "mac")
+elseif(WIN32)
+	set(TARGET_BUILD_PLATFORM "windows")
+endif()
+#TODO check for x86-arm
+# set(OSX_BITNESS "-arch arm64")
+# set(PHYSX_CXX_FLAGS "${OSX_BITNESS} -w")
+set(NV_USE_DEBUG_WINCRT ON CACHE BOOL "Use the debug version of the CRT")
+set(PHYSX_ROOT_DIR ${CMAKE_SOURCE_DIR}/External/PhysX/physx)
+set(PXSHARED_PATH ${PHYSX_ROOT_DIR}/../pxshared)
+set(PXSHARED_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CMAKEMODULES_VERSION "1.27")
+set(CMAKEMODULES_PATH ${PHYSX_ROOT_DIR}/../externals/cmakemodules)
+set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/externals/physx)
+set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/externals/physx)
+
+add_subdirectory(${PHYSX_ROOT_DIR}/compiler/public)
+
+target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/physx/include)
+target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/pxshared/include)
+
+set(PHYSX_LIBRARIES
+	PhysXExtensions
+	PhysX
+	PhysXPvdSDK
+	PhysXVehicle
+	PhysXCharacterKinematic
+	PhysXCooking
+	PhysXCommon
+	PhysXFoundation)
+
+###
+
+set(BULLET_LIBRARIES
+    BulletDynamics 
+    BulletCollision  
+    LinearMath 
+    Bullet3Common)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/bullet3)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/assimp)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/yaml-cpp)
@@ -62,10 +103,8 @@ target_link_libraries(AdHoc PRIVATE
     ImGuizmo
     assimp
     yaml-cpp
-    BulletDynamics 
-    BulletCollision  
-    LinearMath 
-    Bullet3Common)
+	${BULLET_LIBRARIES}
+	${PHYSX_LIBRARIES})
      
 if(APPLE)
     target_link_libraries(AdHoc PUBLIC 
@@ -75,7 +114,6 @@ if(APPLE)
         "-framework GameController")
         target_compile_options(AdHoc PRIVATE -fobjc-arc -xobjective-c++)
 endif()
-
 if(APPLE OR UNIX)
 	target_compile_options(AdHoc PUBLIC -Wno-switch)
 	target_compile_options(AdHoc PUBLIC -Wno-format-security)
@@ -87,10 +125,8 @@ set_target_properties(
     ImGuizmo
 	assimp 
 	yaml-cpp
-	BulletDynamics 
-	BulletCollision 
-	LinearMath 
-	Bullet3Common
+	${BULLET_LIBRARIES}
+	${PHYSX_LIBRARIES}
     PROPERTIES 
 	ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIB_PATH}"
 	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIB_PATH}"
@@ -115,6 +151,7 @@ add_custom_target(copy_assets
 add_dependencies(AdHoc copy_assets) 
 
 target_compile_definitions(AdHoc PUBLIC "$<$<CONFIG:Debug>:ADH_DEBUG>")
+target_compile_definitions(AdHoc PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
 target_compile_definitions(AdHoc PUBLIC "$<$<CONFIG:Release>:ADH_RELEASE>")
 
 if(WIN32)

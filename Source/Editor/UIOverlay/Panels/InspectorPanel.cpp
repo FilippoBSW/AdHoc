@@ -297,9 +297,13 @@ namespace adh {
                 ImGui::DragFloat("Mass", &component.mass, 0.001f, 0.0f, 1.0f);
                 ImGui::DragFloat("Bounciness", &component.bounciness, 0.001f, 0.0f, 1.0f);
                 ImGui::DragFloat("Friction", &component.friction, 0.001f, 0.0f, 1.0f);
-                ImGui::SameLine();
+                // ImGui::SameLine();
                 if (ImGui::Checkbox("Is trigger", &component.isTrigger)) {
                     component.SetIsTrigger(component.isTrigger);
+                }
+                ImGui::SameLine();
+                if (ImGui::Checkbox("Is kinematic", &component.isKinematic)) {
+                    // component.SetIsTrigger(component.isTrigger);
                 }
             },
             currentScene, true, false);
@@ -488,10 +492,12 @@ namespace adh {
                     if (colliderType == RigidBody::ColliderType::eMesh &&
                         currentScene->GetWorld().Contains<Mesh>(entity)) {
                         auto [mesh]{ currentScene->GetWorld().Get<Mesh>(entity) };
-                        rigidBody.Create(currentScene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                        rigidBody.Create(&currentScene->GetPhysics(), colliderType, (std::uint64_t)entity,
                                          transform, 1.0f, 1.0f, 0.5f, mesh.vertex);
                     } else {
-                        rigidBody.Create(currentScene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                        // rigidBody.Create(currentScene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                        //                  transform, 1.0f, 1.0f, 0.5f);
+                        rigidBody.Create(&currentScene->GetPhysics(), colliderType, (std::uint64_t)entity,
                                          transform, 1.0f, 1.0f, 0.5f);
                     }
                 }

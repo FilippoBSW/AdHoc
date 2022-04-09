@@ -125,10 +125,14 @@ namespace adh {
                         if (colliderType == RigidBody::ColliderType::eMesh &&
                             scene->GetWorld().Contains<Mesh>(entity)) {
                             auto [mesh]{ scene->GetWorld().Get<Mesh>(entity) };
-                            rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                            // rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                            //                  transform, 1.0f, 0.0f, 0.5f, mesh.vertex);
+                            rigidBody.Create(&scene->GetPhysics(), colliderType, (std::uint64_t)entity,
                                              transform, 1.0f, 0.0f, 0.5f, mesh.vertex);
                         } else {
-                            rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                            // rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                            //                  transform, 1.0f, 0.0f, 0.5f);
+                            rigidBody.Create(&scene->GetPhysics(), colliderType, (std::uint64_t)entity,
                                              transform, 1.0f, 0.0f, 0.5f);
                         }
                     }
@@ -430,6 +434,7 @@ namespace adh {
         state.RegisterTypeVariable<RigidBody>("friction", &RigidBody::friction);
         state.RegisterTypeVariable<RigidBody>("entity", &RigidBody::entity);
         state.RegisterTypeVariable<RigidBody>("isTrigger", &RigidBody::isTrigger);
+        state.RegisterTypeVariable<RigidBody>("isKinematic", &RigidBody::isKinematic);
         state.RegisterTypeVariable<RigidBody>("velocity", &RigidBody::velocity);
         state.RegisterTypeFunction<RigidBody>("GetVelocity", &RigidBody::GetVelocity);
         state.RegisterTypeVariable<RigidBody>("angularVelocity", &RigidBody::angularVelocity);
@@ -449,6 +454,7 @@ namespace adh {
         state.RegisterTypeVariable<RigidBody>("translate", &RigidBody::translate);
 
         state.RegisterTypeFunction<RigidBody>("SetRotation", &RigidBody::SetRotation);
+        state.RegisterTypeFunction<RigidBody>("AddRotation", &RigidBody::AddRotation);
         state.RegisterTypeFunction<RigidBody>("GetRotation", &RigidBody::GetRotation);
         state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
 

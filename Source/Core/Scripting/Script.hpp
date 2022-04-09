@@ -356,21 +356,20 @@ namespace adh {
             static void AddMethod(const char* key, const char* retTable, R (T::*method)(Args...)) {
                 methodsMap[key] = [=](lua_State* L) {
                     std::int32_t index{ GetIndex(L) };
-                    R(*declassedFp)
-                    (T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
+                    // R(*declassedFp) (T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
 
                     T** p = static_cast<T**>(lua_touserdata(L, 1));
                     ADH_THROW(p != nullptr, "Class ptr is null!");
 
                     if constexpr (std::is_void<R>()) {
                         std::apply(
-                            declassedFp, std::tuple_cat(std::forward_as_tuple(*p),
-                                                        std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
+                            method, std::tuple_cat(std::forward_as_tuple(*p),
+                                                   std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
                         return 0;
                     } else {
                         auto&& retVal = std::apply(
-                            declassedFp, std::tuple_cat(std::forward_as_tuple(*p),
-                                                        std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
+                            method, std::tuple_cat(std::forward_as_tuple(*p),
+                                                   std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
 
                         if constexpr (std::is_pointer<R>::value || std::is_reference<R>::value) {
                             auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
@@ -390,21 +389,20 @@ namespace adh {
             static void AddMethod(const char* key, const char* retTable, R (T::*method)(Args...) const) {
                 methodsMap[key] = [=](lua_State* L) {
                     std::int32_t index{ GetIndex(L) };
-                    R(*declassedFp)
-                    (T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
+                    // R(*declassedFp)(T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
 
                     T** p = static_cast<T**>(lua_touserdata(L, 1));
                     ADH_THROW(p != nullptr, "Class ptr is null!");
 
                     if constexpr (std::is_void<R>()) {
                         std::apply(
-                            declassedFp, std::tuple_cat(std::forward_as_tuple(*p),
-                                                        std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
+                            method, std::tuple_cat(std::forward_as_tuple(*p),
+                                                   std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
                         return 0;
                     } else {
                         auto&& retVal = std::apply(
-                            declassedFp, std::tuple_cat(std::forward_as_tuple(*p),
-                                                        std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
+                            method, std::tuple_cat(std::forward_as_tuple(*p),
+                                                   std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
 
                         if constexpr (std::is_pointer<R>::value || std::is_reference<R>::value) {
                             auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));

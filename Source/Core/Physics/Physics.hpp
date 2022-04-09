@@ -27,6 +27,8 @@
 #include <Std/Array.hpp>
 #include <btBulletDynamicsCommon.h>
 
+#include <PxPhysicsAPI.h>
+
 class btBroadphaseInterface;
 class btDefaultCollisionConfiguration;
 class btCollisionDispatcher;
@@ -60,8 +62,6 @@ namespace adh {
 
         std::uint64_t Raycast(const Vector3D& from, const Vector3D& direction, float distance);
 
-        // Array<std::uint64_t> RaycastAll(const Vector3D& from, const Vector3D& direction, float distance);
-
       private:
         void StepSimulation(float deltaTime);
 
@@ -70,12 +70,21 @@ namespace adh {
         void Clear() noexcept;
 
       public:
-        btBroadphaseInterface* m_Broadphase;
-        btDefaultCollisionConfiguration* m_CollisionConfiguration;
-        btCollisionDispatcher* m_Dispatcher;
-        btSequentialImpulseConstraintSolver* m_Solver;
-        btDiscreteDynamicsWorld* m_World;
+        // btBroadphaseInterface* m_Broadphase;
+        // btDefaultCollisionConfiguration* m_CollisionConfiguration;
+        // btCollisionDispatcher* m_Dispatcher;
+        // btSequentialImpulseConstraintSolver* m_Solver;
+        // btDiscreteDynamicsWorld* m_World;
 
-        btVector3 m_Gravity{ 0.0f, -9.8f, 0.0f };
+        physx::PxDefaultAllocator mDefaultAllocatorCallback;
+        physx::PxDefaultErrorCallback mDefaultErrorCallback;
+        physx::PxDefaultCpuDispatcher* mDispatcher;
+        physx::PxTolerancesScale mToleranceScale;
+        physx::PxFoundation* mFoundation = nullptr;
+        physx::PxPhysics* mPhysics;
+        physx::PxScene* mScene;
+
+        // btVector3 m_Gravity{ 0.0f, -9.8f, 0.0f };
+        physx::PxVec3 mGravity{ 0.0f, -9.81f, 0.0f };
     };
 } // namespace adh

@@ -375,7 +375,7 @@ namespace adh {
             }
 
             std::size_t GetEntityCount() const noexcept {
-                return m_Entities.GetSize();
+                return m_Entities.GetSize() - m_RecicledEntities.GetSize();
             }
 
           private:

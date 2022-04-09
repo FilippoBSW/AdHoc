@@ -104,6 +104,7 @@ namespace adh {
                     out << YAML::Key << "bounciness" << YAML::Value << rigidbody.bounciness;
                     out << YAML::Key << "friction" << YAML::Value << rigidbody.friction;
                     out << YAML::Key << "is trigger" << YAML::Value << rigidbody.isTrigger;
+                    out << YAML::Key << "is kinematic" << YAML::Value << rigidbody.isKinematic;
                     out << YAML::Key << "collider type" << YAML::Value << (uint64_t)rigidbody.colliderType;
                     out << YAML::Key << "entity" << YAML::Value << (uint64_t)rigidbody.entity;
                     out << YAML::Key << "velocity" << YAML::Value << rigidbody.velocity;
@@ -225,7 +226,15 @@ namespace adh {
 
                     if (mesh) {
                         auto [m]{ m_Scene->GetWorld().Get<Mesh>(e) };
-                        r.Create(m_Scene->GetPhysics().m_World,
+                        // r.Create(m_Scene->GetPhysics().m_World,
+                        //          RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
+                        //          static_cast<std::uint64_t>(e),
+                        //          t,
+                        //          rigidbody["mass"].as<float>(),
+                        //          rigidbody["bounciness"].as<float>(),
+                        //          rigidbody["friction"].as<float>(),
+                        //          m.vertex);
+                        r.Create(&m_Scene->GetPhysics(),
                                  RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
                                  static_cast<std::uint64_t>(e),
                                  t,
@@ -234,7 +243,14 @@ namespace adh {
                                  rigidbody["friction"].as<float>(),
                                  m.vertex);
                     } else {
-                        r.Create(m_Scene->GetPhysics().m_World,
+                        // r.Create(m_Scene->GetPhysics().m_World,
+                        //          RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
+                        //          static_cast<std::uint64_t>(e),
+                        //          t,
+                        //          rigidbody["mass"].as<float>(),
+                        //          rigidbody["bounciness"].as<float>(),
+                        //          rigidbody["friction"].as<float>());
+                        r.Create(&m_Scene->GetPhysics(),
                                  RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
                                  static_cast<std::uint64_t>(e),
                                  t,
@@ -243,6 +259,7 @@ namespace adh {
                                  rigidbody["friction"].as<float>());
                     }
                     r.SetIsTrigger(rigidbody["is trigger"].as<bool>());
+                    r.isKinematic     = rigidbody["is kinematic"].as<bool>();
                     r.velocity        = rigidbody["velocity"].as<Vector3D>();
                     r.angularVelocity = rigidbody["angular velocity"].as<Vector3D>();
                 }
