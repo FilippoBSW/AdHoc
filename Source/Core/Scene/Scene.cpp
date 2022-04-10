@@ -84,14 +84,6 @@ namespace adh {
             // rigidBody.mActor->setMass(rigidBody.mass);
             // rigidBody.mActor->setMass(rigidBody.mass);
             physx::PxRigidBodyExt::updateMassAndInertia(*rigidBody.mActor, rigidBody.mass);
-            std::cout << rigidBody.mActor->getMass() << std::endl;
-            physx::PxShape* p;
-            rigidBody.mActor->getShapes(&p, 1);
-            physx::PxMaterial* m;
-            p->getMaterials(&m, 1);
-            std::cout << m->getRestitution() << std::endl;
-            std::cout << m->getDynamicFriction() << std::endl;
-            std::cout << m->getStaticFriction() << std::endl;
 
             rigidBody.mActor->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, rigidBody.isKinematic);
             // } else {

@@ -1,57 +1,91 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(AdHoc)
+set(PROJECT_NAME AdHoc)
+project(${PROJECT_NAME})
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(WIN32)
-    add_executable(AdHoc WIN32 "")
+    add_executable(${PROJECT_NAME} WIN32 "")
 	set(DATA_PATH "Data")
 	set(LIB_PATH "Lib")
 	set(EXE_PATH "Exe")
 elseif(APPLE)
-    add_executable(AdHoc MACOSX_BUNDLE "")
-	set(DATA_PATH "App/AdHoc.app/Data")
-	set(LIB_PATH "App/AdHoc.app/Lib")
+    add_executable(${PROJECT_NAME} MACOSX_BUNDLE "")
+	set(DATA_PATH "App/${PROJECT_NAME}.app/Data")
+	set(LIB_PATH "App/${PROJECT_NAME}.app/Lib")
 	set(EXE_PATH "App")
-	set_target_properties(AdHoc PROPERTIES
+	set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE YES
-        MACOSX_BUNDLE_IDENTIFIER io.AdHoc
-        MACOSX_BUNDLE_GUI_IDENTIFIER io.AdHoc
-        MACOSX_BUNDLE_BUNDLE_NAME "AdHoc"
-		MACOSX_BUNDLE_EXECUTABLE AdHoc
+        MACOSX_BUNDLE_IDENTIFIER io.${PROJECT_NAME}
+        MACOSX_BUNDLE_GUI_IDENTIFIER io.${PROJECT_NAME}
+        MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_NAME}"
+		MACOSX_BUNDLE_EXECUTABLE ${PROJECT_NAME}
         MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
-		MACOSX_BUNDLE_DISPLAY_NAME "AdHoc"
+		MACOSX_BUNDLE_DISPLAY_NAME "${PROJECT_NAME}"
     )
-    set_target_properties(AdHoc PROPERTIES
-        XCODE_ATTRIBUTE_PRODUCT_NAME "AdHoc"
-        XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER "com.github.Filippo-BSW.AdHoc"
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        XCODE_ATTRIBUTE_PRODUCT_NAME "${PROJECT_NAME}"
+        XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER "com.github.Filippo-BSW.${PROJECT_NAME}"
     )
+    target_compile_features(${PROJECT_NAME} PRIVATE c_std_17)
 endif()
 
-# PhysX
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+
 if(APPLE)
 	set(TARGET_BUILD_PLATFORM "mac")
+	add_custom_command(TARGET AdHoc 
+    POST_BUILD COMMAND 
+	${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../../Lib/bin/mac.x86_64/$<CONFIGURATION>"
+	$<TARGET_FILE:AdHoc>)
 elseif(WIN32)
 	set(TARGET_BUILD_PLATFORM "windows")
+		add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/Lib/bin/win.x86_64.vc142.md/$<CONFIGURATION>"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>/$<CONFIGURATION>")
 endif()
-#TODO check for x86-arm
-# set(OSX_BITNESS "-arch arm64")
-# set(PHYSX_CXX_FLAGS "${OSX_BITNESS} -w")
+
 set(NV_USE_DEBUG_WINCRT ON CACHE BOOL "Use the debug version of the CRT")
 set(PHYSX_ROOT_DIR ${CMAKE_SOURCE_DIR}/External/PhysX/physx)
 set(PXSHARED_PATH ${PHYSX_ROOT_DIR}/../pxshared)
 set(PXSHARED_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(PX_PHYSX_ ${CMAKE_INSTALL_PREFIX})
 set(CMAKEMODULES_VERSION "1.27")
+set(PX_GENERATE_STATIC_LIBRARIES ON)
 set(CMAKEMODULES_PATH ${PHYSX_ROOT_DIR}/../externals/cmakemodules)
-set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/externals/physx)
-set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/externals/physx)
+set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/External/PhysX)
+set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/${LIB_PATH})
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/bullet3)
 add_subdirectory(${PHYSX_ROOT_DIR}/compiler/public)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/assimp)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/yaml-cpp)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGui)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGuizmo)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/lua-5.4.3)
 
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/physx/include)
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/pxshared/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Source)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Api)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Platform)
+
+set(ADH_CORE_SRC ${CMAKE_SOURCE_DIR}/Source/Core)
+target_include_directories(${PROJECT_NAME} PRIVATE ${ADH_CORE_SRC})
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/bullet3/src)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/physx/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/pxshared/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/yaml-cpp/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/lua-5.4.3/src)
+
+set(BULLET_LIBRARIES
+    BulletDynamics 
+    BulletCollision  
+    LinearMath 
+    Bullet3Common)
 
 set(PHYSX_LIBRARIES
 	PhysXExtensions
@@ -63,41 +97,7 @@ set(PHYSX_LIBRARIES
 	PhysXCommon
 	PhysXFoundation)
 
-###
-
-set(BULLET_LIBRARIES
-    BulletDynamics 
-    BulletCollision  
-    LinearMath 
-    Bullet3Common)
-
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/bullet3)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/assimp)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/yaml-cpp)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGui)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGuizmo)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/lua-5.4.3)
-
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/Source)
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External)
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/bullet3/src)
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/yaml-cpp/include)
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/lua-5.4.3/src)
-
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/Source/Api)
-target_include_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/Source/Platform)
-
-set(ADH_CORE_SRC ${CMAKE_SOURCE_DIR}/Source/Core)
-target_include_directories(AdHoc PRIVATE ${ADH_CORE_SRC})
-
-target_link_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/bullet3)
-target_link_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/assimp)
-target_link_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/yaml-cpp)
-target_link_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/lua-5.4.3)
-target_link_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/ImGui)
-target_link_directories(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/ImGuizmo)
-
-target_link_libraries(AdHoc PRIVATE 
+target_link_libraries(${PROJECT_NAME} PRIVATE 
 	Lua 
 	ImGui 
     ImGuizmo
@@ -107,20 +107,20 @@ target_link_libraries(AdHoc PRIVATE
 	${PHYSX_LIBRARIES})
      
 if(APPLE)
-    target_link_libraries(AdHoc PUBLIC 
+    target_link_libraries(${PROJECT_NAME} PUBLIC 
         "-framework AppKit" 
         "-framework QuartzCore"
         "-framework Cocoa"
         "-framework GameController")
-        target_compile_options(AdHoc PRIVATE -fobjc-arc -xobjective-c++)
+        target_compile_options(${PROJECT_NAME} PRIVATE -fobjc-arc -xobjective-c++)
 endif()
 if(APPLE OR UNIX)
-	target_compile_options(AdHoc PUBLIC -Wno-switch)
-	target_compile_options(AdHoc PUBLIC -Wno-format-security)
+	target_compile_options(${PROJECT_NAME} PUBLIC -Wno-switch)
+	target_compile_options(${PROJECT_NAME} PUBLIC -Wno-format-security)
 endif()
 
 set_target_properties(
-	AdHoc 
+	${PROJECT_NAME} 
 	ImGui 
     ImGuizmo
 	assimp 
@@ -148,34 +148,34 @@ add_custom_target(copy_assets
 		COMMAND ${CMAKE_COMMAND} -E copy_directory
 				${CMAKE_SOURCE_DIR}/Source/Core/Scripting/Scripts
 				${PROJECT_BINARY_DIR}/${DATA_PATH}/Resources/Scripts)  
-add_dependencies(AdHoc copy_assets) 
+add_dependencies(${PROJECT_NAME} copy_assets) 
 
-target_compile_definitions(AdHoc PUBLIC "$<$<CONFIG:Debug>:ADH_DEBUG>")
-target_compile_definitions(AdHoc PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
-target_compile_definitions(AdHoc PUBLIC "$<$<CONFIG:Release>:ADH_RELEASE>")
+target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Debug>:ADH_DEBUG>")
+target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Release>:ADH_RELEASE>")
+target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
 
 if(WIN32)
-	target_compile_definitions(AdHoc PUBLIC NOMINMAX)
-	target_compile_definitions(AdHoc PUBLIC _CRT_SECURE_NO_WARNINGS)
-	target_compile_definitions(AdHoc PUBLIC UNICODE)
-    target_compile_definitions(AdHoc PRIVATE "ADH_API=__declspec(dllexport)")
-	target_compile_definitions(AdHoc INTERFACE "ADH_API=__declspec(dllimport)")
-    target_compile_definitions(AdHoc PUBLIC "ADH_WINDOWS= ")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC UNICODE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_API=__declspec(dllexport)")
+	target_compile_definitions(${PROJECT_NAME} INTERFACE "ADH_API=__declspec(dllimport)")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_WINDOWS= ")
 elseif(APPLE)
-    target_compile_definitions(AdHoc PUBLIC "ADH_API= ")
-    target_compile_definitions(AdHoc PUBLIC "ADH_APPLE= ")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_API= ")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_APPLE= ")
 elseif(UNIX)
-    target_compile_definitions(AdHoc PUBLIC "ADH_API= )")
-	target_compile_definitions(AdHoc PUBLIC "ADH_LINUX= ")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_API= )")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_LINUX= ")
 endif()
 
 if(WIN32)
 	set(PLATFORM_SRC_DIR ${CMAKE_SOURCE_DIR}/Source/Platform/Windows)
-    target_sources(AdHoc PRIVATE ${PLATFORM_SRC_DIR}/Window.cpp)
+    target_sources(${PROJECT_NAME} PRIVATE ${PLATFORM_SRC_DIR}/Window.cpp)
 elseif(APPLE)
 	set(PLATFORM_SRC_DIR ${CMAKE_SOURCE_DIR}/Source/Platform/macOS)
-    target_sources(AdHoc PRIVATE ${PLATFORM_SRC_DIR}/Window.mm)
-	target_sources(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/Source/Utility.mm)
+    target_sources(${PROJECT_NAME} PRIVATE ${PLATFORM_SRC_DIR}/Window.mm)
+	target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Utility.mm)
 elseif(UNIX)
 
 endif()
@@ -185,110 +185,113 @@ endif()
 #**********************************************
 option(INSTALL "Install" OFF)
 if(INSTALL)
-	target_compile_definitions(AdHoc PUBLIC "ADH_INSTALL= ")
-	target_compile_definitions(AdHoc PUBLIC "DATA_DIRECTORY=\"${PROJECT_BINARY_DIR}/${DATA_PATH}/\"")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_INSTALL= ")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "DATA_DIRECTORY=\"${PROJECT_BINARY_DIR}/${DATA_PATH}/\"")
 else()
 	if(WIN32)
-		target_compile_definitions(AdHoc PUBLIC "DATA_DIRECTORY=\"../../Data/\"")
+		target_compile_definitions(${PROJECT_NAME} PUBLIC "DATA_DIRECTORY=\"../../Data/\"")
 	elseif(APPLE)
-		target_compile_definitions(AdHoc PUBLIC "DATA_DIRECTORY=\"/Data/\"")
+		target_compile_definitions(${PROJECT_NAME} PUBLIC "DATA_DIRECTORY=\"/Data/\"")
 	endif()
 endif()
 
 if(WIN32)
-	target_compile_definitions(AdHoc PUBLIC "EXE_PATH=nullptr")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "EXE_PATH=nullptr")
 else()
-	target_compile_definitions(AdHoc PUBLIC "EXE_PATH=argv[0]")
+	target_compile_definitions(${PROJECT_NAME} PUBLIC "EXE_PATH=argv[0]")
 endif()
 
-target_sources(AdHoc PRIVATE 
+#**********************************************
+# Add source
+#**********************************************
+target_sources(${PROJECT_NAME} PRIVATE 
 	${CMAKE_SOURCE_DIR}/Source/Main.cpp
     ${CMAKE_SOURCE_DIR}/Source/Window.hpp
     ${CMAKE_SOURCE_DIR}/Source/Utility.hpp
 	${CMAKE_SOURCE_DIR}/Source/Vertex.hpp)
 
-target_sources(AdHoc PRIVATE ${CMAKE_SOURCE_DIR}/External/sse2neon/sse2neon.h)
+target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/sse2neon/sse2neon.h)
 
 #**********************************************
-# AdHoc graphics api
+# Graphics api
 #**********************************************
 find_package(Vulkan)
 if(Vulkan_FOUND)
-	target_include_directories(AdHoc PRIVATE ${Vulkan_INCLUDE_DIRS})
-	target_link_libraries(AdHoc PRIVATE ${Vulkan_LIBRARIES})
-    target_compile_definitions(AdHoc PRIVATE "ADH_VULKAN= ")
+	target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VULKAN= ")
     if(WIN32)
-            target_compile_definitions(AdHoc PRIVATE VK_USE_PLATFORM_WIN32_KHR)
-            target_compile_definitions(AdHoc PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_WIN32_SURFACE_EXTENSION_NAME")
+            target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
+            target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_WIN32_SURFACE_EXTENSION_NAME")
     elseif(APPLE)
-        	target_compile_definitions(AdHoc PRIVATE VK_USE_PLATFORM_MACOS_MVK)
-            target_compile_definitions(AdHoc PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_MVK_MACOS_SURFACE_EXTENSION_NAME")
+        	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_MACOS_MVK)
+            target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_MVK_MACOS_SURFACE_EXTENSION_NAME")
     elseif(UNIX)
-        	target_compile_definitions(AdHoc PRIVATE VK_USE_PLATFORM_DIRECTFB_EXT)
+        	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_DIRECTFB_EXT)
     endif()
  
-	set(VULKAN_API_SRC_DIR ${CMAKE_SOURCE_DIR}/Source/Api/Vulkan)
-    target_sources(AdHoc PRIVATE 
-    ${VULKAN_API_SRC_DIR}/Initializers.hpp
-    ${VULKAN_API_SRC_DIR}/Tools.hpp
-    ${VULKAN_API_SRC_DIR}/Instance.hpp
-    ${VULKAN_API_SRC_DIR}/Instance.cpp
-    ${VULKAN_API_SRC_DIR}/PhysicalDevice.hpp
-    ${VULKAN_API_SRC_DIR}/PhysicalDevice.cpp
-    ${VULKAN_API_SRC_DIR}/Surface.hpp
-    ${VULKAN_API_SRC_DIR}/Surface.cpp
-    ${VULKAN_API_SRC_DIR}/Device.hpp
-    ${VULKAN_API_SRC_DIR}/Device.cpp
-    ${VULKAN_API_SRC_DIR}/DeviceQueues.hpp
-    ${VULKAN_API_SRC_DIR}/DeviceQueues.cpp
-    ${VULKAN_API_SRC_DIR}/Allocator.hpp
-    ${VULKAN_API_SRC_DIR}/Allocator.cpp
-    ${VULKAN_API_SRC_DIR}/Context.hpp
-    ${VULKAN_API_SRC_DIR}/Context.cpp
-    ${VULKAN_API_SRC_DIR}/Swapchain.hpp
-    ${VULKAN_API_SRC_DIR}/Swapchain.cpp
-    ${VULKAN_API_SRC_DIR}/Buffer.hpp
-    ${VULKAN_API_SRC_DIR}/Buffer.cpp
-    ${VULKAN_API_SRC_DIR}/Image.hpp
-    ${VULKAN_API_SRC_DIR}/Image.cpp
-    ${VULKAN_API_SRC_DIR}/Shader.hpp
-    ${VULKAN_API_SRC_DIR}/Shader.cpp
-    ${VULKAN_API_SRC_DIR}/Shader.inl
-    ${VULKAN_API_SRC_DIR}/VertexLayout.hpp
-    ${VULKAN_API_SRC_DIR}/VertexLayout.cpp
-    ${VULKAN_API_SRC_DIR}/PipelineLayout.hpp
-    ${VULKAN_API_SRC_DIR}/PipelineLayout.cpp
-    ${VULKAN_API_SRC_DIR}/DescriptorSet.hpp
-    ${VULKAN_API_SRC_DIR}/DescriptorSet.cpp
-    ${VULKAN_API_SRC_DIR}/VertexBuffer.hpp
-    ${VULKAN_API_SRC_DIR}/VertexBuffer.cpp
-    ${VULKAN_API_SRC_DIR}/UniformBuffer.hpp
-    ${VULKAN_API_SRC_DIR}/UniformBuffer.cpp
-    ${VULKAN_API_SRC_DIR}/IndexBuffer.hpp
-    ${VULKAN_API_SRC_DIR}/IndexBuffer.cpp
-    ${VULKAN_API_SRC_DIR}/Attachments.hpp
-    ${VULKAN_API_SRC_DIR}/Attachments.cpp
-    ${VULKAN_API_SRC_DIR}/ComputePipeline.hpp
-    ${VULKAN_API_SRC_DIR}/ComputePipeline.cpp
-    ${VULKAN_API_SRC_DIR}/GraphicsPipeline.hpp
-    ${VULKAN_API_SRC_DIR}/GraphicsPipeline.cpp
-    ${VULKAN_API_SRC_DIR}/Subpass.hpp
-    ${VULKAN_API_SRC_DIR}/Subpass.cpp
-    ${VULKAN_API_SRC_DIR}/RenderPass.hpp
-    ${VULKAN_API_SRC_DIR}/RenderPass.cpp
-    ${VULKAN_API_SRC_DIR}/Sampler.hpp
-    ${VULKAN_API_SRC_DIR}/Sampler.cpp
-    ${VULKAN_API_SRC_DIR}/Texture2D.hpp
-    ${VULKAN_API_SRC_DIR}/Texture2D.cpp
-    ${VULKAN_API_SRC_DIR}/CommandPool.hpp
-    ${VULKAN_API_SRC_DIR}/CommandPool.cpp
-    ${VULKAN_API_SRC_DIR}/CommandBuffer.hpp
-    ${VULKAN_API_SRC_DIR}/CommandBuffer.cpp
-    ${VULKAN_API_SRC_DIR}/Viewport.hpp
-    ${VULKAN_API_SRC_DIR}/Viewport.cpp
-    ${VULKAN_API_SRC_DIR}/Scissor.hpp
-    ${VULKAN_API_SRC_DIR}/Scissor.cpp
-    ${VULKAN_API_SRC_DIR}/Memory.hpp)
+	set(VULKAN_API_SRC ${CMAKE_SOURCE_DIR}/Source/Api/Vulkan)
+    target_sources(${PROJECT_NAME} PRIVATE 
+    ${VULKAN_API_SRC}/Initializers.hpp
+    ${VULKAN_API_SRC}/Tools.hpp
+    ${VULKAN_API_SRC}/Instance.hpp
+    ${VULKAN_API_SRC}/Instance.cpp
+    ${VULKAN_API_SRC}/PhysicalDevice.hpp
+    ${VULKAN_API_SRC}/PhysicalDevice.cpp
+    ${VULKAN_API_SRC}/Surface.hpp
+    ${VULKAN_API_SRC}/Surface.cpp
+    ${VULKAN_API_SRC}/Device.hpp
+    ${VULKAN_API_SRC}/Device.cpp
+    ${VULKAN_API_SRC}/DeviceQueues.hpp
+    ${VULKAN_API_SRC}/DeviceQueues.cpp
+    ${VULKAN_API_SRC}/Allocator.hpp
+    ${VULKAN_API_SRC}/Allocator.cpp
+    ${VULKAN_API_SRC}/Context.hpp
+    ${VULKAN_API_SRC}/Context.cpp
+    ${VULKAN_API_SRC}/Swapchain.hpp
+    ${VULKAN_API_SRC}/Swapchain.cpp
+    ${VULKAN_API_SRC}/Buffer.hpp
+    ${VULKAN_API_SRC}/Buffer.cpp
+    ${VULKAN_API_SRC}/Image.hpp
+    ${VULKAN_API_SRC}/Image.cpp
+    ${VULKAN_API_SRC}/Shader.hpp
+    ${VULKAN_API_SRC}/Shader.cpp
+    ${VULKAN_API_SRC}/Shader.inl
+    ${VULKAN_API_SRC}/VertexLayout.hpp
+    ${VULKAN_API_SRC}/VertexLayout.cpp
+    ${VULKAN_API_SRC}/PipelineLayout.hpp
+    ${VULKAN_API_SRC}/PipelineLayout.cpp
+    ${VULKAN_API_SRC}/DescriptorSet.hpp
+    ${VULKAN_API_SRC}/DescriptorSet.cpp
+    ${VULKAN_API_SRC}/VertexBuffer.hpp
+    ${VULKAN_API_SRC}/VertexBuffer.cpp
+    ${VULKAN_API_SRC}/UniformBuffer.hpp
+    ${VULKAN_API_SRC}/UniformBuffer.cpp
+    ${VULKAN_API_SRC}/IndexBuffer.hpp
+    ${VULKAN_API_SRC}/IndexBuffer.cpp
+    ${VULKAN_API_SRC}/Attachments.hpp
+    ${VULKAN_API_SRC}/Attachments.cpp
+    ${VULKAN_API_SRC}/ComputePipeline.hpp
+    ${VULKAN_API_SRC}/ComputePipeline.cpp
+    ${VULKAN_API_SRC}/GraphicsPipeline.hpp
+    ${VULKAN_API_SRC}/GraphicsPipeline.cpp
+    ${VULKAN_API_SRC}/Subpass.hpp
+    ${VULKAN_API_SRC}/Subpass.cpp
+    ${VULKAN_API_SRC}/RenderPass.hpp
+    ${VULKAN_API_SRC}/RenderPass.cpp
+    ${VULKAN_API_SRC}/Sampler.hpp
+    ${VULKAN_API_SRC}/Sampler.cpp
+    ${VULKAN_API_SRC}/Texture2D.hpp
+    ${VULKAN_API_SRC}/Texture2D.cpp
+    ${VULKAN_API_SRC}/CommandPool.hpp
+    ${VULKAN_API_SRC}/CommandPool.cpp
+    ${VULKAN_API_SRC}/CommandBuffer.hpp
+    ${VULKAN_API_SRC}/CommandBuffer.cpp
+    ${VULKAN_API_SRC}/Viewport.hpp
+    ${VULKAN_API_SRC}/Viewport.cpp
+    ${VULKAN_API_SRC}/Scissor.hpp
+    ${VULKAN_API_SRC}/Scissor.cpp
+    ${VULKAN_API_SRC}/Memory.hpp)
 endif()
 
 if(NOT Vulkan_FOUND)
@@ -296,9 +299,9 @@ if(NOT Vulkan_FOUND)
 endif()
 
 #**********************************************
-# AdHoc template library
+# Template library
 #**********************************************
-target_sources(AdHoc PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Entity/Entity.hpp
     ${ADH_CORE_SRC}/Event/Event.hpp
     ${ADH_CORE_SRC}/Event/Event.cpp
@@ -325,9 +328,9 @@ target_sources(AdHoc PRIVATE
     ${ADH_CORE_SRC}/Std/Utility.hpp)
 
 #**********************************************
-# AdHoc math library
+# Math library
 #**********************************************
-target_sources(AdHoc PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Math/Math.hpp
     ${ADH_CORE_SRC}/Math/Source/Matrix.hpp
     ${ADH_CORE_SRC}/Math/Source/Matrix.inl
@@ -354,9 +357,9 @@ target_sources(AdHoc PRIVATE
     ${ADH_CORE_SRC}/Math/Source/XmmVector.inl)
 
 #**********************************************
-# AdHoc scene
+# Scene
 #**********************************************
-target_sources(AdHoc PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Scene/Scene.hpp
     ${ADH_CORE_SRC}/Scene/Scene.cpp
 	${ADH_CORE_SRC}/Scene/Serializer.hpp
@@ -374,17 +377,17 @@ target_sources(AdHoc PRIVATE
     ${ADH_CORE_SRC}/Scene/Components/Transform.hpp)
 
 #**********************************************
-# AdHoc Scripting
+# Scripting
 #**********************************************
-target_sources(AdHoc PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE 
 	${ADH_CORE_SRC}/Scripting/Script.hpp
 	${ADH_CORE_SRC}/Scripting/ScriptHandler.hpp
 	${ADH_CORE_SRC}/Scripting/ScriptHandler.cpp)
  
 #**********************************************
-# AdHoc input
+# Input
 #**********************************************
-target_sources(AdHoc PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Input/Input.hpp
     ${ADH_CORE_SRC}/Input/Input.cpp
     ${ADH_CORE_SRC}/Input/Controller.hpp
@@ -397,10 +400,10 @@ target_sources(AdHoc PRIVATE
     ${ADH_CORE_SRC}/Input/AppleKeycodes.hpp)
 
 #**********************************************
-# AdHoc Editor
+# Editor
 #**********************************************
 set(ADH_EDITOR_SRC ${CMAKE_SOURCE_DIR}/Source/Editor)
-target_sources(AdHoc PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE 
 	${ADH_EDITOR_SRC}/Editor.hpp
 	${ADH_EDITOR_SRC}/Editor.cpp
 	${ADH_EDITOR_SRC}/Api/Vulkan/VulkanImGui.hpp
@@ -424,61 +427,3 @@ target_sources(AdHoc PRIVATE
 	${ADH_EDITOR_SRC}/UIOverlay/Panels/ControlsPanel.cpp
 	${ADH_EDITOR_SRC}/UIOverlay/Panels/ViewportRect.hpp
 	${ADH_EDITOR_SRC}/UIOverlay/Panels/ViewportUtility.hpp)
-
-if(NOT WIN32)
-    target_compile_features(AdHoc PRIVATE c_std_17)
-endif()
-target_compile_features(AdHoc PRIVATE cxx_std_20)
-
-#TODO: GNU/Linux support
-#TODO: IOS support 
-# option(BUILD_FOR_IOS "Build for IOS" OFF)
-# if(BUILD_FOR_IOS)
-#     target_compile_definitions(AdHoc PRIVATE "ADH_IOS= ")
-#     set(CMAKE_OSX_SYSROOT "iphoneos")
-#     set(CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphoneos;-iphonesimulator")
-#     target_link_libraries(
-#         AdHoc
-#         PUBLIC
-#         "-framework UIKit"
-#     )
-
-#     set_target_properties(AdHoc PROPERTIES
-#         MACOSX_BUNDLE YES
-#         MACOSX_BUNDLE_GUI_IDENTIFIER com.AdHoc
-#         MACOSX_BUNDLE_BUNDLE_NAME "AdHoc"
-#         MACOSX_BUNDLE_BUNDLE_VERSION "0.1"
-#         MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1"
-#         XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
-#         XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2"
-#         XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
-#         XCODE_ATTRIBUTE_COMBINE_HIDPI_IMAGES "NO"
-#         )
-
-#     set_target_properties(
-#         AdHoc
-#         PROPERTIES
-#         XCODE_ATTRIBUTE_PRODUCT_NAME
-#         "AdHoc"
-#         XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER
-#         "com.github.Filippo-BSW.AdHoc"
-#     )
-
-#     set_target_properties(
-#         AdHoc
-#         PROPERTIES
-#         XCODE_ATTRIBUTE_PRODUCT_NAME[variant=Debug]
-#         "AdHoc-Dbg"
-#         XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER[variant=Debug]
-#          "com.github.Filippo-BSW.AdHoc"
-#     )
-# endif()
-
-# VK_USE_PLATFORM_IOS_MVK
-# VK_MVK_IOS_SURFACE_EXTENSION_NAME
-# VkIOSSurfaceCreateInfoMVK surfaceCreateInfo = {};
-# surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
-# surfaceCreateInfo.pNext = NULL;
-# surfaceCreateInfo.flags = 0;
-# surfaceCreateInfo.pView = view;
-# err = vkCreateIOSSurfaceMVK(instance, &surfaceCreateInfo, nullptr, &surface);

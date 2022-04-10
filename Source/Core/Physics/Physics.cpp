@@ -163,6 +163,7 @@ namespace adh {
         // } else {
         //     return 0;
         // }
+        return 0;
     }
 
     void Physics::MoveConstruct(Physics&& rhs) noexcept {

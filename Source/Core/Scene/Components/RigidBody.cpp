@@ -150,7 +150,7 @@ namespace adh {
         mPhysics = world;
 
         mMaterial = mPhysics->mPhysics->createMaterial(friction, friction, bounciness);
-        mShape    = mPhysics->mPhysics->createShape(physx::PxBoxGeometry(transform.scale.x, transform.scale.y, transform.scale.z), *mMaterial);
+        mShape    = mPhysics->mPhysics->createShape(physx::PxBoxGeometry(transform.scale.x, transform.scale.y, transform.scale.z), *mMaterial, true);
         switch (colliderType) {
         case ColliderType::eBox:
             {
