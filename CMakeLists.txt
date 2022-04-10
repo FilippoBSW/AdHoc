@@ -45,7 +45,7 @@ elseif(WIN32)
 		add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_directory
 		"${CMAKE_BINARY_DIR}/Lib/bin/win.x86_64.vc142.md/$<CONFIGURATION>"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>/$<CONFIGURATION>")
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 endif()
 
 set(NV_USE_DEBUG_WINCRT ON CACHE BOOL "Use the debug version of the CRT")
