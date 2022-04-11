@@ -23,13 +23,6 @@
 // *********************************************************************************
 //
 
-// bounciness
-// body type
-// different shapes
-// rotate with added velocity
-// call back
-// raycast
-
 #include "Scene.hpp"
 #include <Math/Math.hpp>
 
@@ -57,122 +50,43 @@ namespace adh {
         return m_State;
     }
 
-    Physics& Scene::GetPhysics() {
+    PhysicsWorld& Scene::GetPhysics() {
         return m_PhysicsWorld;
     }
 
-    const Physics& Scene::GetPhysics() const {
+    const PhysicsWorld& Scene::GetPhysics() const {
         return m_PhysicsWorld;
     }
 
     void Scene::ResetPhysicsWorld() {
-        // m_PhysicsWorld.m_World->clearForces();
-        // m_PhysicsWorld.ClearForces();
         m_World.GetSystem<Transform, RigidBody>().ForEach([&](Transform& transform, RigidBody& rigidBody) {
-            rigidBody.mActor->clearForce(physx::PxForceMode::eFORCE);
-            rigidBody.mActor->clearForce(physx::PxForceMode::eIMPULSE);
-            rigidBody.mActor->clearTorque();
-            physx::PxVec3 zeroVec{};
-            rigidBody.mActor->setLinearVelocity(zeroVec);
-            rigidBody.mActor->setAngularVelocity(zeroVec);
-            rigidBody.velocity        = {};
-            rigidBody.angularVelocity = {};
-
-            // rigidBody.mMaterial->setRestitution(rigidBody.bounciness);
-            // rigidBody.mMaterial->setDynamicFriction(rigidBody.friction);
-            // rigidBody.mMaterial->setStaticFriction(rigidBody.friction);
-            // rigidBody.mActor->setMass(rigidBody.mass);
-            // rigidBody.mActor->setMass(rigidBody.mass);
-            physx::PxRigidBodyExt::updateMassAndInertia(*rigidBody.mActor, rigidBody.mass);
-
-            rigidBody.mActor->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, rigidBody.isKinematic);
-            // } else {
-            // rigidBody.mActor->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, false);
-            // }
-
-            // rigidBody.mMaterial->release();
-            // rigidBody.mMaterial = rigidBody.mPhysics->mPhysics->createMaterial(rigidBody.friction, rigidBody.friction, rigidBody.bounciness);
-            rigidBody.mMaterial->setDynamicFriction(rigidBody.friction);
-            // rigidBody.mMaterial->setStaticFriction(rigidBody.friction);
-            rigidBody.mMaterial->setRestitution(rigidBody.bounciness);
-
-            // rigidBody.mActor->detachShape(*rigidBody.mShape);
-            // rigidBody.mShape->release();
-            // if (!rigidBody.isTrigger)
-            //     rigidBody.mShape = rigidBody.mPhysics->mPhysics->createShape(physx::PxBoxGeometry(transform.scale.x, transform.scale.y, transform.scale.z), *rigidBody.mMaterial);
-            // else
-            //     rigidBody.mShape = rigidBody.mPhysics->mPhysics->createShape(physx::PxBoxGeometry(transform.scale.x, transform.scale.y, transform.scale.z), *rigidBody.mMaterial, false,
-            //                                                                  physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eTRIGGER_SHAPE | physx::PxShapeFlag::eSCENE_QUERY_SHAPE);
-            // rigidBody.mActor->attachShape(*rigidBody.mShape);
-
-            if (rigidBody.isTrigger) {
-                rigidBody.mShape->setFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eTRIGGER_SHAPE | physx::PxShapeFlag::eSCENE_QUERY_SHAPE);
-            } else {
-                rigidBody.mShape->setFlags(physx::PxShapeFlag::eVISUALIZATION | physx::PxShapeFlag::eSCENE_QUERY_SHAPE | physx::PxShapeFlag::eSIMULATION_SHAPE);
+            if (rigidBody.bodyType == PhysicsBodyType::eDynamic) {
+                rigidBody.ClearForces();
+                physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(rigidBody.actor), rigidBody.mass);
+                static_cast<physx::PxRigidDynamic*>(rigidBody.actor)->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, rigidBody.isKinematic);
             }
-            rigidBody.mShape->setMaterials(&rigidBody.mMaterial, 1);
-            rigidBody.mShape->setGeometry(physx::PxBoxGeometry(transform.scale.x, transform.scale.y, transform.scale.z));
-            rigidBody.mActor->detachShape(*rigidBody.mShape);
-            rigidBody.mActor->attachShape(*rigidBody.mShape);
 
-            // if (rigidBody.isTrigger) {
-            // rigidBody.mShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, rigidBody.isTrigger);
-            // rigidBody.mShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !rigidBody.isTrigger);
-            // rigidBody.mShape->setMaterials(&rigidBody.mMaterial, 1);
-            // } else {
-            //     rigidBody.mShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
-            //     rigidBody.mShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
-            // }
-            // rigidBody.mShape->setGeometry(physx::PxBoxGeometry(transform.scale.x, transform.scale.y, transform.scale.z));
-            // rigidBody.mActor->attachShape(*rigidBody.mShape);
+            rigidBody.material->setStaticFriction(rigidBody.staticFriction);
+            rigidBody.material->setDynamicFriction(rigidBody.dynamicFriction);
+            rigidBody.material->setRestitution(rigidBody.restitution);
+
+            if (rigidBody.colliderShape == PhysicsColliderShape::eBox) {
+                // rigidBody.SetGeometry(physx::PxBoxGeometry{ rigidBody.scale.x, rigidBody.scale.y, rigidBody.scale.z });
+                rigidBody.SetGeometry(physx::PxBoxGeometry{ transform.scale.x, transform.scale.y, transform.scale.z });
+            } else if (rigidBody.colliderShape == PhysicsColliderShape::eSphere) {
+                rigidBody.SetGeometry(physx::PxSphereGeometry{ rigidBody.radius });
+            } else if (rigidBody.colliderShape == PhysicsColliderShape::eCapsule) {
+                rigidBody.SetGeometry(physx::PxCapsuleGeometry{ rigidBody.radius, rigidBody.halfHeight });
+            }
+            rigidBody.SetTrigger(rigidBody.isTrigger);
+            rigidBody.SetKinematic(rigidBody.isKinematic);
 
             physx::PxTransform t;
             t.p = physx::PxVec3{ transform.translate.x, transform.translate.y, transform.translate.z };
             Quaternion<float> qq(transform.rotation);
             physx::PxQuat q(qq.x, qq.y, qq.z, qq.w);
             t.q = q;
-            rigidBody.mActor->setGlobalPose(t);
-
-            // // Reset forces and velocity
-            // rigidBody.body->clearGravity();
-            // rigidBody.body->clearForces();
-            // btVector3 zeroVector(0, 0, 0);
-            // rigidBody.body->setLinearVelocity(zeroVector);
-            // rigidBody.body->setAngularVelocity(zeroVector);
-            // rigidBody.body->setActivationState(DISABLE_DEACTIVATION);
-            // rigidBody.velocity        = {};
-            // rigidBody.angularVelocity = {};
-
-            // // Update collision flags
-            // rigidBody.body->updateInertiaTensor();
-            // btScalar bodyMass = rigidBody.mass;
-            // btVector3 bodyInertia{};
-            // if (rigidBody.mass > 0.0f) {
-            //     rigidBody.body->setCollisionFlags(rigidBody.body->getCollisionFlags() | btCollisionObject::CF_DYNAMIC_OBJECT);
-            //     rigidBody.body->getCollisionShape()->calculateLocalInertia(bodyMass, bodyInertia);
-            // } else {
-            //     rigidBody.body->setCollisionFlags(rigidBody.body->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
-            // }
-
-            // // Update mass, friciton and bounciness
-            // rigidBody.body->setMassProps(bodyMass, bodyInertia);
-            // rigidBody.body->setFriction(rigidBody.friction);
-            // rigidBody.body->setRestitution(rigidBody.bounciness);
-
-            // // Update scale
-            // rigidBody.body->getCollisionShape()->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-            // m_PhysicsWorld.m_World->getCollisionWorld()->updateSingleAabb(rigidBody.body);
-
-            // // Update position and rotation
-            // btTransform& trans = rigidBody.body->getWorldTransform();
-            // trans.setOrigin(btVector3(transform.translate.x, transform.translate.y, transform.translate.z));
-
-            // btQuaternion q(transform.rotation.y, transform.rotation.x, transform.rotation.z);
-            // // btQuaternion q;
-            // // q.setEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
-            // trans.setRotation(q);
-
-            // rigidBody.body->setWorldTransform(trans);
+            rigidBody.actor->setGlobalPose(t);
         });
     }
 

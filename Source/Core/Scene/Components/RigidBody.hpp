@@ -28,35 +28,32 @@
 #include <Vertex.hpp>
 
 #include "Math/Math.hpp"
+#include "Mesh.hpp"
 #include "Transform.hpp"
-
-#include <PxPhysicsAPI.h>
-#include <btBulletDynamicsCommon.h>
-
-#include <Physics/Physics.hpp>
-
-class btRigidBody;
-class btCollisionShape;
+#include <Physics/PhysicsWorld.hpp>
 
 namespace adh {
+    enum class PhysicsBodyType {
+        eStatic,
+        eDynamic
+    };
+
+    enum class PhysicsColliderShape {
+        eBox,
+        eSphere,
+        eCapsule,
+        eMesh,
+        eConvexMesh,
+        eInvalid
+    };
+
+    enum class PhysicsColliderType {
+        eCollider,
+        eTrigger
+    };
+
     class RigidBody {
       public:
-        enum class BodyType {
-            eStatic,
-            eKinematic,
-            eDynamic
-        };
-
-        enum class ColliderType {
-            eBox,
-            eSphere,
-            eCone,
-            eCylinder,
-            eCapsule,
-            eMesh,
-            eInvalid,
-        };
-
         RigidBody();
 
         RigidBody(const RigidBody& rhs) = delete;
@@ -69,11 +66,21 @@ namespace adh {
 
         ~RigidBody();
 
-        void Create(btDiscreteDynamicsWorld* world, ColliderType colliderType, std::uint64_t entity, const Transform& transform,
-                    float mass, float bounciness, float friction, const Array<Vertex>& vertices = {});
-
-        void Create(Physics* world, ColliderType colliderType, std::uint64_t entity, const Transform& transform,
-                    float mass, float bounciness, float friction, const Array<Vertex>& vertices = {});
+        void Create(std::uint64_t entity,
+                    physx::PxScene* scene,
+                    float staticFriction,
+                    float dynamicFriction,
+                    float restitution,
+                    PhysicsBodyType bodyType,
+                    float mass,
+                    bool isKinematic,
+                    bool isTrigger,
+                    PhysicsColliderShape colliderShape,
+                    PhysicsColliderType colliderType,
+                    const Vector3D& scale,
+                    float radius,
+                    float halfHeight,
+                    const Mesh* const mesh = nullptr);
 
         void OnUpdate(Transform& transform) noexcept;
 
@@ -99,19 +106,25 @@ namespace adh {
 
         Vector3D& GetAngularVelocity() noexcept;
 
-        void SetGravity(float x, float y, float z) noexcept;
+        void AddForce(float x, float y, float z) noexcept;
+
+        void AddTorque(float x, float y, float z) noexcept;
+
+        void SetHasGravity(bool hasGravity) noexcept;
 
         bool GetIsTrigger() const noexcept;
 
-        void SetBodyType(BodyType collisionType) noexcept;
+        void SetBodyType() noexcept;
 
-        void SetIsTrigger(bool isTrigger) noexcept;
+        void SetTrigger(bool isTrigger) noexcept;
+
+        void SetKinematic(bool isKinematic) noexcept;
+
+        void SetGeometry(const physx::PxGeometry& geometry);
 
         void SetLinearFactor(float x, float y, float z) noexcept;
 
         void SetAngularFactor(float x, float y, float z) noexcept;
-
-        void ClearGravity() noexcept;
 
         void ClearForces() noexcept;
 
@@ -123,30 +136,34 @@ namespace adh {
         void Clear() noexcept;
 
       public:
-        // btRigidBody* body;
-        // btDiscreteDynamicsWorld* m_World;
-        float mass;
-        float bounciness;
-        float friction;
+        // Material
+        float staticFriction;
+        float dynamicFriction;
+        float restitution;
+        physx::PxMaterial* material;
 
-        physx::PxRigidDynamic* mActor;
-        physx::PxMaterial* mMaterial;
-        physx::PxShape* mShape;
+        // Actor
+        bool isKinematic{ false };
+        float mass{ 1.0f };
+        PhysicsBodyType bodyType;
+        physx::PxRigidActor* actor;
 
-        Physics* mPhysics;
+        // Shape
+        PhysicsColliderShape colliderShape;
+        PhysicsColliderType colliderType;
+        physx::PxShape* shape;
+        Vector3D scale;
+        float radius;
+        float halfHeight;
 
         std::uint64_t entity;
+        physx::PxScene* scene;
 
         bool isTrigger{ false };
-        bool isKinematic{ false };
 
-        ColliderType colliderType;
-
-        Vector3D velocity{};
-        Vector3D angularVelocity{};
-
+        Vector3D velocity;
+        Vector3D angularVelocity;
         Vector3D translate;
         Vector3D rotation;
-        Vector3D scale;
     };
 } // namespace adh

@@ -26,7 +26,7 @@
 
 #include <Std/UniquePtr.hpp>
 
-#include <Physics/Physics.hpp>
+#include <Physics/PhysicsWorld.hpp>
 
 #include <Entity/Entity.hpp>
 #include <Scripting/Script.hpp>
@@ -49,9 +49,9 @@ namespace adh {
 
         const lua::State& GetState() const;
 
-        Physics& GetPhysics();
+        PhysicsWorld& GetPhysics();
 
-        const Physics& GetPhysics() const;
+        const PhysicsWorld& GetPhysics() const;
 
         void ResetPhysicsWorld();
 
@@ -69,7 +69,7 @@ namespace adh {
 
       private:
         std::string m_Tag;
-        Physics m_PhysicsWorld;
+        PhysicsWorld m_PhysicsWorld;
         ecs::World m_World;
         lua::State m_State;
         Serializer m_Serializer;

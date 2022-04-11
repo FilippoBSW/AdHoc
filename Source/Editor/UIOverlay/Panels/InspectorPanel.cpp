@@ -294,16 +294,26 @@ namespace adh {
 
         DrawComponent<RigidBody>(
             "RigidBody", entity, [](auto& component) {
-                ImGui::DragFloat("Mass", &component.mass, 0.001f, 0.0f, 1.0f);
-                ImGui::DragFloat("Bounciness", &component.bounciness, 0.001f, 0.0f, 1.0f);
-                ImGui::DragFloat("Friction", &component.friction, 0.001f, 0.0f, 1.0f);
-                // ImGui::SameLine();
-                if (ImGui::Checkbox("Is trigger", &component.isTrigger)) {
-                    component.SetIsTrigger(component.isTrigger);
+                ImGui::DragFloat("Mass", &component.mass, 0.001f, 0.0f, 1'000.0f);
+                ImGui::DragFloat("Static Friction", &component.staticFriction, 0.001f, 0.0f, 1.0f);
+                ImGui::DragFloat("Dynamic Friction", &component.dynamicFriction, 0.001f, 0.0f, 1.0f);
+                ImGui::DragFloat("Restitution", &component.restitution, 0.001f, 0.0f, 1.0f);
+
+                if (component.colliderShape == PhysicsColliderShape::eBox) {
+                    DrawTransform("Scale", component.scale);
+                } else if (component.colliderShape == PhysicsColliderShape::eSphere) {
+                    ImGui::DragFloat("Radius", &component.radius, 0.001f, 0.0f, 1'000.0f);
+                } else if (component.colliderShape == PhysicsColliderShape::eCapsule) {
+                    ImGui::DragFloat("Radius", &component.radius, 0.001f, 0.0f, 1'000.0f);
+                    ImGui::DragFloat("Half Height", &component.halfHeight, 0.001f, 0.0f, 1'000.0f);
                 }
-                ImGui::SameLine();
-                if (ImGui::Checkbox("Is kinematic", &component.isKinematic)) {
-                    // component.SetIsTrigger(component.isTrigger);
+
+                if (component.bodyType == PhysicsBodyType::eDynamic) {
+                    if (ImGui::Checkbox("Is trigger", &component.isTrigger)) {
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Checkbox("Is kinematic", &component.isKinematic)) {
+                    }
                 }
             },
             currentScene, true, false);
@@ -462,46 +472,90 @@ namespace adh {
             }
 
             if (ImGui::BeginMenu("RigidBody")) {
-                RigidBody::ColliderType colliderType{ RigidBody::ColliderType::eInvalid };
-
-                if (ImGui::MenuItem("Box Collider")) {
-                    colliderType = RigidBody::ColliderType::eBox;
+                bool isStatic = false;
+                PhysicsColliderShape colliderShape{ PhysicsColliderShape::eInvalid };
+                if (ImGui::BeginMenu("Dynamic")) {
+                    if (ImGui::MenuItem("Box Collider")) {
+                        colliderShape = PhysicsColliderShape::eBox;
+                    }
+                    if (ImGui::MenuItem("Sphere Collider")) {
+                        colliderShape = PhysicsColliderShape::eSphere;
+                    }
+                    if (ImGui::MenuItem("Capsule Collider")) {
+                        colliderShape = PhysicsColliderShape::eCapsule;
+                    }
+                    if (ImGui::MenuItem("Mesh collider")) {
+                        colliderShape = PhysicsColliderShape::eMesh;
+                    }
+                    if (ImGui::MenuItem("Convex mesh collider")) {
+                        colliderShape = PhysicsColliderShape::eConvexMesh;
+                    }
+                    ImGui::EndMenu();
                 }
-                if (ImGui::MenuItem("Sphere Collider")) {
-                    colliderType = RigidBody::ColliderType::eSphere;
+                if (ImGui::BeginMenu("Static")) {
+                    if (ImGui::MenuItem("Box Collider")) {
+                        colliderShape = PhysicsColliderShape::eBox;
+                        isStatic      = true;
+                    }
+                    if (ImGui::MenuItem("Sphere Collider")) {
+                        colliderShape = PhysicsColliderShape::eSphere;
+                        isStatic      = true;
+                    }
+                    if (ImGui::MenuItem("Capsule Collider")) {
+                        colliderShape = PhysicsColliderShape::eCapsule;
+                        isStatic      = true;
+                    }
+                    if (ImGui::MenuItem("Mesh collider")) {
+                        colliderShape = PhysicsColliderShape::eMesh;
+                        isStatic      = true;
+                    }
+                    if (ImGui::MenuItem("Convex mesh collider")) {
+                        colliderShape = PhysicsColliderShape::eConvexMesh;
+                        isStatic      = true;
+                    }
+                    ImGui::EndMenu();
                 }
-                if (ImGui::MenuItem("Cone Collider")) {
-                    colliderType = RigidBody::ColliderType::eCone;
-                }
-                if (ImGui::MenuItem("Cylinder Collider")) {
-                    colliderType = RigidBody::ColliderType::eCylinder;
-                }
-                if (ImGui::MenuItem("Capsule Collider")) {
-                    colliderType = RigidBody::ColliderType::eCapsule;
-                }
-                if (ImGui::MenuItem("Mesh collider")) {
-                    colliderType = RigidBody::ColliderType::eMesh;
-                }
-
-                if (colliderType != RigidBody::ColliderType::eInvalid &&
+                if (colliderShape != PhysicsColliderShape::eInvalid &&
                     !currentScene->GetWorld().Contains<RigidBody>(entity) &&
                     currentScene->GetWorld().Contains<Transform>(entity)) {
                     auto [rigidBody]{ currentScene->GetWorld().Add<RigidBody>(entity, RigidBody{}) };
                     auto [transform]{ currentScene->GetWorld().Get<Transform>(entity) };
 
-                    if (colliderType == RigidBody::ColliderType::eMesh &&
+                    if ((colliderShape == PhysicsColliderShape::eMesh || colliderShape == PhysicsColliderShape::eConvexMesh) &&
                         currentScene->GetWorld().Contains<Mesh>(entity)) {
                         auto [mesh]{ currentScene->GetWorld().Get<Mesh>(entity) };
-                        rigidBody.Create(&currentScene->GetPhysics(), colliderType, (std::uint64_t)entity,
-                                         transform, 1.0f, 1.0f, 0.5f, mesh.vertex);
+                        rigidBody.Create(static_cast<std::uint64_t>(entity),
+                                         currentScene->GetPhysics().GetScene(),
+                                         0.5f,
+                                         0.5f,
+                                         1.0f,
+                                         isStatic ? PhysicsBodyType::eStatic : PhysicsBodyType::eDynamic,
+                                         1.0f,
+                                         false,
+                                         false,
+                                         colliderShape,
+                                         PhysicsColliderType::eCollider,
+                                         transform.scale,
+                                         1.0f,
+                                         0.5,
+                                         &mesh);
                     } else {
-                        // rigidBody.Create(currentScene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
-                        //                  transform, 1.0f, 1.0f, 0.5f);
-                        rigidBody.Create(&currentScene->GetPhysics(), colliderType, (std::uint64_t)entity,
-                                         transform, 1.0f, 1.0f, 0.5f);
+                        rigidBody.Create(static_cast<std::uint64_t>(entity),
+                                         currentScene->GetPhysics().GetScene(),
+                                         0.5f,
+                                         0.5f,
+                                         1.0f,
+                                         isStatic ? PhysicsBodyType::eStatic : PhysicsBodyType::eDynamic,
+                                         1.0f,
+                                         false,
+                                         false,
+                                         colliderShape,
+                                         PhysicsColliderType::eCollider,
+                                         transform.scale,
+                                         1.0f,
+                                         0.5);
                     }
                 }
-
                 ImGui::EndMenu();
             }
 

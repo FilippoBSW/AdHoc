@@ -96,50 +96,50 @@ namespace adh {
             }
         } else if (!std::strcmp(name, "RigidBody")) {
             if (!scene->GetWorld().Contains<RigidBody>(ecs::Entity(entity))) {
-                if (lua_isstring(L, 3)) {
-                    auto type = lua_tostring(L, 3);
-                    RigidBody::ColliderType colliderType{ RigidBody::ColliderType::eInvalid };
-                    if (!std::strcmp(type, "Box")) {
-                        colliderType = RigidBody::ColliderType::eBox;
-                    } else if (!std::strcmp(type, "Sphere")) {
-                        colliderType = RigidBody::ColliderType::eSphere;
-                    } else if (!std::strcmp(type, "Cone")) {
-                        colliderType = RigidBody::ColliderType::eCone;
-                    } else if (!std::strcmp(type, "Cylinder")) {
-                        colliderType = RigidBody::ColliderType::eCylinder;
-                    } else if (!std::strcmp(type, "Capsule")) {
-                        colliderType = RigidBody::ColliderType::eCapsule;
-                    } else if (!std::strcmp(type, "Mesh")) {
-                        colliderType = RigidBody::ColliderType::eMesh;
-                    } else {
-                        std::string err{ "Rigid body type not valid" };
-                        Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eLog, err.data());
-                        return 0;
-                    }
-                    if (colliderType != RigidBody::ColliderType::eInvalid &&
-                        !scene->GetWorld().Contains<RigidBody>(entity) &&
-                        scene->GetWorld().Contains<Transform>(entity)) {
-                        auto [rigidBody]{ scene->GetWorld().Add<RigidBody>(entity, RigidBody{}) };
-                        auto [transform]{ scene->GetWorld().Get<Transform>(entity) };
+                // if (lua_isstring(L, 3)) {
+                //     auto type = lua_tostring(L, 3);
+                //     RigidBody::ColliderShape colliderType{ RigidBody::ColliderShape::eInvalid };
+                //     if (!std::strcmp(type, "Box")) {
+                //         colliderType = RigidBody::ColliderShape::eBox;
+                //     } else if (!std::strcmp(type, "Sphere")) {
+                //         colliderType = RigidBody::ColliderShape::eSphere;
+                //     } else if (!std::strcmp(type, "Cone")) {
+                //         colliderType = RigidBody::ColliderShape::eCone;
+                //     } else if (!std::strcmp(type, "Cylinder")) {
+                //         colliderType = RigidBody::ColliderShape::eCylinder;
+                //     } else if (!std::strcmp(type, "Capsule")) {
+                //         colliderType = RigidBody::ColliderShape::eCapsule;
+                //     } else if (!std::strcmp(type, "Mesh")) {
+                //         colliderType = RigidBody::ColliderShape::eMesh;
+                //     } else {
+                //         std::string err{ "Rigid body type not valid" };
+                //         Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eLog, err.data());
+                //         return 0;
+                //     }
+                //     if (colliderType != RigidBody::ColliderShape::eInvalid &&
+                //         !scene->GetWorld().Contains<RigidBody>(entity) &&
+                //         scene->GetWorld().Contains<Transform>(entity)) {
+                //         auto [rigidBody]{ scene->GetWorld().Add<RigidBody>(entity, RigidBody{}) };
+                //         auto [transform]{ scene->GetWorld().Get<Transform>(entity) };
 
-                        if (colliderType == RigidBody::ColliderType::eMesh &&
-                            scene->GetWorld().Contains<Mesh>(entity)) {
-                            auto [mesh]{ scene->GetWorld().Get<Mesh>(entity) };
-                            // rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
-                            //                  transform, 1.0f, 0.0f, 0.5f, mesh.vertex);
-                            rigidBody.Create(&scene->GetPhysics(), colliderType, (std::uint64_t)entity,
-                                             transform, 1.0f, 0.0f, 0.5f, mesh.vertex);
-                        } else {
-                            // rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
-                            //                  transform, 1.0f, 0.0f, 0.5f);
-                            rigidBody.Create(&scene->GetPhysics(), colliderType, (std::uint64_t)entity,
-                                             transform, 1.0f, 0.0f, 0.5f);
-                        }
-                    }
-                } else {
-                    std::string err{ "Need to specify the rigid body type!" };
-                    Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eError, err.data());
-                }
+                //         if (colliderType == RigidBody::ColliderShape::eMesh &&
+                //             scene->GetWorld().Contains<Mesh>(entity)) {
+                //             auto [mesh]{ scene->GetWorld().Get<Mesh>(entity) };
+                //             // rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                //             //                  transform, 1.0f, 0.0f, 0.5f, mesh.vertex);
+                //             rigidBody.Create(&scene->GetPhysics(), colliderType, (std::uint64_t)entity,
+                //                              transform, 1.0f, 0.0f, 0.5f, mesh.vertex);
+                //         } else {
+                //             // rigidBody.Create(scene->GetPhysics().m_World, colliderType, (std::uint64_t)entity,
+                //             //                  transform, 1.0f, 0.0f, 0.5f);
+                //             rigidBody.Create(&scene->GetPhysics(), colliderType, (std::uint64_t)entity,
+                //                              transform, 1.0f, 0.0f, 0.5f);
+                //         }
+                //     }
+                // } else {
+                //     std::string err{ "Need to specify the rigid body type!" };
+                //     Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eError, err.data());
+                // }
             }
         } else {
             std::string err = "Component: [" + std::string(name) + "] is invalid!\n";
@@ -260,7 +260,7 @@ namespace adh {
         auto direction = static_cast<Vector3D**>(lua_touserdata(L, 2));
         auto distance  = lua_tonumber(L, 3);
         auto e{ scene->GetPhysics().Raycast(**from, **direction, distance) };
-        lua_pushinteger(L, e);
+        lua_pushinteger(L, static_cast<RigidBody*>(e)->entity);
         return 1;
     }
 
@@ -430,10 +430,10 @@ namespace adh {
         state.RegisterType<RigidBody>("RigidBody");
         state.RegisterTypeConstructor<RigidBody>("new");
         state.RegisterTypeVariable<RigidBody>("mass", &RigidBody::mass);
-        state.RegisterTypeVariable<RigidBody>("bounciness", &RigidBody::bounciness);
-        state.RegisterTypeVariable<RigidBody>("friction", &RigidBody::friction);
+        state.RegisterTypeVariable<RigidBody>("restitution", &RigidBody::restitution);
+        state.RegisterTypeVariable<RigidBody>("dynamicFriction", &RigidBody::dynamicFriction);
+        state.RegisterTypeVariable<RigidBody>("staticFriction", &RigidBody::staticFriction);
         state.RegisterTypeVariable<RigidBody>("entity", &RigidBody::entity);
-        state.RegisterTypeVariable<RigidBody>("isTrigger", &RigidBody::isTrigger);
         state.RegisterTypeVariable<RigidBody>("isKinematic", &RigidBody::isKinematic);
         state.RegisterTypeVariable<RigidBody>("velocity", &RigidBody::velocity);
         state.RegisterTypeFunction<RigidBody>("GetVelocity", &RigidBody::GetVelocity);
@@ -446,8 +446,7 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("SetAngularVelocity", &RigidBody::SetAngularVelocity);
         state.RegisterTypeFunction<RigidBody>("AddAngularVelocity", &RigidBody::AddAngularVelocity);
         state.RegisterTypeFunction<RigidBody>("GetIsTrigger", &RigidBody::GetIsTrigger);
-        state.RegisterTypeFunction<RigidBody>("SetIsTrigger", &RigidBody::SetIsTrigger);
-        state.RegisterTypeFunction<RigidBody>("SetGravity", &RigidBody::SetGravity);
+        state.RegisterTypeFunction<RigidBody>("SetTrigger", &RigidBody::SetTrigger);
 
         state.RegisterTypeFunction<RigidBody>("SetTranslation", &RigidBody::SetTranslation);
         state.RegisterTypeFunction<RigidBody>("GetTranslation", &RigidBody::GetTranslation);
@@ -458,7 +457,9 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("GetRotation", &RigidBody::GetRotation);
         state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
 
-        state.RegisterTypeFunction<RigidBody>("ClearGravity", &RigidBody::ClearGravity);
         state.RegisterTypeFunction<RigidBody>("ClearForces", &RigidBody::ClearForces);
+
+        state.RegisterTypeFunction<RigidBody>("AddForce", &RigidBody::AddForce);
+        state.RegisterTypeFunction<RigidBody>("AddTorque", &RigidBody::AddTorque);
     }
 } // namespace adh

@@ -101,14 +101,18 @@ namespace adh {
                 SerializeComponent(out, "RigidBody", [&]() {
                     auto [rigidbody] = m_Scene->m_World.Get<RigidBody>(entity);
                     out << YAML::Key << "mass" << YAML::Value << rigidbody.mass;
-                    out << YAML::Key << "bounciness" << YAML::Value << rigidbody.bounciness;
-                    out << YAML::Key << "friction" << YAML::Value << rigidbody.friction;
+                    out << YAML::Key << "restitution" << YAML::Value << rigidbody.restitution;
+                    out << YAML::Key << "static friction" << YAML::Value << rigidbody.staticFriction;
+                    out << YAML::Key << "dynamic friction" << YAML::Value << rigidbody.dynamicFriction;
                     out << YAML::Key << "is trigger" << YAML::Value << rigidbody.isTrigger;
                     out << YAML::Key << "is kinematic" << YAML::Value << rigidbody.isKinematic;
                     out << YAML::Key << "collider type" << YAML::Value << (uint64_t)rigidbody.colliderType;
+                    out << YAML::Key << "collider shape" << YAML::Value << (uint64_t)rigidbody.colliderShape;
+                    out << YAML::Key << "body type" << YAML::Value << (uint64_t)rigidbody.bodyType;
                     out << YAML::Key << "entity" << YAML::Value << (uint64_t)rigidbody.entity;
-                    out << YAML::Key << "velocity" << YAML::Value << rigidbody.velocity;
-                    out << YAML::Key << "angular velocity" << YAML::Value << rigidbody.angularVelocity;
+                    out << YAML::Key << "scale" << YAML::Value << rigidbody.scale;
+                    out << YAML::Key << "radius" << YAML::Value << rigidbody.radius;
+                    out << YAML::Key << "half height" << YAML::Value << rigidbody.halfHeight;
                 });
             }
 
@@ -224,44 +228,26 @@ namespace adh {
                     auto [r]{ m_Scene->GetWorld().Add<RigidBody>(e, RigidBody{}) };
                     auto [t]{ m_Scene->GetWorld().Get<Transform>(e) };
 
+                    Mesh* p{ nullptr };
                     if (mesh) {
                         auto [m]{ m_Scene->GetWorld().Get<Mesh>(e) };
-                        // r.Create(m_Scene->GetPhysics().m_World,
-                        //          RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
-                        //          static_cast<std::uint64_t>(e),
-                        //          t,
-                        //          rigidbody["mass"].as<float>(),
-                        //          rigidbody["bounciness"].as<float>(),
-                        //          rigidbody["friction"].as<float>(),
-                        //          m.vertex);
-                        r.Create(&m_Scene->GetPhysics(),
-                                 RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
-                                 static_cast<std::uint64_t>(e),
-                                 t,
-                                 rigidbody["mass"].as<float>(),
-                                 rigidbody["bounciness"].as<float>(),
-                                 rigidbody["friction"].as<float>(),
-                                 m.vertex);
-                    } else {
-                        // r.Create(m_Scene->GetPhysics().m_World,
-                        //          RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
-                        //          static_cast<std::uint64_t>(e),
-                        //          t,
-                        //          rigidbody["mass"].as<float>(),
-                        //          rigidbody["bounciness"].as<float>(),
-                        //          rigidbody["friction"].as<float>());
-                        r.Create(&m_Scene->GetPhysics(),
-                                 RigidBody::ColliderType(rigidbody["collider type"].as<std::uint32_t>()),
-                                 static_cast<std::uint64_t>(e),
-                                 t,
-                                 rigidbody["mass"].as<float>(),
-                                 rigidbody["bounciness"].as<float>(),
-                                 rigidbody["friction"].as<float>());
+                        p = &m;
                     }
-                    r.SetIsTrigger(rigidbody["is trigger"].as<bool>());
-                    r.isKinematic     = rigidbody["is kinematic"].as<bool>();
-                    r.velocity        = rigidbody["velocity"].as<Vector3D>();
-                    r.angularVelocity = rigidbody["angular velocity"].as<Vector3D>();
+                    r.Create(static_cast<std::uint64_t>(e),
+                             m_Scene->GetPhysics().GetScene(),
+                             rigidbody["static friction"].as<float>(),
+                             rigidbody["dynamic friction"].as<float>(),
+                             rigidbody["restitution"].as<float>(),
+                             PhysicsBodyType(rigidbody["body type"].as<int>()),
+                             rigidbody["mass"].as<float>(),
+                             rigidbody["is kinematic"].as<bool>(),
+                             rigidbody["is trigger"].as<bool>(),
+                             PhysicsColliderShape(rigidbody["collider shape"].as<int>()),
+                             PhysicsColliderType(rigidbody["collider type"].as<int>()),
+                             rigidbody["scale"].as<Vector3D>(),
+                             rigidbody["radius"].as<float>(),
+                             rigidbody["half height"].as<float>(),
+                             p);
                 }
 
                 auto camera2D = i["Camera2D"];

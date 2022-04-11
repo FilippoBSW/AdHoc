@@ -20,25 +20,17 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-// *********************************************************************************M
+// *********************************************************************************
 
 #include "RigidBody.hpp"
+#include <Event/Event.hpp>
 #include <Math/Math.hpp>
-// #include "Math/source/Quaternion.hpp"
-// #include "PxShape.h"
-// #include "foundation/PxVec3.h"
-#include <btBulletDynamicsCommon.h>
 #include <iostream>
 
-#include <Event/Event.hpp>
-
 namespace adh {
-    RigidBody::RigidBody() : mActor{ nullptr } {}
-    // : body{} {}
-
-    RigidBody::~RigidBody() {
-        Clear();
-    }
+    RigidBody::RigidBody() : actor{},
+                             material{},
+                             shape{} {}
 
     RigidBody::RigidBody(RigidBody&& rhs) noexcept {
         MoveConstruct(Move(rhs));
@@ -47,207 +39,121 @@ namespace adh {
     RigidBody& RigidBody::operator=(RigidBody&& rhs) noexcept {
         Clear();
         MoveConstruct(Move(rhs));
-
         return *this;
     }
 
-    void RigidBody::Create(btDiscreteDynamicsWorld* world, ColliderType colliderType, std::uint64_t entity, const Transform& transform,
-                           float mass, float bounciness, float friction, const Array<Vertex>& vertices) {
-        // btCollisionShape* shape;
-        // switch (colliderType) {
-        // case ColliderType::eBox:
-        //     {
-        //         shape = new btBoxShape(btVector3(1.0f, 1.0f, 1.0f));
-        //         break;
-        //     }
-        // case ColliderType::eSphere:
-        //     {
-        //         shape = new btSphereShape(1.0f);
-        //         break;
-        //     }
-        // case ColliderType::eCone:
-        //     {
-        //         shape = new btConeShape(1.0f, 2.0f);
-        //         break;
-        //     }
-        // case ColliderType::eCylinder:
-        //     {
-        //         shape = new btCylinderShape(btVector3{ 0.5f, 0.0f, 0.0f });
-        //         break;
-        //     }
-        // case ColliderType::eCapsule:
-        //     {
-        //         shape = new btCapsuleShape(1.0f, 2.0f);
-        //         break;
-        //     }
-        // case ColliderType::eMesh:
-        //     {
-        //         shape = new btConvexHullShape();
-        //         for (std::size_t i{}; i < vertices.GetSize(); ++i) {
-        //             static_cast<btConvexHullShape*>(shape)->addPoint(
-        //                 btVector3(
-        //                     vertices[i].position.x,
-        //                     vertices[i].position.y,
-        //                     vertices[i].position.z));
-        //         }
-        //         break;
-        //     }
-        // default:; // TODO: compounds etc
-        // }
-
-        // m_World            = world;
-        // this->mass         = mass;
-        // this->bounciness   = bounciness;
-        // this->friction     = friction;
-        // this->entity       = entity;
-        // this->colliderType = colliderType;
-
-        // btTransform trans;
-        // trans.setIdentity();
-        // trans.setOrigin(btVector3(transform.translate.x, transform.translate.y, transform.translate.z));
-
-        // btQuaternion q;
-        // q.setEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
-        // trans.setRotation(q);
-
-        // btDefaultMotionState* motionState = new btDefaultMotionState(trans);
-
-        // btScalar bodyMass = mass;
-        // btVector3 bodyInertia;
-        // if (mass > 0.0) {
-        //     shape->calculateLocalInertia(bodyMass, bodyInertia);
-        // }
-
-        // btRigidBody::btRigidBodyConstructionInfo bodyCI = btRigidBody::btRigidBodyConstructionInfo(bodyMass, motionState, shape, bodyInertia);
-        // // bodyCI.m_restitution                            = bounciness;
-        // // bodyCI.m_friction                               = friction;
-
-        // this->body = new btRigidBody(bodyCI);
-        // body->getCollisionShape()->setLocalScaling(btVector3(transform.scale.x, transform.scale.y, transform.scale.z));
-        // body->setRestitution(bounciness);
-        // body->setFriction(friction);
-        // body->setMassProps(bodyMass, bodyInertia);
-        // body->setUserPointer(this);
-        // world->addRigidBody(body);
-        //
-        //
-        // PxShapeFlags shapeFlags = PxShapeFlag::eVISUALIZATION | PxShapeFlag::eSIMULATION_SHAPE;
-        // shape = gPhysics->createShape(geom, *gMaterial, isExclusive, shapeFlags);
-
-        // For this method to work, you need a way to mark shapes as triggers without using PxShapeFlag::eTRIGGER_SHAPE
-        // (so that trigger-trigger pairs are reported), and without calling a PxShape function (so that the data is
-        // available in a filter shader).
-        //
-        // One way is to reserve a special PxFilterData value/mask for triggers. It may not always be possible depending
-        // on how you otherwise use the filter data).
-        // const PxFilterData triggerFilterData(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
-        // shape->setSimulationFilterData(triggerFilterData);
+    RigidBody::~RigidBody() {
+        Clear();
     }
 
-    void RigidBody::Create(Physics* world, ColliderType colliderType, std::uint64_t entity, const Transform& transform,
-                           float mass, float bounciness, float friction, const Array<Vertex>& vertices) {
-        using namespace physx;
-        mPhysics = world;
+    void RigidBody::Create(std::uint64_t entity,
+                           physx::PxScene* scene,
+                           float staticFriction,
+                           float dynamicFriction,
+                           float restitution,
+                           PhysicsBodyType bodyType,
+                           float mass,
+                           bool isKinematic,
+                           bool isTrigger,
+                           PhysicsColliderShape colliderShape,
+                           PhysicsColliderType colliderType,
+                           const Vector3D& scale,
+                           float radius,
+                           float halfHeight,
+                           const Mesh* const mesh) {
+        this->entity = entity;
+        this->scene  = scene;
 
-        mMaterial = mPhysics->mPhysics->createMaterial(friction, friction, bounciness);
-        mShape    = mPhysics->mPhysics->createShape(physx::PxBoxGeometry(transform.scale.x, transform.scale.y, transform.scale.z), *mMaterial, true);
-        switch (colliderType) {
-        case ColliderType::eBox:
+        // Material
+        this->staticFriction  = staticFriction;
+        this->dynamicFriction = dynamicFriction;
+        this->restitution     = restitution;
+        material              = PhysicsWorld::Get()->CreateMaterial(staticFriction, dynamicFriction, restitution);
+
+        // Actor
+        this->bodyType    = bodyType;
+        this->mass        = mass;
+        this->isKinematic = isKinematic;
+        switch (bodyType) {
+        case PhysicsBodyType::eDynamic:
             {
+                actor = PhysicsWorld::Get()->CreateDynamicActor();
+                physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(actor), mass);
+                static_cast<physx::PxRigidDynamic*>(actor)->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, isKinematic);
                 break;
             }
-        case ColliderType::eSphere:
+        case PhysicsBodyType::eStatic:
             {
+                actor = PhysicsWorld::Get()->CreateStaticActor();
                 break;
             }
-        case ColliderType::eCone:
-            {
-                break;
-            }
-        case ColliderType::eCylinder:
-            {
-                break;
-            }
-        case ColliderType::eCapsule:
-            {
-                break;
-            }
-        case ColliderType::eMesh:
-            {
-                break;
-            }
-        default:; // TODO: compounds etc
         }
 
-        mActor             = mPhysics->mPhysics->createRigidDynamic(physx::PxTransform(physx::PxVec3(0)));
-        mActor->userData   = this;
-        this->mass         = mass;
-        this->bounciness   = bounciness;
-        this->friction     = friction;
-        this->entity       = entity;
-        this->colliderType = colliderType;
+        // Shape
+        this->colliderShape = colliderShape;
+        this->colliderType  = colliderType;
+        this->isTrigger     = isTrigger;
+        this->scale         = scale;
+        this->radius        = radius;
+        this->halfHeight    = halfHeight;
 
-        // mActor->setSleepThreshold(1);
-        // mActor->setKinematicTarget();
+        switch (colliderShape) {
+        case PhysicsColliderShape::eBox:
+            {
+                shape = PhysicsWorld::Get()->CreateBoxShape(actor, material, physx::PxVec3(scale.x, scale.y, scale.z));
+                break;
+            }
+        case PhysicsColliderShape::eSphere:
+            {
+                shape = PhysicsWorld::Get()->CreateSphereShape(actor, material, radius);
+                break;
+            }
+        case PhysicsColliderShape::eCapsule:
+            {
+                shape = PhysicsWorld::Get()->CreateCapsuleShape(actor, material, radius, halfHeight);
+                break;
+            }
+        case PhysicsColliderShape::eMesh:
+            {
+                shape = PhysicsWorld::Get()->CreateMeshShape(actor, material, *mesh);
+                break;
+            }
+        case PhysicsColliderShape::eConvexMesh:
+            {
+                shape = PhysicsWorld::Get()->CreateConvexMeshShape(actor, material, *mesh);
+                break;
+            }
+        }
+        SetTrigger(isTrigger);
 
-        // std::cout << mActor->getSleepThreshold() << std::endl;
-        physx::PxTransform t = mActor->getGlobalPose();
-        Quaternion<float> qq(transform.rotation);
-        physx::PxQuat q(qq.x, qq.y, qq.z, qq.w);
-        t.q = q;
-        mActor->setGlobalPose(t);
-
-        mActor->attachShape(*mShape);
-
-        // mActor->setMass(mass);
-        physx::PxRigidBodyExt::updateMassAndInertia(*mActor, mass);
-        mPhysics->mScene->addActor(*mActor);
+        actor->userData = this;
+        actor->attachShape(*shape);
+        // scene->addActor(*actor);
     }
 
     void RigidBody::OnUpdate(Transform& transform) noexcept {
-        // const btTransform& transf(body->getWorldTransform());
-        // const btVector3& origin(transf.getOrigin());
-        // const btQuaternion& currentRotation(transf.getRotation());
-
-        // transform.translate = Vector3D{ origin.getX(), origin.getY(), origin.getZ() };
-        // // currentRotation.getEulerZYX(transform.rotation.z, transform.rotation.y, transform.rotation.x);
-        // transform.q.x = currentRotation.getX();
-        // transform.q.y = currentRotation.getY();
-        // transform.q.z = currentRotation.getZ();
-        // transform.q.w = currentRotation.getW();
-
-        // auto vel{ body->getLinearVelocity() };
-        // velocity = Vector3D{ vel.getX(), vel.getY(), vel.getZ() };
-        // auto avel{ body->getAngularVelocity() };
-        // angularVelocity = Vector3D{ avel.getX(), avel.getY(), avel.getZ() };
-
-        // translate = Vector3D{ origin.getX(), origin.getY(), origin.getZ() };
-        // rotation  = transform.rotation;
-        // // currentRotation.getEulerZYX(rotation.z, rotation.y, rotation.x);
-        // //
-
-        physx::PxTransform t = mActor->getGlobalPose();
+        physx::PxTransform t = actor->getGlobalPose();
         transform.translate  = Vector3D{ t.p.x, t.p.y, t.p.z };
-        translate            = transform.translate;
-        rotation             = transform.rotation;
         transform.q.x        = t.q.x;
         transform.q.y        = t.q.y;
         transform.q.z        = t.q.z;
         transform.q.w        = t.q.w;
 
-        auto v          = mActor->getLinearVelocity();
-        velocity        = Vector3D{ v.x, v.y, v.z };
-        auto av         = mActor->getAngularVelocity();
-        angularVelocity = Vector3D{ av.x, av.y, av.z };
+        translate = transform.translate;
+        rotation  = transform.rotation;
+
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            auto v          = static_cast<physx::PxRigidDynamic*>(actor)->getLinearVelocity();
+            velocity        = Vector3D{ v.x, v.y, v.z };
+            auto av         = static_cast<physx::PxRigidDynamic*>(actor)->getAngularVelocity();
+            angularVelocity = Vector3D{ av.x, av.y, av.z };
+        }
     }
 
     void RigidBody::SetTranslation(float x, float y, float z) noexcept {
-        // btTransform& transf(body->getWorldTransform());
-        // transf.setOrigin(btVector3{ x, y, z });
-
-        physx::PxTransform t = mActor->getGlobalPose();
+        physx::PxTransform t = actor->getGlobalPose();
         t.p                  = physx::PxVec3{ x, y, z };
-        mActor->setGlobalPose(t);
+        actor->setGlobalPose(t);
     }
 
     Vector3D& RigidBody::GetTranslation() noexcept {
@@ -255,35 +161,19 @@ namespace adh {
     }
 
     void RigidBody::SetRotation(float x, float y, float z) noexcept {
-        // btTransform& transf(body->getWorldTransform());
-        // btQuaternion q(y, x, z);
-        // btQuaternion q;
-        // q.setEulerZYX(z, y, x);
-        // transf.setRotation(q);
-
-        {
-            physx::PxTransform t = mActor->getGlobalPose();
-            Quaternion<float> qq(Vector3D{ x, y, z });
-            physx::PxQuat q(qq.x, qq.y, qq.z, qq.w);
-            t.q = q;
-            mActor->setGlobalPose(t);
-        }
+        physx::PxTransform t = actor->getGlobalPose();
+        Quaternion qq(Vector3D{ x, y, z });
+        physx::PxQuat q(qq.x, qq.y, qq.z, qq.w);
+        t.q = q;
+        actor->setGlobalPose(t);
     }
 
     void RigidBody::AddRotation(float x, float y, float z) noexcept {
-        // btTransform& transf(body->getWorldTransform());
-        // btQuaternion q(y, x, z);
-        // btQuaternion q;
-        // q.setEulerZYX(z, y, x);
-        // transf.setRotation(q);
-
-        {
-            physx::PxTransform t = mActor->getGlobalPose();
-            Quaternion<float> qq(Vector3D{ x, y, z });
-            physx::PxQuat q(qq.x, qq.y, qq.z, qq.w);
-            t.q *= q;
-            mActor->setGlobalPose(t);
-        }
+        physx::PxTransform t = actor->getGlobalPose();
+        Quaternion qq(Vector3D{ x, y, z });
+        physx::PxQuat q(qq.x, qq.y, qq.z, qq.w);
+        t.q *= q;
+        actor->setGlobalPose(t);
     }
 
     Vector3D& RigidBody::GetRotation() noexcept {
@@ -291,125 +181,95 @@ namespace adh {
     }
 
     void RigidBody::SetVelocity(float x, float y, float z) noexcept {
-        // body->setLinearVelocity(btVector3{ x, y, z });
-        mActor->setLinearVelocity(physx::PxVec3(x, y, z));
+        static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3(x, y, z));
     }
 
     void RigidBody::AddVelocity(float x, float y, float z) noexcept {
-        // auto vel{ body->getLinearVelocity() };
-        // vel.setX(vel.getX() + x);
-        // vel.setY(vel.getY() + y);
-        // vel.setZ(vel.getZ() + z);
-        // body->setLinearVelocity(vel);
-        //
-
-        auto vel{ mActor->getLinearVelocity() };
+        auto vel{ static_cast<physx::PxRigidDynamic*>(actor)->getLinearVelocity() };
         vel.x += x;
         vel.y += y;
         vel.z += z;
-        mActor->setLinearVelocity(vel);
+        static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(vel);
     }
 
     Vector3D& RigidBody::GetVelocity() noexcept {
         return velocity;
     }
 
+    void RigidBody::AddForce(float x, float y, float z) noexcept {
+        static_cast<physx::PxRigidDynamic*>(actor)->addForce(physx::PxVec3(x, y, z));
+    }
+
+    void RigidBody::AddTorque(float x, float y, float z) noexcept {
+        static_cast<physx::PxRigidDynamic*>(actor)->addTorque(physx::PxVec3(x, y, z));
+    }
+
     void RigidBody::SetAngularVelocity(float x, float y, float z) noexcept {
-        // body->setAngularVelocity(btVector3{ x, y, z });
-        mActor->setAngularVelocity(physx::PxVec3(x, y, z));
+        static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3(x, y, z));
     }
 
     void RigidBody::AddAngularVelocity(float x, float y, float z) noexcept {
-        // auto vel{ body->getAngularVelocity() };
-        // vel.setX(vel.getX() + x);
-        // vel.setY(vel.getY() + y);
-        // vel.setZ(vel.getZ() + z);
-        // body->setAngularVelocity(vel);
-
-        auto vel{ mActor->getAngularVelocity() };
+        auto vel{ static_cast<physx::PxRigidDynamic*>(actor)->getAngularVelocity() };
         vel.x += x;
         vel.y += y;
         vel.z += z;
-        mActor->setAngularVelocity(vel);
+        static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(vel);
     }
 
     Vector3D& RigidBody::GetAngularVelocity() noexcept {
         return angularVelocity;
     }
 
-    void RigidBody::SetGravity(float x, float y, float z) noexcept {
-        // body->setGravity(btVector3{ x, y, z });
-        mActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+    void RigidBody::SetHasGravity(bool hasGravity) noexcept {
+        actor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !hasGravity);
     }
 
-    void RigidBody::SetBodyType(BodyType collisionType) noexcept {
-        // switch (collisionType) {
-        // case BodyType::eStatic:
-        //     {
-        //         body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
-        //         break;
-        //     }
-        // case BodyType::eKinematic:
-        //     {
-        //         body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
-        //         break;
-        //     }
-        // case BodyType::eDynamic:
-        //     {
-        //         body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_DYNAMIC_OBJECT);
-        //         break;
-        //     }
-        // }
-    }
-
-    void RigidBody::SetIsTrigger(bool isTrigger) noexcept {
-        // this->isTrigger = isTrigger;
-        // if (isTrigger) {
-        //     body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
-        // } else {
-        //     auto bit{ 1u };
-        //     auto flag = btCollisionObject::CF_NO_CONTACT_RESPONSE;
-        //     body->setCollisionFlags(body->getCollisionFlags() & ~(bit << flag));
-        // }
-
+    void RigidBody::SetTrigger(bool isTrigger) noexcept {
         this->isTrigger = isTrigger;
-        // mShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
-        // mShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, isTrigger);
-        // mShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
-        // mShape->setFlag(physx::PxShapeFlag::eVISUALIZATION, isTrigger);
-        // mActor->attachShape(*mShape);
+        if (isTrigger) {
+            shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+            shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+            colliderType = PhysicsColliderType::eTrigger;
+        } else {
+            shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
+            shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+            colliderType = PhysicsColliderType::eCollider;
+        }
     }
 
     void RigidBody::SetLinearFactor(float x, float y, float z) noexcept {
-        // body->setLinearFactor(btVector3(x, y, z));
-        using namespace physx;
-        mActor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_LINEAR_X, bool(x));
-        mActor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, bool(y));
-        mActor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, bool(z));
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, bool(x));
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, bool(y));
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, bool(z));
     }
 
     void RigidBody::SetAngularFactor(float x, float y, float z) noexcept {
-        // body->setAngularFactor(btVector3(x, y, z));
-        using namespace physx;
-        mActor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, bool(x));
-        mActor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, bool(y));
-        mActor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, bool(z));
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, bool(x));
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, bool(y));
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, bool(z));
     }
 
     bool RigidBody::GetIsTrigger() const noexcept {
         return isTrigger;
     }
 
-    void RigidBody::ClearGravity() noexcept {
-        // body->clearGravity();
-        // mActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+    void RigidBody::SetKinematic(bool isKinematic) noexcept {
+        this->isKinematic = isKinematic;
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, isKinematic);
+    }
+
+    void RigidBody::SetGeometry(const physx::PxGeometry& geometry) {
+        shape->setGeometry(geometry);
     }
 
     void RigidBody::ClearForces() noexcept {
-        // body->clearForces();
-        mActor->clearForce(physx::PxForceMode::eFORCE);
-        mActor->clearForce(physx::PxForceMode::eIMPULSE);
-        mActor->clearTorque();
+        static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eFORCE);
+        static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eIMPULSE);
+        static_cast<physx::PxRigidDynamic*>(actor)->clearTorque();
+        static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{});
+        static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{});
+        velocity        = {};
+        angularVelocity = {};
     }
 
     void RigidBody::Destroy() noexcept {
@@ -417,58 +277,28 @@ namespace adh {
     }
 
     void RigidBody::MoveConstruct(RigidBody&& rhs) noexcept {
-        // body = rhs.body;
-        // if (body != nullptr) {
-        //     body->setUserPointer(this);
-        // }
-        // m_World         = rhs.m_World;
-        // mass            = rhs.mass;
-        // bounciness      = rhs.bounciness;
-        // friction        = rhs.friction;
-        // entity          = rhs.entity;
-        // isTrigger       = rhs.isTrigger;
-        // colliderType    = rhs.colliderType;
-        // velocity        = rhs.velocity;
-        // angularVelocity = rhs.angularVelocity;
-        // rhs.body        = nullptr;
-        // rhs.m_World     = nullptr;
-
-        mActor = rhs.mActor;
-        if (mActor != nullptr) {
-            mActor->userData = this;
+        std::memcpy(this, &rhs, sizeof(*this));
+        if (actor != nullptr) {
+            actor->userData = this;
         }
-
-        mMaterial       = rhs.mMaterial;
-        mShape          = rhs.mShape;
-        mPhysics        = rhs.mPhysics;
-        mass            = rhs.mass;
-        bounciness      = rhs.bounciness;
-        friction        = rhs.friction;
-        entity          = rhs.entity;
-        isTrigger       = rhs.isTrigger;
-        isKinematic     = rhs.isKinematic;
-        colliderType    = rhs.colliderType;
-        velocity        = rhs.velocity;
-        angularVelocity = rhs.angularVelocity;
-        rhs.mActor      = nullptr;
-        rhs.mMaterial   = nullptr;
-        rhs.mShape      = nullptr;
-        rhs.mPhysics    = nullptr;
+        rhs.actor    = nullptr;
+        rhs.material = nullptr;
+        rhs.shape    = nullptr;
     }
 
     void RigidBody::Clear() noexcept {
-        // if (body) {
-        //     delete body->getMotionState();
-        //     delete body->getCollisionShape();
-        //     m_World->removeRigidBody(body);
-        //     delete body;
-        //     // count--;
-        // }
-
-        if (mActor) {
-            mActor->release();
-            mMaterial->release();
-            mShape->release();
+        if (material) {
+            material->release();
+            material = nullptr;
+        }
+        if (shape) {
+            shape->release();
+            shape = nullptr;
+        }
+        if (actor) {
+            scene->removeActor(*actor);
+            actor->release();
+            actor = nullptr;
         }
     }
 } // namespace adh

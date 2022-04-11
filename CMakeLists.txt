@@ -306,8 +306,6 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Event/Event.hpp
     ${ADH_CORE_SRC}/Event/Event.cpp
     ${ADH_CORE_SRC}/Event/EventTypes.hpp
-    ${ADH_CORE_SRC}/Physics/Physics.hpp
-    ${ADH_CORE_SRC}/Physics/Physics.cpp
     ${ADH_CORE_SRC}/Std/Algorithms.hpp
     ${ADH_CORE_SRC}/Std/Random.hpp
     ${ADH_CORE_SRC}/Std/Array.hpp
@@ -326,6 +324,13 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Std/TGALoader.hpp
     ${ADH_CORE_SRC}/Std/UniquePtr.hpp
     ${ADH_CORE_SRC}/Std/Utility.hpp)
+
+#**********************************************
+# Physics library
+#**********************************************
+target_sources(${PROJECT_NAME} PRIVATE
+    ${ADH_CORE_SRC}/Physics/PhysicsWorld.hpp
+    ${ADH_CORE_SRC}/Physics/PhysicsWorld.cpp)
 
 #**********************************************
 # Math library

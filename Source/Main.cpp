@@ -22,6 +22,9 @@
 // SOFTWARE.
 // *********************************************************************************
 
+// TODO:
+// Fixed Update
+
 #include "Vulkan/Attachments.hpp"
 #include "Vulkan/Subpass.hpp"
 #include <Editor/Editor.hpp>
@@ -547,8 +550,7 @@ class AdHoc {
             UpdateScripts();
 
             if (g_IsPlaying && !g_IsPaused) {
-                scene.GetPhysics().OnUpdate(deltaTime);
-
+                scene.GetPhysics().StepSimulation(deltaTime);
                 scene.GetWorld().GetSystem<Transform, RigidBody>().ForEach([&](Transform& transform, RigidBody& rigidBody) {
                     rigidBody.OnUpdate(transform);
                 });
@@ -616,6 +618,7 @@ class AdHoc {
     }
 
     void ReadyScript() {
+        // TODO: error remains for one round too much
         scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
             script                       = scene.GetState().CreateScript(script.filePath);
             ScriptHandler::currentEntity = static_cast<std::uint64_t>(ent);
