@@ -22,9 +22,6 @@
 // SOFTWARE.
 // *********************************************************************************
 
-// TODO:
-// Fixed Update
-
 #include "Vulkan/Attachments.hpp"
 #include "Vulkan/Subpass.hpp"
 #include <Editor/Editor.hpp>
@@ -299,25 +296,6 @@ struct ShadowMap2D {
     Debug debug;
 };
 
-// enum class CollisionStatus {
-//     eEnter,
-//     eExit,
-//     eColliding
-// };
-
-// struct TempTest {
-//     CollisionStatus status;
-//     CollisionEvent event;
-// };
-
-// struct pairhash {
-//   public:
-//     template <typename T, typename U>
-//     std::size_t operator()(const std::pair<T, U>& x) const {
-//         return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
-//     }
-// };
-
 class AdHoc {
   public:
     const char* name{ "AdHoc" };
@@ -371,8 +349,6 @@ class AdHoc {
     bool g_AreScriptsReady{ false };
 
     ShadowMap2D shadowMap;
-
-    // std::unordered_map<std::pair<std::uint64_t, std::uint64_t>, TempTest, pairhash> collisionHash;
 
   public:
     ~AdHoc() {
@@ -448,7 +424,7 @@ class AdHoc {
         case StatusEvent::Type::eRun:
             {
                 scene.Save();
-                scene.ResetPhysicsWorld(); // Update to change debug draw
+                scene.ResetPhysicsWorld();
                 ReadyScript();
                 g_AreScriptsReady = true;
                 g_IsPlaying       = true;
@@ -464,10 +440,7 @@ class AdHoc {
                     g_AreScriptsReady = false;
                     g_IsPlaying       = false;
                     g_IsPaused        = false;
-
-                    // collisionHash.clear();
-
-                    g_MaximizeOnPlay = maximizeOnPlay2;
+                    g_MaximizeOnPlay  = maximizeOnPlay2;
                 }
                 break;
             }
@@ -578,8 +551,6 @@ class AdHoc {
                 RecreateSwapchain();
                 RecreateEditor();
             }
-
-            // UpdateCollisionEvents();
         }
     }
 
@@ -624,7 +595,6 @@ class AdHoc {
     }
 
     void ReadyScript() {
-        // TODO: error remains for one round too much
         scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
             script                       = scene.GetState().CreateScript(script.filePath);
             ScriptHandler::currentEntity = static_cast<std::uint64_t>(ent);
@@ -648,44 +618,6 @@ class AdHoc {
                 script.Unbind();
             });
         }
-    }
-
-    void UpdateCollisionEvents() {
-        // // TODO: Same tick as physics
-        // for (auto i = collisionHash.begin(); i != collisionHash.end();) {
-        //     if (i->second.status == CollisionStatus::eColliding || i->second.status == CollisionStatus::eEnter) {
-        //         i->second.status = CollisionStatus::eExit;
-        //         ++i;
-        //     } else if (i->second.status == CollisionStatus::eExit) {
-        //         if (g_IsPlaying && g_AreScriptsReady) {
-        //             scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
-        //                 bool call{};
-        //                 EntityID rhs{};
-        //                 EntityID e = static_cast<EntityID>(ent);
-
-        //                 if (e == i->second.event.entityA) {
-        //                     rhs  = i->second.event.entityB;
-        //                     call = true;
-        //                 } else if (e == i->second.event.entityB) {
-        //                     rhs  = i->second.event.entityA;
-        //                     call = true;
-        //                 }
-
-        //                 if (call) {
-        //                     script.Bind();
-        //                     if (i->second.event.type == adh::CollisionEvent::Type::eCollision) {
-        //                         script.Call("OnCollisionExit", rhs);
-        //                     } else if (i->second.event.type == adh::CollisionEvent::Type::eTrigger) {
-        //                         script.Call("OnTriggerExit", rhs);
-        //                     }
-        //                     script.Unbind();
-        //                 }
-        //             });
-        //         }
-
-        //         collisionHash.erase(i++);
-        //     }
-        // }
     }
 
     void Draw() {
