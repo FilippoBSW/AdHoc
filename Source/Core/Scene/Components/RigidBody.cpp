@@ -206,9 +206,40 @@ namespace adh {
         static_cast<physx::PxRigidDynamic*>(actor)->addTorque(physx::PxVec3(x, y, z));
     }
 
+    float RigidBody::GetRestitution() const noexcept {
+        return restitution;
+    }
+
     void RigidBody::SetRestitution(float restitution) noexcept {
         this->restitution = restitution;
         material->setRestitution(restitution);
+    }
+
+    float RigidBody::GetStaticFriction() const noexcept {
+        return staticFriction;
+    }
+
+    void RigidBody::SetStaticFriction(float staticFriction) noexcept {
+        this->staticFriction = staticFriction;
+        material->setStaticFriction(staticFriction);
+    }
+
+    float RigidBody::GetDynamicFriction() const noexcept {
+        return dynamicFriction;
+    }
+
+    void RigidBody::SetDynamicFriction(float dynamicFriction) noexcept {
+        this->dynamicFriction = dynamicFriction;
+        material->setDynamicFriction(dynamicFriction);
+    }
+
+    float RigidBody::GetMass() const noexcept {
+        return mass;
+    }
+
+    void RigidBody::SetMass(float mass) noexcept {
+        this->mass = mass;
+        physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(actor), mass);
     }
 
     void RigidBody::SetAngularVelocity(float x, float y, float z) noexcept {
@@ -267,6 +298,16 @@ namespace adh {
 
     void RigidBody::SetGeometry(const physx::PxGeometry& geometry) {
         shape->setGeometry(geometry);
+    }
+
+    void RigidBody::UpdateGeometry() noexcept {
+        if (colliderShape == PhysicsColliderShape::eBox) {
+            SetGeometry(physx::PxBoxGeometry{ scale.x, scale.y, scale.z });
+        } else if (colliderShape == PhysicsColliderShape::eSphere) {
+            SetGeometry(physx::PxSphereGeometry{ radius });
+        } else if (colliderShape == PhysicsColliderShape::eCapsule) {
+            SetGeometry(physx::PxCapsuleGeometry{ radius, halfHeight });
+        }
     }
 
     void RigidBody::ClearForces() noexcept {

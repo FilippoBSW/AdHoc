@@ -4,17 +4,11 @@ local this = GetThis()
 local entities = {}
 local rigidbodies = {}
 local nextId = 0
-local input = GetInput()
 
-function Start()
-end
-
-function Update()
-    -- if input:GetKey(AdHoc.Key.a) == true then
+function FixedUpdate()
         entities[nextId] = CreateEntity()
-        AddComponent(entities[nextId], "RigidBody", "Box");
+        AddComponent(entities[nextId], "RigidBody", "Box", "Dynamic");
         rigidbodies[nextId] = GetComponent(entities[nextId], "RigidBody")
-        rigidbodies[nextId]:AddVelocity(0.0, 0.0, 10.0)
+        rigidbodies[nextId]:SetRestitution(0.1)
         nextId = nextId + 1
-    -- end
 end

@@ -110,7 +110,17 @@ namespace adh {
 
         void AddTorque(float x, float y, float z) noexcept;
 
+        float GetRestitution() const noexcept;
+
         void SetRestitution(float restitution) noexcept;
+
+        float GetStaticFriction() const noexcept;
+
+        void SetStaticFriction(float staticFriction) noexcept;
+
+        float GetDynamicFriction() const noexcept;
+
+        void SetDynamicFriction(float dynamicFriction) noexcept;
 
         void SetHasGravity(bool hasGravity) noexcept;
 
@@ -119,6 +129,10 @@ namespace adh {
         void SetBodyType() noexcept;
 
         void SetTrigger(bool isTrigger) noexcept;
+
+        float GetMass() const noexcept;
+
+        void SetMass(float mass) noexcept;
 
         void SetKinematic(bool isKinematic) noexcept;
 
@@ -129,6 +143,8 @@ namespace adh {
         void SetAngularFactor(bool x, bool y, bool z) noexcept;
 
         void ClearForces() noexcept;
+
+        void UpdateGeometry() noexcept;
 
         void Destroy() noexcept;
 

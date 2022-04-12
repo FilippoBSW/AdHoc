@@ -441,9 +441,13 @@ namespace adh {
         state.RegisterTypeVariable<RigidBody>("staticFriction", &RigidBody::staticFriction);
         state.RegisterTypeVariable<RigidBody>("entity", &RigidBody::entity);
         state.RegisterTypeVariable<RigidBody>("isKinematic", &RigidBody::isKinematic);
+        state.RegisterTypeVariable<RigidBody>("isTrigger", &RigidBody::isTrigger);
         state.RegisterTypeVariable<RigidBody>("velocity", &RigidBody::velocity);
-        state.RegisterTypeFunction<RigidBody>("GetVelocity", &RigidBody::GetVelocity);
+        state.RegisterTypeVariable<RigidBody>("translate", &RigidBody::translate);
+        state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
+        state.RegisterTypeVariable<RigidBody>("scale", &RigidBody::scale);
         state.RegisterTypeVariable<RigidBody>("angularVelocity", &RigidBody::angularVelocity);
+        state.RegisterTypeFunction<RigidBody>("GetVelocity", &RigidBody::GetVelocity);
         state.RegisterTypeFunction<RigidBody>("GetAngularVelocity", &RigidBody::GetAngularVelocity);
         state.RegisterTypeFunction<RigidBody>("SetLinearFactor", &RigidBody::SetLinearFactor);
         state.RegisterTypeFunction<RigidBody>("SetAngularFactor", &RigidBody::SetAngularFactor);
@@ -453,16 +457,23 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("AddAngularVelocity", &RigidBody::AddAngularVelocity);
         state.RegisterTypeFunction<RigidBody>("GetIsTrigger", &RigidBody::GetIsTrigger);
         state.RegisterTypeFunction<RigidBody>("SetTrigger", &RigidBody::SetTrigger);
+        state.RegisterTypeFunction<RigidBody>("SetKinematic", &RigidBody::SetKinematic);
         state.RegisterTypeFunction<RigidBody>("SetTranslation", &RigidBody::SetTranslation);
         state.RegisterTypeFunction<RigidBody>("GetTranslation", &RigidBody::GetTranslation);
-        state.RegisterTypeVariable<RigidBody>("translate", &RigidBody::translate);
+        state.RegisterTypeFunction<RigidBody>("SetMass", &RigidBody::SetMass);
+        state.RegisterTypeFunction<RigidBody>("GetMass", &RigidBody::GetMass);
         state.RegisterTypeFunction<RigidBody>("SetRotation", &RigidBody::SetRotation);
         state.RegisterTypeFunction<RigidBody>("AddRotation", &RigidBody::AddRotation);
         state.RegisterTypeFunction<RigidBody>("GetRotation", &RigidBody::GetRotation);
-        state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
         state.RegisterTypeFunction<RigidBody>("ClearForces", &RigidBody::ClearForces);
         state.RegisterTypeFunction<RigidBody>("AddForce", &RigidBody::AddForce);
         state.RegisterTypeFunction<RigidBody>("AddTorque", &RigidBody::AddTorque);
+        state.RegisterTypeFunction<RigidBody>("GetRestitution", &RigidBody::GetRestitution);
         state.RegisterTypeFunction<RigidBody>("SetRestitution", &RigidBody::SetRestitution);
+        state.RegisterTypeFunction<RigidBody>("GetStaticFriction", &RigidBody::GetStaticFriction);
+        state.RegisterTypeFunction<RigidBody>("SetStaticFriction", &RigidBody::SetStaticFriction);
+        state.RegisterTypeFunction<RigidBody>("GetDynamicFriction", &RigidBody::GetDynamicFriction);
+        state.RegisterTypeFunction<RigidBody>("SetDynamicFriction", &RigidBody::SetDynamicFriction);
+        state.RegisterTypeFunction<RigidBody>("UpdateGeometry", &RigidBody::UpdateGeometry);
     }
 } // namespace adh
