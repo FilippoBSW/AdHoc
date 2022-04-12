@@ -50,6 +50,7 @@ function Update()
         local tempRigidbody = GetComponent(entities[nextId], "RigidBody")
         tempRigidbody:SetTranslation(transform.translate.x + 2 * forward.x, transform.translate.y, transform.translate.z + 2 * forward.z)
         tempRigidbody:AddVelocity(force * forward.x, force * 2, force * forward.z)
+        tempRigidbody.radius = 0.5
         tempRigidbody:UpdateGeometry()
         tempRigidbody:SetRestitution(0.2)
         

@@ -447,6 +447,8 @@ namespace adh {
         state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
         state.RegisterTypeVariable<RigidBody>("scale", &RigidBody::scale);
         state.RegisterTypeVariable<RigidBody>("angularVelocity", &RigidBody::angularVelocity);
+        state.RegisterTypeVariable<RigidBody>("radius", &RigidBody::radius);
+        state.RegisterTypeVariable<RigidBody>("halfHeight", &RigidBody::halfHeight);
         state.RegisterTypeFunction<RigidBody>("GetVelocity", &RigidBody::GetVelocity);
         state.RegisterTypeFunction<RigidBody>("GetAngularVelocity", &RigidBody::GetAngularVelocity);
         state.RegisterTypeFunction<RigidBody>("SetLinearFactor", &RigidBody::SetLinearFactor);
