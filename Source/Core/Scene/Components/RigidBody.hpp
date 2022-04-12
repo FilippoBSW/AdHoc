@@ -110,6 +110,8 @@ namespace adh {
 
         void AddTorque(float x, float y, float z) noexcept;
 
+        void SetRestitution(float restitution) noexcept;
+
         void SetHasGravity(bool hasGravity) noexcept;
 
         bool GetIsTrigger() const noexcept;
@@ -122,9 +124,9 @@ namespace adh {
 
         void SetGeometry(const physx::PxGeometry& geometry);
 
-        void SetLinearFactor(float x, float y, float z) noexcept;
+        void SetLinearFactor(bool x, bool y, bool z) noexcept;
 
-        void SetAngularFactor(float x, float y, float z) noexcept;
+        void SetAngularFactor(bool x, bool y, bool z) noexcept;
 
         void ClearForces() noexcept;
 

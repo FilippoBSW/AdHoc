@@ -526,7 +526,7 @@ class AdHoc {
             window.PollEvents();
 
             UpdateCameras();
-            UpdateScripts();
+            UpdateScripts(deltaTime);
 
             if (g_IsPlaying && !g_IsPaused) {
                 scene.GetPhysics().StepSimulation(deltaTime);
@@ -609,12 +609,17 @@ class AdHoc {
         });
     }
 
-    void UpdateScripts() {
+    void UpdateScripts(float deltaTime) {
         if (g_IsPlaying && !g_IsPaused && g_AreScriptsReady) {
             scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
                 script.Bind();
                 ScriptHandler::currentEntity = static_cast<std::uint64_t>(ent);
                 script.Call("Update");
+                script.fixedUpdateAcculumator += deltaTime;
+                if (script.fixedUpdateAcculumator >= 0.017f) {
+                    script.Call("FixedUpdate");
+                    script.fixedUpdateAcculumator = {};
+                }
                 script.Unbind();
             });
         }

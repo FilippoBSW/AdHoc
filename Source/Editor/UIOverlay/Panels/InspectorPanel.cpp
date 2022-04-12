@@ -313,11 +313,11 @@ namespace adh {
                 }
 
                 if (component.bodyType == PhysicsBodyType::eDynamic) {
-                    if (ImGui::Checkbox("Is trigger", &component.isTrigger)) {
-                    }
-                    ImGui::SameLine();
                     if (ImGui::Checkbox("Is kinematic", &component.isKinematic)) {
                     }
+                    ImGui::SameLine();
+                }
+                if (ImGui::Checkbox("Is trigger", &component.isTrigger)) {
                 }
             },
             currentScene, true, false);
@@ -525,40 +525,27 @@ namespace adh {
                     auto [rigidBody]{ currentScene->GetWorld().Add<RigidBody>(entity, RigidBody{}) };
                     auto [transform]{ currentScene->GetWorld().Get<Transform>(entity) };
 
+                    Mesh* meshPtr{ nullptr };
                     if ((colliderShape == PhysicsColliderShape::eMesh || colliderShape == PhysicsColliderShape::eConvexMesh) &&
                         currentScene->GetWorld().Contains<Mesh>(entity)) {
                         auto [mesh]{ currentScene->GetWorld().Get<Mesh>(entity) };
-                        rigidBody.Create(static_cast<std::uint64_t>(entity),
-                                         0.5f,
-                                         0.5f,
-                                         1.0f,
-                                         isStatic ? PhysicsBodyType::eStatic : PhysicsBodyType::eDynamic,
-                                         1.0f,
-                                         false,
-                                         false,
-                                         true,
-                                         colliderShape,
-                                         PhysicsColliderType::eCollider,
-                                         transform.scale,
-                                         1.0f,
-                                         0.5,
-                                         &mesh);
-                    } else {
-                        rigidBody.Create(static_cast<std::uint64_t>(entity),
-                                         0.5f,
-                                         0.5f,
-                                         1.0f,
-                                         isStatic ? PhysicsBodyType::eStatic : PhysicsBodyType::eDynamic,
-                                         1.0f,
-                                         false,
-                                         false,
-                                         true,
-                                         colliderShape,
-                                         PhysicsColliderType::eCollider,
-                                         transform.scale,
-                                         1.0f,
-                                         0.5);
+                        meshPtr = &mesh;
                     }
+                    rigidBody.Create(static_cast<std::uint64_t>(entity),
+                                     0.5f,
+                                     0.5f,
+                                     1.0f,
+                                     isStatic ? PhysicsBodyType::eStatic : PhysicsBodyType::eDynamic,
+                                     1.0f,
+                                     false,
+                                     false,
+                                     true,
+                                     colliderShape,
+                                     PhysicsColliderType::eCollider,
+                                     transform.scale,
+                                     1.0f,
+                                     0.5,
+                                     meshPtr);
                 }
                 ImGui::EndMenu();
             }

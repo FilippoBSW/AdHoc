@@ -206,6 +206,11 @@ namespace adh {
         static_cast<physx::PxRigidDynamic*>(actor)->addTorque(physx::PxVec3(x, y, z));
     }
 
+    void RigidBody::SetRestitution(float restitution) noexcept {
+        this->restitution = restitution;
+        material->setRestitution(restitution);
+    }
+
     void RigidBody::SetAngularVelocity(float x, float y, float z) noexcept {
         static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3(x, y, z));
     }
@@ -239,16 +244,16 @@ namespace adh {
         }
     }
 
-    void RigidBody::SetLinearFactor(float x, float y, float z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, bool(x));
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, bool(y));
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, bool(z));
+    void RigidBody::SetLinearFactor(bool x, bool y, bool z) noexcept {
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, x);
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, y);
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, z);
     }
 
-    void RigidBody::SetAngularFactor(float x, float y, float z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, bool(x));
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, bool(y));
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, bool(z));
+    void RigidBody::SetAngularFactor(bool x, bool y, bool z) noexcept {
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, x);
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, y);
+        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, z);
     }
 
     bool RigidBody::GetIsTrigger() const noexcept {

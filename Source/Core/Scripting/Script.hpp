@@ -504,6 +504,7 @@ namespace adh {
             std::string fileName;
             std::string filePath;
             std::string errorText;
+            float fixedUpdateAcculumator{};
 
           private:
             std::string m_Id;

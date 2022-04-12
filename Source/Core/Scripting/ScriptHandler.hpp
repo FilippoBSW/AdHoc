@@ -58,6 +58,8 @@ namespace adh {
 
         static int Raycast(lua_State* L);
 
+        static int SetGravity(lua_State* L);
+
         static void RegisterBindings();
 
         inline static Scene* scene;

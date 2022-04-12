@@ -80,11 +80,11 @@ namespace adh {
 
         void StepSimulation(float deltaTime);
 
-        Vector3D GetGravity() noexcept;
+        Vector3D& GetGravity() noexcept;
 
         void SetGravity(const Vector3D& gravity) noexcept;
 
-        void* Raycast(const Vector3D& from, const Vector3D& direction, float distance);
+        std::uint64_t Raycast(const Vector3D& from, const Vector3D& direction, float distance);
 
         // TODO:
         // void Sweep();

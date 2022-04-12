@@ -186,13 +186,17 @@ namespace adh {
         Clear();
     }
 
-    // TODO: tick, multithread
     void PhysicsWorld::StepSimulation(float deltaTime) {
-        m_Scene[m_CurrentScene]->simulate(deltaTime);
-        m_Scene[m_CurrentScene]->fetchResults(true);
+        float dt = 1 / 120.0;
+        while (deltaTime > 0.0f) {
+            float d = std::min(deltaTime, dt);
+            m_Scene[m_CurrentScene]->simulate(d);
+            m_Scene[m_CurrentScene]->fetchResults(true);
+            deltaTime -= d;
+        }
     }
 
-    Vector3D PhysicsWorld::GetGravity() noexcept {
+    Vector3D& PhysicsWorld::GetGravity() noexcept {
         return m_Gravity;
     }
 
@@ -201,12 +205,12 @@ namespace adh {
         m_Scene[m_CurrentScene]->setGravity(physx::PxVec3{ gravity.x, gravity.y, gravity.z });
     }
 
-    void* PhysicsWorld::Raycast(const Vector3D& from, const Vector3D& direction, float distance) {
+    std::uint64_t PhysicsWorld::Raycast(const Vector3D& from, const Vector3D& direction, float distance) {
         PxRaycastBuffer hit;
         if (m_Scene[m_CurrentScene]->raycast(PxVec3{ from.x, from.y, from.z }, PxVec3{ direction.x, direction.y, direction.z }, distance, hit)) {
-            return hit.block.actor->userData;
+            return static_cast<RigidBody*>(hit.block.actor->userData)->entity;
         } else {
-            return nullptr;
+            return {};
         }
     }
 
