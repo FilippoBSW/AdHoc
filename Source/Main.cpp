@@ -299,24 +299,24 @@ struct ShadowMap2D {
     Debug debug;
 };
 
-enum class CollisionStatus {
-    eEnter,
-    eExit,
-    eColliding
-};
+// enum class CollisionStatus {
+//     eEnter,
+//     eExit,
+//     eColliding
+// };
 
-struct TempTest {
-    CollisionStatus status;
-    CollisionEvent event;
-};
+// struct TempTest {
+//     CollisionStatus status;
+//     CollisionEvent event;
+// };
 
-struct pairhash {
-  public:
-    template <typename T, typename U>
-    std::size_t operator()(const std::pair<T, U>& x) const {
-        return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
-    }
-};
+// struct pairhash {
+//   public:
+//     template <typename T, typename U>
+//     std::size_t operator()(const std::pair<T, U>& x) const {
+//         return std::hash<T>()(x.first) ^ std::hash<U>()(x.second);
+//     }
+// };
 
 class AdHoc {
   public:
@@ -372,7 +372,7 @@ class AdHoc {
 
     ShadowMap2D shadowMap;
 
-    std::unordered_map<std::pair<std::uint64_t, std::uint64_t>, TempTest, pairhash> collisionHash;
+    // std::unordered_map<std::pair<std::uint64_t, std::uint64_t>, TempTest, pairhash> collisionHash;
 
   public:
     ~AdHoc() {
@@ -388,9 +388,6 @@ class AdHoc {
     }
 
     void OnCollisionEvent(CollisionEvent* event) {
-        auto ref = collisionHash.emplace(std::make_pair(event->entityA, event->entityB), TempTest{ CollisionStatus::eEnter, *event });
-        CollisionStatus nextCollisionStatus{};
-
         if (g_IsPlaying && g_AreScriptsReady) {
             scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
                 bool call{};
@@ -407,34 +404,43 @@ class AdHoc {
 
                 if (call) {
                     script.Bind();
-                    if (event->type == CollisionEvent::Type::eCollision) {
-                        if (ref.first->second.status == CollisionStatus::eEnter) {
+                    switch (event->type) {
+                    case CollisionEvent::Type::eCollisionEnter:
+                        {
                             script.Call("OnCollisionEnter", rhs);
-                            nextCollisionStatus = CollisionStatus::eColliding;
-                        } else if (ref.first->second.status == CollisionStatus::eColliding) {
-                            script.Call("OnCollision", rhs);
-                        } else if (ref.first->second.status == CollisionStatus::eExit) {
-                            script.Call("OnCollision", rhs);
-                            nextCollisionStatus = CollisionStatus::eColliding;
+                            break;
                         }
-                    } else if (event->type == CollisionEvent::Type::eTrigger) {
-                        if (ref.first->second.status == CollisionStatus::eEnter) {
+                    case CollisionEvent::Type::eCollisionPersist:
+                        {
+                            script.Call("OnCollisionPersist", rhs);
+                            break;
+                        }
+                    case CollisionEvent::Type::eCollisionExit:
+                        {
+                            script.Call("OnCollisionExit", rhs);
+                            break;
+                        }
+                    case CollisionEvent::Type::eTriggerEnter:
+                        {
                             script.Call("OnTriggerEnter", rhs);
-                            nextCollisionStatus = CollisionStatus::eColliding;
-
-                        } else if (ref.first->second.status == CollisionStatus::eColliding) {
-                            script.Call("OnTrigger", rhs);
-                        } else if (ref.first->second.status == CollisionStatus::eExit) {
-                            script.Call("OnTrigger", rhs);
-                            nextCollisionStatus = CollisionStatus::eColliding;
+                            break;
+                        }
+                    case CollisionEvent::Type::eTriggerPersist:
+                        {
+                            script.Call("OnTriggerPersist", rhs);
+                            break;
+                        }
+                    case CollisionEvent::Type::eTriggerExit:
+                        {
+                            script.Call("OnTriggerExit", rhs);
+                            break;
                         }
                     }
                     script.Unbind();
                 }
             });
         }
-        ref.first->second.status = nextCollisionStatus;
-        event->isHandled         = true;
+        event->isHandled = true;
     }
 
     void OnStatusEvent(StatusEvent* event) {
@@ -459,7 +465,7 @@ class AdHoc {
                     g_IsPlaying       = false;
                     g_IsPaused        = false;
 
-                    collisionHash.clear();
+                    // collisionHash.clear();
 
                     g_MaximizeOnPlay = maximizeOnPlay2;
                 }
@@ -573,7 +579,7 @@ class AdHoc {
                 RecreateEditor();
             }
 
-            UpdateCollisionEvents();
+            // UpdateCollisionEvents();
         }
     }
 
@@ -645,41 +651,41 @@ class AdHoc {
     }
 
     void UpdateCollisionEvents() {
-        // TODO: Same tick as physics
-        for (auto i = collisionHash.begin(); i != collisionHash.end();) {
-            if (i->second.status == CollisionStatus::eColliding || i->second.status == CollisionStatus::eEnter) {
-                i->second.status = CollisionStatus::eExit;
-                ++i;
-            } else if (i->second.status == CollisionStatus::eExit) {
-                if (g_IsPlaying && g_AreScriptsReady) {
-                    scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
-                        bool call{};
-                        EntityID rhs{};
-                        EntityID e = static_cast<EntityID>(ent);
+        // // TODO: Same tick as physics
+        // for (auto i = collisionHash.begin(); i != collisionHash.end();) {
+        //     if (i->second.status == CollisionStatus::eColliding || i->second.status == CollisionStatus::eEnter) {
+        //         i->second.status = CollisionStatus::eExit;
+        //         ++i;
+        //     } else if (i->second.status == CollisionStatus::eExit) {
+        //         if (g_IsPlaying && g_AreScriptsReady) {
+        //             scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
+        //                 bool call{};
+        //                 EntityID rhs{};
+        //                 EntityID e = static_cast<EntityID>(ent);
 
-                        if (e == i->second.event.entityA) {
-                            rhs  = i->second.event.entityB;
-                            call = true;
-                        } else if (e == i->second.event.entityB) {
-                            rhs  = i->second.event.entityA;
-                            call = true;
-                        }
+        //                 if (e == i->second.event.entityA) {
+        //                     rhs  = i->second.event.entityB;
+        //                     call = true;
+        //                 } else if (e == i->second.event.entityB) {
+        //                     rhs  = i->second.event.entityA;
+        //                     call = true;
+        //                 }
 
-                        if (call) {
-                            script.Bind();
-                            if (i->second.event.type == adh::CollisionEvent::Type::eCollision) {
-                                script.Call("OnCollisionExit", rhs);
-                            } else if (i->second.event.type == adh::CollisionEvent::Type::eTrigger) {
-                                script.Call("OnTriggerExit", rhs);
-                            }
-                            script.Unbind();
-                        }
-                    });
-                }
+        //                 if (call) {
+        //                     script.Bind();
+        //                     if (i->second.event.type == adh::CollisionEvent::Type::eCollision) {
+        //                         script.Call("OnCollisionExit", rhs);
+        //                     } else if (i->second.event.type == adh::CollisionEvent::Type::eTrigger) {
+        //                         script.Call("OnTriggerExit", rhs);
+        //                     }
+        //                     script.Unbind();
+        //                 }
+        //             });
+        //         }
 
-                collisionHash.erase(i++);
-            }
-        }
+        //         collisionHash.erase(i++);
+        //     }
+        // }
     }
 
     void Draw() {

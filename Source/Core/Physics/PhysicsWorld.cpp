@@ -27,9 +27,40 @@
 
 #include <Event/Event.hpp>
 
+#include <Scene/Components/RigidBody.hpp>
+
 #include <thread>
 
 using namespace physx;
+
+// see https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxguide/Manual/RigidBodyCollision.html#broad-phase-callback
+PxFilterFlags FilterShader(physx::PxFilterObjectAttributes attributes0,
+                           physx::PxFilterData filterData0,
+                           physx::PxFilterObjectAttributes attributes1,
+                           physx::PxFilterData filterData1,
+                           physx::PxPairFlags& pairFlags,
+                           const void* constantBlock,
+                           physx::PxU32 constantBlockSize) {
+    // let triggers through
+    if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1)) {
+        pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+        return PxFilterFlag::eDEFAULT;
+    }
+
+    // generate contacts for all that were not filtered above
+    pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+
+    // trigger the contact callback for pairs (A,B) where
+    // the filtermask of A contains the ID of B and vice versa.
+    if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1)) {
+        pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND |
+                     PxPairFlag::eNOTIFY_TOUCH_PERSISTS |
+                     PxPairFlag::eNOTIFY_TOUCH_LOST |
+                     PxPairFlag::eNOTIFY_CONTACT_POINTS;
+    }
+
+    return PxFilterFlag::eDEFAULT;
+}
 
 namespace adh {
     PhysicsWorld::PhysicsWorld(PhysicsWorld&& rhs) {
@@ -61,9 +92,10 @@ namespace adh {
         m_Cooking->setParams(params);
 
         physx::PxSceneDesc sceneDesc(m_Physics->getTolerancesScale());
-        sceneDesc.gravity       = PxVec3(m_Gravity.x, m_Gravity.y, m_Gravity.z);
-        sceneDesc.cpuDispatcher = m_Dispatcher;
-        sceneDesc.filterShader  = PxDefaultSimulationFilterShader;
+        sceneDesc.gravity                 = PxVec3(m_Gravity.x, m_Gravity.y, m_Gravity.z);
+        sceneDesc.cpuDispatcher           = m_Dispatcher;
+        sceneDesc.filterShader            = FilterShader;
+        sceneDesc.simulationEventCallback = this;
         m_Scene.EmplaceBack(m_Physics->createScene(sceneDesc));
         SetGravity(m_Gravity);
 
@@ -142,10 +174,11 @@ namespace adh {
     void PhysicsWorld::ResetScene() {
         m_Scene[m_CurrentScene]->release();
         physx::PxSceneDesc sceneDesc(m_Physics->getTolerancesScale());
-        sceneDesc.gravity       = PxVec3(m_Gravity.x, m_Gravity.y, m_Gravity.z);
-        sceneDesc.cpuDispatcher = m_Dispatcher;
-        sceneDesc.filterShader  = PxDefaultSimulationFilterShader;
-        m_Scene[m_CurrentScene] = m_Physics->createScene(sceneDesc);
+        sceneDesc.gravity                 = PxVec3(m_Gravity.x, m_Gravity.y, m_Gravity.z);
+        sceneDesc.cpuDispatcher           = m_Dispatcher;
+        sceneDesc.filterShader            = FilterShader;
+        sceneDesc.simulationEventCallback = this;
+        m_Scene[m_CurrentScene]           = m_Physics->createScene(sceneDesc);
         SetGravity(m_Gravity);
     }
 
@@ -187,10 +220,45 @@ namespace adh {
     }
 
     void PhysicsWorld::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) {
-        std::cout << " Contaxt!" << std::endl;
+        for (PxU32 i = 0; i < nbPairs; ++i) {
+            const PxContactPair& contactpair = pairs[i];
+
+            if (pairHeader.actors[0]->userData == nullptr || pairHeader.actors[1]->userData == nullptr) {
+                continue;
+            }
+
+            auto a = static_cast<RigidBody*>(pairHeader.actors[0]->userData);
+            auto b = static_cast<RigidBody*>(pairHeader.actors[1]->userData);
+
+            if (contactpair.events & PxPairFlag::eNOTIFY_TOUCH_FOUND) {
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionEnter, a->entity, b->entity);
+            } else if (contactpair.events & PxPairFlag::eNOTIFY_TOUCH_LOST) {
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionEnter, a->entity, b->entity);
+            } else if (contactpair.events & PxPairFlag::eNOTIFY_TOUCH_PERSISTS) {
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionEnter, a->entity, b->entity);
+            }
+        }
     }
 
     void PhysicsWorld::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) {
+        for (PxU32 i = 0; i < count; ++i) {
+            const PxTriggerPair& triggerPair = pairs[i];
+
+            if (triggerPair.triggerActor->userData == nullptr || triggerPair.otherActor->userData == nullptr) {
+                continue;
+            }
+
+            auto a = static_cast<RigidBody*>(triggerPair.otherActor->userData);
+            auto b = static_cast<RigidBody*>(triggerPair.triggerActor->userData);
+
+            if (triggerPair.status & PxPairFlag::eNOTIFY_TOUCH_FOUND) {
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerEnter, a->entity, b->entity);
+            } else if (triggerPair.status & PxPairFlag::eNOTIFY_TOUCH_LOST) {
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerEnter, a->entity, b->entity);
+            } else if (triggerPair.status & PxPairFlag::eNOTIFY_TOUCH_PERSISTS) {
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerEnter, a->entity, b->entity);
+            }
+        }
     }
 
     void PhysicsWorld::onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) {

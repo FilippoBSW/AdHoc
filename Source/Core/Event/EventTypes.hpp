@@ -167,8 +167,12 @@ namespace adh {
 
     struct CollisionEvent : BaseEvent {
         enum class Type {
-            eCollision,
-            eTrigger
+            eCollisionEnter,
+            eCollisionPersist,
+            eCollisionExit,
+            eTriggerEnter,
+            eTriggerPersist,
+            eTriggerExit
         };
         CollisionEvent(Type type, std::uint64_t lhs, std::uint64_t rhs)
             : type{ type },

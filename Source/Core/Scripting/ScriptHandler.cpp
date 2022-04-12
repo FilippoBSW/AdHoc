@@ -428,18 +428,14 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("AddAngularVelocity", &RigidBody::AddAngularVelocity);
         state.RegisterTypeFunction<RigidBody>("GetIsTrigger", &RigidBody::GetIsTrigger);
         state.RegisterTypeFunction<RigidBody>("SetTrigger", &RigidBody::SetTrigger);
-
         state.RegisterTypeFunction<RigidBody>("SetTranslation", &RigidBody::SetTranslation);
         state.RegisterTypeFunction<RigidBody>("GetTranslation", &RigidBody::GetTranslation);
         state.RegisterTypeVariable<RigidBody>("translate", &RigidBody::translate);
-
         state.RegisterTypeFunction<RigidBody>("SetRotation", &RigidBody::SetRotation);
         state.RegisterTypeFunction<RigidBody>("AddRotation", &RigidBody::AddRotation);
         state.RegisterTypeFunction<RigidBody>("GetRotation", &RigidBody::GetRotation);
         state.RegisterTypeVariable<RigidBody>("rotation", &RigidBody::rotation);
-
         state.RegisterTypeFunction<RigidBody>("ClearForces", &RigidBody::ClearForces);
-
         state.RegisterTypeFunction<RigidBody>("AddForce", &RigidBody::AddForce);
         state.RegisterTypeFunction<RigidBody>("AddTorque", &RigidBody::AddTorque);
     }

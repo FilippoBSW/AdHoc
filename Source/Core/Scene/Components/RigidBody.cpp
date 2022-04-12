@@ -125,6 +125,10 @@ namespace adh {
             }
         }
         SetTrigger(isTrigger);
+        physx::PxFilterData filter;
+        filter.word0 = 1;
+        filter.word1 = 1;
+        shape->setSimulationFilterData(filter);
 
         actor->userData = this;
     }
@@ -261,13 +265,15 @@ namespace adh {
     }
 
     void RigidBody::ClearForces() noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eFORCE);
-        static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eIMPULSE);
-        static_cast<physx::PxRigidDynamic*>(actor)->clearTorque();
-        static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{});
-        static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{});
-        velocity        = {};
-        angularVelocity = {};
+        if (!isKinematic) {
+            static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eFORCE);
+            static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eIMPULSE);
+            static_cast<physx::PxRigidDynamic*>(actor)->clearTorque();
+            static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{});
+            static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{});
+            velocity        = {};
+            angularVelocity = {};
+        }
     }
 
     void RigidBody::Destroy() noexcept {
