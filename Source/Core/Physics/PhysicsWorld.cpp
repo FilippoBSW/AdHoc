@@ -33,7 +33,6 @@
 
 using namespace physx;
 
-// see https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxguide/Manual/RigidBodyCollision.html#broad-phase-callback
 PxFilterFlags FilterShader(physx::PxFilterObjectAttributes attributes0,
                            physx::PxFilterData filterData0,
                            physx::PxFilterObjectAttributes attributes1,
@@ -41,17 +40,14 @@ PxFilterFlags FilterShader(physx::PxFilterObjectAttributes attributes0,
                            physx::PxPairFlags& pairFlags,
                            const void* constantBlock,
                            physx::PxU32 constantBlockSize) {
-    // let triggers through
+
     if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1)) {
         pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
         return PxFilterFlag::eDEFAULT;
     }
 
-    // generate contacts for all that were not filtered above
     pairFlags = PxPairFlag::eCONTACT_DEFAULT;
 
-    // trigger the contact callback for pairs (A,B) where
-    // the filtermask of A contains the ID of B and vice versa.
     if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1)) {
         pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND |
                      PxPairFlag::eNOTIFY_TOUCH_PERSISTS |
@@ -102,23 +98,23 @@ namespace adh {
         s_This = this;
     }
 
-    physx::PxMaterial* PhysicsWorld::CreateMaterial(float staticFriction, float dynamicFriction, float restitution) {
+    [[nodiscard]] physx::PxMaterial* PhysicsWorld::CreateMaterial(float staticFriction, float dynamicFriction, float restitution) {
         return m_Physics->createMaterial(staticFriction, dynamicFriction, restitution);
     }
 
-    physx::PxShape* PhysicsWorld::CreateBoxShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const physx::PxVec3& scale) {
+    [[nodiscard]] physx::PxShape* PhysicsWorld::CreateBoxShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const physx::PxVec3& scale) {
         return physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxBoxGeometry(scale.x, scale.y, scale.z), &material, 1);
     }
 
-    physx::PxShape* PhysicsWorld::CreateSphereShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius) {
+    [[nodiscard]] physx::PxShape* PhysicsWorld::CreateSphereShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius) {
         return physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxSphereGeometry(radius), &material, 1);
     }
 
-    physx::PxShape* PhysicsWorld::CreateCapsuleShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius, float halfHeight) {
+    [[nodiscard]] physx::PxShape* PhysicsWorld::CreateCapsuleShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius, float halfHeight) {
         return physx::PxRigidActorExt::createExclusiveShape(*actor, physx::PxCapsuleGeometry(radius, halfHeight), &material, 1);
     }
 
-    physx::PxShape* PhysicsWorld::CreateMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
+    [[nodiscard]] physx::PxShape* PhysicsWorld::CreateMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
         PxTriangleMeshDesc meshDesc;
         meshDesc.setToDefault();
         meshDesc.points.data      = mesh.vertex.GetData();
@@ -137,7 +133,7 @@ namespace adh {
         return shape;
     }
 
-    physx::PxShape* PhysicsWorld::CreateConvexMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
+    [[nodiscard]] physx::PxShape* PhysicsWorld::CreateConvexMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
         PxBoundedData pointdata{};
         pointdata.count  = static_cast<physx::PxU32>(mesh.vertex.GetSize());
         pointdata.stride = sizeof(PxVec3);
@@ -155,13 +151,13 @@ namespace adh {
         return shape;
     }
 
-    physx::PxRigidDynamic* PhysicsWorld::CreateDynamicActor() {
+    [[nodiscard]] physx::PxRigidDynamic* PhysicsWorld::CreateDynamicActor() {
         physx::PxRigidDynamic* actor = m_Physics->createRigidDynamic(physx::PxTransform{ physx::PxVec3{} });
         m_Scene[m_CurrentScene]->addActor(*actor);
         return actor;
     }
 
-    physx::PxRigidStatic* PhysicsWorld::CreateStaticActor() {
+    [[nodiscard]] physx::PxRigidStatic* PhysicsWorld::CreateStaticActor() {
         physx::PxRigidStatic* actor = m_Physics->createRigidStatic(physx::PxTransform{ physx::PxVec3{} });
         m_Scene[m_CurrentScene]->addActor(*actor);
         return actor;

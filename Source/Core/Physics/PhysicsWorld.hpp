@@ -56,21 +56,21 @@ namespace adh {
 
         void Create();
 
-        physx::PxMaterial* CreateMaterial(float staticFriction, float dynamicFriction, float restitution);
+        [[nodiscard]] physx::PxMaterial* CreateMaterial(float staticFriction, float dynamicFriction, float restitution);
 
-        physx::PxShape* CreateBoxShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const physx::PxVec3& scale);
+        [[nodiscard]] physx::PxShape* CreateBoxShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const physx::PxVec3& scale);
 
-        physx::PxShape* CreateSphereShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius);
+        [[nodiscard]] physx::PxShape* CreateSphereShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius);
 
-        physx::PxShape* CreateCapsuleShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius, float halfHeight);
+        [[nodiscard]] physx::PxShape* CreateCapsuleShape(physx::PxRigidActor* actor, physx::PxMaterial* material, float radius, float halfHeight);
 
-        physx::PxShape* CreateMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh);
+        [[nodiscard]] physx::PxShape* CreateMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh);
 
-        physx::PxShape* CreateConvexMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh);
+        [[nodiscard]] physx::PxShape* CreateConvexMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh);
 
-        physx::PxRigidDynamic* CreateDynamicActor();
+        [[nodiscard]] physx::PxRigidDynamic* CreateDynamicActor();
 
-        physx::PxRigidStatic* CreateStaticActor();
+        [[nodiscard]] physx::PxRigidStatic* CreateStaticActor();
 
         physx::PxScene* GetScene() noexcept;
 
