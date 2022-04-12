@@ -294,13 +294,17 @@ namespace adh {
 
         DrawComponent<RigidBody>(
             "RigidBody", entity, [](auto& component) {
-                ImGui::DragFloat("Mass", &component.mass, 0.001f, 0.0f, 1'000.0f);
-                ImGui::DragFloat("Static Friction", &component.staticFriction, 0.001f, 0.0f, 1.0f);
-                ImGui::DragFloat("Dynamic Friction", &component.dynamicFriction, 0.001f, 0.0f, 1.0f);
-                ImGui::DragFloat("Restitution", &component.restitution, 0.001f, 0.0f, 1.0f);
+                if (component.bodyType == PhysicsBodyType::eDynamic) {
+                    ImGui::DragFloat("Mass", &component.mass, 0.001f, 0.0f, 1'000.0f);
+                    ImGui::DragFloat("Static Friction", &component.staticFriction, 0.001f, 0.0f, 1.0f);
+                    ImGui::DragFloat("Dynamic Friction", &component.dynamicFriction, 0.001f, 0.0f, 1.0f);
+                    ImGui::DragFloat("Restitution", &component.restitution, 0.001f, 0.0f, 1.0f);
+                }
 
                 if (component.colliderShape == PhysicsColliderShape::eBox) {
                     DrawTransform("Scale", component.scale);
+                    if (ImGui::Checkbox("Scale is same as model", &component.scaleSameAsModel)) {
+                    }
                 } else if (component.colliderShape == PhysicsColliderShape::eSphere) {
                     ImGui::DragFloat("Radius", &component.radius, 0.001f, 0.0f, 1'000.0f);
                 } else if (component.colliderShape == PhysicsColliderShape::eCapsule) {
@@ -532,6 +536,7 @@ namespace adh {
                                          1.0f,
                                          false,
                                          false,
+                                         true,
                                          colliderShape,
                                          PhysicsColliderType::eCollider,
                                          transform.scale,
@@ -547,6 +552,7 @@ namespace adh {
                                          1.0f,
                                          false,
                                          false,
+                                         true,
                                          colliderShape,
                                          PhysicsColliderType::eCollider,
                                          transform.scale,

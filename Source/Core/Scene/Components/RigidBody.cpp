@@ -54,13 +54,15 @@ namespace adh {
                            float mass,
                            bool isKinematic,
                            bool isTrigger,
+                           bool scaleSameAsModel,
                            PhysicsColliderShape colliderShape,
                            PhysicsColliderType colliderType,
                            const Vector3D& scale,
                            float radius,
                            float halfHeight,
                            const Mesh* const mesh) {
-        this->entity = entity;
+        this->entity           = entity;
+        this->scaleSameAsModel = scaleSameAsModel;
 
         // Material
         this->staticFriction  = staticFriction;

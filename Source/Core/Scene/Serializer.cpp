@@ -106,6 +106,7 @@ namespace adh {
                     out << YAML::Key << "dynamic friction" << YAML::Value << rigidbody.dynamicFriction;
                     out << YAML::Key << "is trigger" << YAML::Value << rigidbody.isTrigger;
                     out << YAML::Key << "is kinematic" << YAML::Value << rigidbody.isKinematic;
+                    out << YAML::Key << "scale is same as model" << YAML::Value << rigidbody.scaleSameAsModel;
                     out << YAML::Key << "collider type" << YAML::Value << (uint64_t)rigidbody.colliderType;
                     out << YAML::Key << "collider shape" << YAML::Value << (uint64_t)rigidbody.colliderShape;
                     out << YAML::Key << "body type" << YAML::Value << (uint64_t)rigidbody.bodyType;
@@ -242,6 +243,7 @@ namespace adh {
                              rigidbody["mass"].as<float>(),
                              rigidbody["is kinematic"].as<bool>(),
                              rigidbody["is trigger"].as<bool>(),
+                             rigidbody["scale is same as model"].as<bool>(),
                              PhysicsColliderShape(rigidbody["collider shape"].as<int>()),
                              PhysicsColliderType(rigidbody["collider type"].as<int>()),
                              rigidbody["scale"].as<Vector3D>(),

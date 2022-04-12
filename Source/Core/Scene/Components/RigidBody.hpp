@@ -74,6 +74,7 @@ namespace adh {
                     float mass,
                     bool isKinematic,
                     bool isTrigger,
+                    bool scaleIsSameAsModel,
                     PhysicsColliderShape colliderShape,
                     PhysicsColliderType colliderType,
                     const Vector3D& scale,
@@ -151,6 +152,7 @@ namespace adh {
         PhysicsColliderShape colliderShape;
         PhysicsColliderType colliderType;
         physx::PxShape* shape;
+        bool scaleSameAsModel{ true };
         Vector3D scale;
         float radius;
         float halfHeight;

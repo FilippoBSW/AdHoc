@@ -64,6 +64,7 @@ namespace adh {
                 rigidBody.ClearForces();
                 physx::PxRigidBodyExt::updateMassAndInertia(*static_cast<physx::PxRigidDynamic*>(rigidBody.actor), rigidBody.mass);
                 static_cast<physx::PxRigidDynamic*>(rigidBody.actor)->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, rigidBody.isKinematic);
+                rigidBody.SetKinematic(rigidBody.isKinematic);
             }
 
             rigidBody.material->setStaticFriction(rigidBody.staticFriction);
@@ -71,15 +72,17 @@ namespace adh {
             rigidBody.material->setRestitution(rigidBody.restitution);
 
             if (rigidBody.colliderShape == PhysicsColliderShape::eBox) {
-                // rigidBody.SetGeometry(physx::PxBoxGeometry{ rigidBody.scale.x, rigidBody.scale.y, rigidBody.scale.z });
-                rigidBody.SetGeometry(physx::PxBoxGeometry{ transform.scale.x, transform.scale.y, transform.scale.z });
+                if (rigidBody.scaleSameAsModel) {
+                    rigidBody.SetGeometry(physx::PxBoxGeometry{ transform.scale.x, transform.scale.y, transform.scale.z });
+                } else {
+                    rigidBody.SetGeometry(physx::PxBoxGeometry{ rigidBody.scale.x, rigidBody.scale.y, rigidBody.scale.z });
+                }
             } else if (rigidBody.colliderShape == PhysicsColliderShape::eSphere) {
                 rigidBody.SetGeometry(physx::PxSphereGeometry{ rigidBody.radius });
             } else if (rigidBody.colliderShape == PhysicsColliderShape::eCapsule) {
                 rigidBody.SetGeometry(physx::PxCapsuleGeometry{ rigidBody.radius, rigidBody.halfHeight });
             }
             rigidBody.SetTrigger(rigidBody.isTrigger);
-            rigidBody.SetKinematic(rigidBody.isKinematic);
 
             physx::PxTransform t;
             t.p = physx::PxVec3{ transform.translate.x, transform.translate.y, transform.translate.z };
