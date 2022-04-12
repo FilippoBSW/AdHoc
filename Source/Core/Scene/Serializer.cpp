@@ -176,8 +176,9 @@ namespace adh {
         auto scene       = node["Scene"];
         m_Scene->m_Tag   = scene.as<std::string>();
         m_Scene->m_World.Reset();
-        m_Scene->GetPhysics().Destroy();
-        m_Scene->GetPhysics().Create();
+        // m_Scene->GetPhysics().Destroy();
+        // m_Scene->GetPhysics().Create();
+        m_Scene->GetPhysics().ResetScene();
         m_Scene->m_State     = lua::NewState();
         ScriptHandler::scene = m_Scene;
         ScriptHandler::RegisterBindings();
@@ -234,7 +235,6 @@ namespace adh {
                         p = &m;
                     }
                     r.Create(static_cast<std::uint64_t>(e),
-                             m_Scene->GetPhysics().GetScene(),
                              rigidbody["static friction"].as<float>(),
                              rigidbody["dynamic friction"].as<float>(),
                              rigidbody["restitution"].as<float>(),

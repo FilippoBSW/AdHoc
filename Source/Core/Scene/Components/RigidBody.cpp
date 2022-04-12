@@ -47,7 +47,6 @@ namespace adh {
     }
 
     void RigidBody::Create(std::uint64_t entity,
-                           physx::PxScene* scene,
                            float staticFriction,
                            float dynamicFriction,
                            float restitution,
@@ -62,7 +61,6 @@ namespace adh {
                            float halfHeight,
                            const Mesh* const mesh) {
         this->entity = entity;
-        this->scene  = scene;
 
         // Material
         this->staticFriction  = staticFriction;
@@ -127,8 +125,6 @@ namespace adh {
         SetTrigger(isTrigger);
 
         actor->userData = this;
-        actor->attachShape(*shape);
-        // scene->addActor(*actor);
     }
 
     void RigidBody::OnUpdate(Transform& transform) noexcept {
@@ -291,13 +287,10 @@ namespace adh {
             material->release();
             material = nullptr;
         }
-        if (shape) {
-            shape->release();
-            shape = nullptr;
-        }
         if (actor) {
-            scene->removeActor(*actor);
-            actor->release();
+            actor->getScene()->removeActor(*actor);
+            actor->release(); // NOTE: also releases shape
+            shape = nullptr;
             actor = nullptr;
         }
     }

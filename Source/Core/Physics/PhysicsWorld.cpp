@@ -124,13 +124,13 @@ namespace adh {
     }
 
     physx::PxRigidDynamic* PhysicsWorld::CreateDynamicActor() {
-        physx::PxRigidDynamic* actor = m_Physics->createRigidDynamic(physx::PxTransform{});
+        physx::PxRigidDynamic* actor = m_Physics->createRigidDynamic(physx::PxTransform{ physx::PxVec3{} });
         m_Scene[m_CurrentScene]->addActor(*actor);
         return actor;
     }
 
     physx::PxRigidStatic* PhysicsWorld::CreateStaticActor() {
-        physx::PxRigidStatic* actor = m_Physics->createRigidStatic(physx::PxTransform{});
+        physx::PxRigidStatic* actor = m_Physics->createRigidStatic(physx::PxTransform{ physx::PxVec3{} });
         m_Scene[m_CurrentScene]->addActor(*actor);
         return actor;
     }
@@ -141,7 +141,6 @@ namespace adh {
 
     void PhysicsWorld::ResetScene() {
         m_Scene[m_CurrentScene]->release();
-
         physx::PxSceneDesc sceneDesc(m_Physics->getTolerancesScale());
         sceneDesc.gravity       = PxVec3(m_Gravity.x, m_Gravity.y, m_Gravity.z);
         sceneDesc.cpuDispatcher = m_Dispatcher;

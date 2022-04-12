@@ -36,7 +36,8 @@ namespace adh {
         inline static PhysicsWorld* s_This;
 
       public:
-        static PhysicsWorld* Get() {
+        static PhysicsWorld* Get() ADH_NOEXCEPT {
+            ADH_THROW(s_This != nullptr, "Physics world pointer is null!");
             return s_This;
         }
 

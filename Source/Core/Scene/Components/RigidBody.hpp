@@ -67,7 +67,6 @@ namespace adh {
         ~RigidBody();
 
         void Create(std::uint64_t entity,
-                    physx::PxScene* scene,
                     float staticFriction,
                     float dynamicFriction,
                     float restitution,
@@ -157,7 +156,6 @@ namespace adh {
         float halfHeight;
 
         std::uint64_t entity;
-        physx::PxScene* scene;
 
         bool isTrigger{ false };
 

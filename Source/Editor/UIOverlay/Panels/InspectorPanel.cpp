@@ -525,7 +525,6 @@ namespace adh {
                         currentScene->GetWorld().Contains<Mesh>(entity)) {
                         auto [mesh]{ currentScene->GetWorld().Get<Mesh>(entity) };
                         rigidBody.Create(static_cast<std::uint64_t>(entity),
-                                         currentScene->GetPhysics().GetScene(),
                                          0.5f,
                                          0.5f,
                                          1.0f,
@@ -541,7 +540,6 @@ namespace adh {
                                          &mesh);
                     } else {
                         rigidBody.Create(static_cast<std::uint64_t>(entity),
-                                         currentScene->GetPhysics().GetScene(),
                                          0.5f,
                                          0.5f,
                                          1.0f,
