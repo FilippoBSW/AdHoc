@@ -126,17 +126,17 @@ namespace adh {
 namespace adh {
     template <typename T>
     Vector<3u, T> Add(const Vector<3u, T>& lhs, const Vector<3u, T>& rhs) noexcept {
-        return Vector<3u, T>{lhs[0] + rhs[0], lhs[1] + rhs[1], lhs[2] + rhs[2]};
+        return Vector<3u, T>{ lhs[0] + rhs[0], lhs[1] + rhs[1], lhs[2] + rhs[2] };
     }
 
     template <typename T>
     Vector<3u, T> Subtract(const Vector<3u, T>& lhs, const Vector<3u, T>& rhs) noexcept {
-        return Vector<3u, T>{lhs[0] - rhs[0], lhs[1] - rhs[1], lhs[2] - rhs[2]};
+        return Vector<3u, T>{ lhs[0] - rhs[0], lhs[1] - rhs[1], lhs[2] - rhs[2] };
     }
 
     template <typename T>
     Vector<3u, T> Multiply(const Vector<3u, T>& lhs, T rhs) noexcept {
-        return Vector<3u, T>{lhs[0] * rhs, lhs[1] * rhs, lhs[2] * rhs};
+        return Vector<3u, T>{ lhs[0] * rhs, lhs[1] * rhs, lhs[2] * rhs };
     }
 
     template <typename T>
@@ -149,18 +149,19 @@ namespace adh {
         return Vector<3u, T>{
             lhs[0] * rhs[0][0] + lhs[1] * rhs[1][0] + lhs[2] * rhs[2][0],
             lhs[0] * rhs[0][1] + lhs[1] * rhs[1][1] + lhs[2] * rhs[2][1],
-            lhs[0] * rhs[0][2] + lhs[1] * rhs[1][2] + lhs[2] * rhs[2][2]};
+            lhs[0] * rhs[0][2] + lhs[1] * rhs[1][2] + lhs[2] * rhs[2][2]
+        };
     }
 
     template <typename T>
     Vector<3u, T> Multiply(const Vector<3u, T>& lhs, const Vector<3u, T>& rhs) noexcept {
-        return Vector<3u, T>{lhs[0] * rhs[0], lhs[1] * rhs[1], lhs[2] * rhs[2]};
+        return Vector<3u, T>{ lhs[0] * rhs[0], lhs[1] * rhs[1], lhs[2] * rhs[2] };
     }
 
     template <typename T>
     Vector<3u, T> Divide(const Vector<3u, T>& lhs, T rhs) noexcept {
-        auto d{(T(1) / rhs)};
-        return Vector<3u, T>{lhs[0] * d, lhs[1] * d, lhs[2] * d};
+        auto d{ (T(1) / rhs) };
+        return Vector<3u, T>{ lhs[0] * d, lhs[1] * d, lhs[2] * d };
     }
 
     template <typename T>
@@ -173,6 +174,7 @@ namespace adh {
         return Vector<3u, T>{
             lhs[1] * rhs[2] - lhs[2] * rhs[1],
             lhs[2] * rhs[0] - lhs[0] * rhs[2],
-            lhs[0] * rhs[1] - lhs[1] * rhs[0]};
+            lhs[0] * rhs[1] - lhs[1] * rhs[0]
+        };
     }
 } // namespace adh

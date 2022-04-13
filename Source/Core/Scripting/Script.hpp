@@ -63,36 +63,36 @@ namespace adh {
 
         template <typename T>
         struct GetType<T*> {
-            void* operator()(lua_State* L, std::int32_t& index) {
-                return lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
+            T* operator()(lua_State* L, std::int32_t& index) {
+                return *(T**)lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
             }
         };
 
         template <typename T>
         struct GetType<const T*> {
-            void* operator()(lua_State* L, std::int32_t& index) {
-                return lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
+            const T* operator()(lua_State* L, std::int32_t& index) {
+                return *(T**)lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
             }
         };
 
         template <typename T>
         struct GetType<const T* const> {
-            void* operator()(lua_State* L, std::int32_t& index) {
-                return lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
+            const T* const operator()(lua_State* L, std::int32_t& index) {
+                return *(T**)lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
             }
         };
 
         template <typename T>
         struct GetType<T&> {
-            void* operator()(lua_State* L, std::int32_t& index) {
-                return lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
+            T& operator()(lua_State* L, std::int32_t& index) {
+                return **(T**)lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
             }
         };
 
         template <typename T>
         struct GetType<const T&> {
-            void* operator()(lua_State* L, std::int32_t& index) {
-                return lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
+            const T& operator()(lua_State* L, std::int32_t& index) {
+                return **(T**)lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
             }
         };
 
@@ -152,50 +152,8 @@ namespace adh {
             }
         };
 
-        template <>
-        struct GetType<void*> {
-            void* operator()(lua_State* L, std::int32_t& index) {
-                return lua_touserdata(L, ADH_LUA_UPDATE_STACK_INDEX(index));
-            }
-        };
-
         template <typename T>
         struct PushValue {
-        };
-
-        template <typename T>
-        struct PushValue<T*> {
-            void operator()(lua_State* L, T* value) {
-                lua_pushlightuserdata(L, value);
-            }
-        };
-
-        template <typename T>
-        struct PushValue<const T*> {
-            void operator()(lua_State* L, const T* value) {
-                lua_pushlightuserdata(L, (T*)value);
-            }
-        };
-
-        template <typename T>
-        struct PushValue<const T* const> {
-            void operator()(lua_State* L, const T* const value) {
-                lua_pushlightuserdata(L, (T*)value);
-            }
-        };
-
-        template <typename T>
-        struct PushValue<T&> {
-            void operator()(lua_State* L, T& value) {
-                lua_pushlightuserdata(L, &value);
-            }
-        };
-
-        template <typename T>
-        struct PushValue<const T&> {
-            void operator()(lua_State* L, const T& value) {
-                lua_pushlightuserdata(L, (T*)&value);
-            }
         };
 
         template <>
@@ -356,7 +314,6 @@ namespace adh {
             static void AddMethod(const char* key, const char* retTable, R (T::*method)(Args...)) {
                 methodsMap[key] = [=](lua_State* L) {
                     std::int32_t index{ GetIndex(L) };
-                    // R(*declassedFp) (T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
 
                     T** p = static_cast<T**>(lua_touserdata(L, 1));
                     ADH_THROW(p != nullptr, "Class ptr is null!");
@@ -376,6 +333,12 @@ namespace adh {
                             *ptr       = &retVal;
                             luaL_getmetatable(L, retTable);
                             lua_setmetatable(L, -2);
+                        } else if constexpr (std::is_class<R>::value) {
+                            auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
+                            R* p       = new R{ retVal };
+                            *ptr       = p;
+                            luaL_getmetatable(L, retTable);
+                            lua_setmetatable(L, -2);
                         } else {
                             PushValue<R>()(L, retVal);
                         }
@@ -389,7 +352,6 @@ namespace adh {
             static void AddMethod(const char* key, const char* retTable, R (T::*method)(Args...) const) {
                 methodsMap[key] = [=](lua_State* L) {
                     std::int32_t index{ GetIndex(L) };
-                    // R(*declassedFp)(T*, Args...) = (R(*)(T*, Args...))VoidCast(method);
 
                     T** p = static_cast<T**>(lua_touserdata(L, 1));
                     ADH_THROW(p != nullptr, "Class ptr is null!");
@@ -407,6 +369,12 @@ namespace adh {
                         if constexpr (std::is_pointer<R>::value || std::is_reference<R>::value) {
                             auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
                             *ptr       = &retVal;
+                            luaL_getmetatable(L, retTable);
+                            lua_setmetatable(L, -2);
+                        } else if constexpr (std::is_class<R>::value) {
+                            auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
+                            R* p       = new R{ retVal };
+                            *ptr       = p;
                             luaL_getmetatable(L, retTable);
                             lua_setmetatable(L, -2);
                         } else {
@@ -663,7 +631,6 @@ namespace adh {
           private:
             Script CreateScript(const std::string& script, std::uint64_t id) {
                 auto uniqueScript{ CreateUniqueScript(script, id) };
-
                 luaL_loadfile(m_State, script.data());
                 lua_newtable(m_State);
                 lua_newtable(m_State);
@@ -674,7 +641,6 @@ namespace adh {
                 lua_getfield(m_State, LUA_REGISTRYINDEX, uniqueScript.data());
                 lua_setupvalue(m_State, 1, 1);
                 lua_setglobal(m_State, uniqueScript.data());
-
                 return Script(Move(uniqueScript), m_State, script);
             }
 
