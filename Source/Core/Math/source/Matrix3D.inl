@@ -38,7 +38,7 @@ namespace adh {
 
     template <typename T>
     template <typename... Args, typename>
-    Matrix<3u, 3u, T>::Matrix(Args&&... args) noexcept : m{std::forward<Args>(args)...} {
+    Matrix<3u, 3u, T>::Matrix(Args&&... args) noexcept : m{ std::forward<Args>(args)... } {
     }
 
     template <typename T>
@@ -63,7 +63,7 @@ namespace adh {
 
     template <typename T>
     void Matrix<3u, 3u, T>::Identity() noexcept {
-        *this = Matrix<3u, 3u, T>{T(1)};
+        *this = Matrix<3u, 3u, T>{ T(1) };
     }
 
     template <typename T>
@@ -105,7 +105,8 @@ namespace adh {
         return Matrix<3u, 3u, T>{
             lhs[0][0] + rhs[0][0], lhs[0][1] + rhs[0][1], lhs[0][2] + rhs[0][2],
             lhs[1][0] + rhs[1][0], lhs[1][1] + rhs[1][1], lhs[1][2] + rhs[1][2],
-            lhs[2][0] + rhs[2][0], lhs[2][1] + rhs[2][1], lhs[2][2] + rhs[2][2]};
+            lhs[2][0] + rhs[2][0], lhs[2][1] + rhs[2][1], lhs[2][2] + rhs[2][2]
+        };
     }
 
     template <typename T>
@@ -113,7 +114,8 @@ namespace adh {
         return Matrix<3u, 3u, T>{
             lhs[0][0] - rhs[0][0], lhs[0][1] - rhs[0][1], lhs[0][2] - rhs[0][2],
             lhs[1][0] - rhs[1][0], lhs[1][1] - rhs[1][1], lhs[1][2] - rhs[1][2],
-            lhs[2][0] - rhs[2][0], lhs[2][1] - rhs[2][1], lhs[2][2] - rhs[2][2]};
+            lhs[2][0] - rhs[2][0], lhs[2][1] - rhs[2][1], lhs[2][2] - rhs[2][2]
+        };
     }
 
     template <typename T>
@@ -129,7 +131,8 @@ namespace adh {
 
             rhs[2][0] * lhs[0][0] + rhs[2][1] * lhs[1][0] + rhs[2][2] * lhs[2][0],
             rhs[2][0] * lhs[0][1] + rhs[2][1] * lhs[1][1] + rhs[2][2] * lhs[2][1],
-            rhs[2][0] * lhs[0][2] + rhs[2][1] * lhs[1][2] + rhs[2][2] * lhs[2][2]};
+            rhs[2][0] * lhs[0][2] + rhs[2][1] * lhs[1][2] + rhs[2][2] * lhs[2][2]
+        };
     }
 
     template <typename T>
@@ -137,7 +140,8 @@ namespace adh {
         return Matrix<3u, 3u, T>{
             lhs[0][0] * rhs, lhs[0][1] * rhs, lhs[0][2] * rhs,
             lhs[1][0] * rhs, lhs[1][1] * rhs, lhs[1][2] * rhs,
-            lhs[2][0] * rhs, lhs[2][1] * rhs, lhs[2][2] * rhs};
+            lhs[2][0] * rhs, lhs[2][1] * rhs, lhs[2][2] * rhs
+        };
     }
 
     template <typename T>
@@ -147,27 +151,27 @@ namespace adh {
 
     template <typename T>
     auto Rotate(const Matrix<3u, 3u, T>& mat, T angle, const Vector<3u, T>& axis) noexcept {
-        Quaternion q{angle, axis};
+        Quaternion q{ angle, axis };
         return mat * q.GetMatrix3D();
     }
 
     template <typename T>
     auto Rotate(const Matrix<3u, 3u, T>& mat, const Vector<3u, T>& angle) noexcept {
-        Quaternion q{angle};
+        Quaternion q{ angle };
         return mat * q.GetMatrix3D();
     }
 
     template <typename T>
     auto Inverse(const Matrix<3u, 3u, T>& mat) noexcept {
-        const Vector<3u, T>& a{mat[0]};
-        const Vector<3u, T>& b{mat[1]};
-        const Vector<3u, T>& c{mat[2]};
+        const Vector<3u, T>& a{ mat[0] };
+        const Vector<3u, T>& b{ mat[1] };
+        const Vector<3u, T>& c{ mat[2] };
 
         Vector<3u, T> r0 = Cross(c, b);
         Vector<3u, T> r1 = Cross(a, c);
         Vector<3u, T> r2 = Cross(b, a);
 
-        T det{T(1) / Dot(r2, c)};
+        T det{ T(1) / Dot(r2, c) };
         r0 *= det;
         r1 *= det;
         r2 *= det;
@@ -175,7 +179,8 @@ namespace adh {
         Matrix<3u, 3u, T> returnValue{
             r0.x, r1.x, r2.x,
             r0.y, r1.y, r2.y,
-            r0.z, r1.z, r2.z};
+            r0.z, r1.z, r2.z
+        };
 
         return returnValue;
     }

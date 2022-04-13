@@ -40,7 +40,7 @@ namespace adh {
 
     template <typename T>
     template <typename... Args, typename>
-    Matrix<4u, 4u, T>::Matrix(Args&&... args) noexcept : m{std::forward<Args>(args)...} {
+    Matrix<4u, 4u, T>::Matrix(Args&&... args) noexcept : m{ std::forward<Args>(args)... } {
     }
 
     template <typename T>
@@ -65,7 +65,7 @@ namespace adh {
 
     template <typename T>
     void Matrix<4u, 4u, T>::Identity() noexcept {
-        *this = Matrix<4u, 4u, T>{T(1)};
+        *this = Matrix<4u, 4u, T>{ T(1) };
     }
 
     template <typename T>
@@ -153,7 +153,8 @@ namespace adh {
             lhs[0][0] + rhs[0][0], lhs[0][1] + rhs[0][1], lhs[0][2] + rhs[0][2], lhs[0][3] + rhs[0][3],
             lhs[1][0] + rhs[1][0], lhs[1][1] + rhs[1][1], lhs[1][2] + rhs[1][2], lhs[2][3] + rhs[1][3],
             lhs[2][0] + rhs[2][0], lhs[2][1] + rhs[2][1], lhs[2][2] + rhs[2][2], lhs[2][3] + rhs[2][3],
-            lhs[3][0] + rhs[3][0], lhs[3][1] + rhs[3][1], lhs[3][2] + rhs[3][2], lhs[3][3] + rhs[3][3]};
+            lhs[3][0] + rhs[3][0], lhs[3][1] + rhs[3][1], lhs[3][2] + rhs[3][2], lhs[3][3] + rhs[3][3]
+        };
     }
 
     template <typename T>
@@ -162,16 +163,17 @@ namespace adh {
             lhs[0][0] - rhs[0][0], lhs[0][1] - rhs[0][1], lhs[0][2] - rhs[0][2], lhs[0][3] - rhs[0][3],
             lhs[1][0] - rhs[1][0], lhs[1][1] - rhs[1][1], lhs[1][2] - rhs[1][2], lhs[2][3] - rhs[1][3],
             lhs[2][0] - rhs[2][0], lhs[2][1] - rhs[2][1], lhs[2][2] - rhs[2][2], lhs[2][3] - rhs[2][3],
-            lhs[3][0] - rhs[3][0], lhs[3][1] - rhs[3][1], lhs[3][2] - rhs[3][2], lhs[3][3] - rhs[3][3]};
+            lhs[3][0] - rhs[3][0], lhs[3][1] - rhs[3][1], lhs[3][2] - rhs[3][2], lhs[3][3] - rhs[3][3]
+        };
     }
 
     template <typename T>
     auto Multiply(const Matrix<4u, 4u, T>& lhs, const Matrix<4u, 4u, T>& rhs) noexcept {
         return Matrix<4u, 4u, T>{
-			rhs[0][0] * lhs[0][0] + rhs[0][1] * lhs[1][0] + rhs[0][2] * lhs[2][0] + rhs[0][3] * lhs[3][0],
-			rhs[0][0] * lhs[0][1] + rhs[0][1] * lhs[1][1] + rhs[0][2] * lhs[2][1] + rhs[0][3] * lhs[3][1],
-			rhs[0][0] * lhs[0][2] + rhs[0][1] * lhs[1][2] + rhs[0][2] * lhs[2][2] + rhs[0][3] * lhs[3][2],
-			rhs[0][0] * lhs[0][3] + rhs[0][1] * lhs[1][3] + rhs[0][2] * lhs[2][3] + rhs[0][3] * lhs[3][3],
+            rhs[0][0] * lhs[0][0] + rhs[0][1] * lhs[1][0] + rhs[0][2] * lhs[2][0] + rhs[0][3] * lhs[3][0],
+            rhs[0][0] * lhs[0][1] + rhs[0][1] * lhs[1][1] + rhs[0][2] * lhs[2][1] + rhs[0][3] * lhs[3][1],
+            rhs[0][0] * lhs[0][2] + rhs[0][1] * lhs[1][2] + rhs[0][2] * lhs[2][2] + rhs[0][3] * lhs[3][2],
+            rhs[0][0] * lhs[0][3] + rhs[0][1] * lhs[1][3] + rhs[0][2] * lhs[2][3] + rhs[0][3] * lhs[3][3],
 
             rhs[1][0] * lhs[0][0] + rhs[1][1] * lhs[1][0] + rhs[1][2] * lhs[2][0] + rhs[1][3] * lhs[3][0],
             rhs[1][0] * lhs[0][1] + rhs[1][1] * lhs[1][1] + rhs[1][2] * lhs[2][1] + rhs[1][3] * lhs[3][1],
@@ -186,7 +188,8 @@ namespace adh {
             rhs[3][0] * lhs[0][0] + rhs[3][1] * lhs[1][0] + rhs[3][2] * lhs[2][0] + rhs[3][3] * lhs[3][0],
             rhs[3][0] * lhs[0][1] + rhs[3][1] * lhs[1][1] + rhs[3][2] * lhs[2][1] + rhs[3][3] * lhs[3][1],
             rhs[3][0] * lhs[0][2] + rhs[3][1] * lhs[1][2] + rhs[3][2] * lhs[2][2] + rhs[3][3] * lhs[3][2],
-            rhs[3][0] * lhs[0][3] + rhs[3][1] * lhs[1][3] + rhs[3][2] * lhs[2][3] + rhs[3][3] * lhs[3][3]};
+            rhs[3][0] * lhs[0][3] + rhs[3][1] * lhs[1][3] + rhs[3][2] * lhs[2][3] + rhs[3][3] * lhs[3][3]
+        };
     }
 
     template <typename T>
@@ -195,7 +198,8 @@ namespace adh {
             lhs[0][0] * rhs, lhs[0][1] * rhs, lhs[0][2] * rhs, lhs[0][3] * rhs,
             lhs[1][0] * rhs, lhs[1][1] * rhs, lhs[1][2] * rhs, lhs[1][3] * rhs,
             lhs[2][0] * rhs, lhs[2][1] * rhs, lhs[2][2] * rhs, lhs[2][3] * rhs,
-            lhs[3][0] * rhs, lhs[3][1] * rhs, lhs[3][2] * rhs, lhs[3][3] * rhs};
+            lhs[3][0] * rhs, lhs[3][1] * rhs, lhs[3][2] * rhs, lhs[3][3] * rhs
+        };
     }
 
     template <typename T>
@@ -205,17 +209,17 @@ namespace adh {
 
     template <typename T>
     auto Rotate(const Matrix<4u, 4u, T>& mat, T angle, const Vector<3u, T>& axis) noexcept {
-        Quaternion q{angle, axis};
+        Quaternion q{ angle, axis };
         return mat * q.GetMatrix4D();
     }
 
     template <typename T>
     auto Rotate(const Matrix<4u, 4u, T>& mat, const Vector<3u, T>& angle) noexcept {
-        Quaternion q{angle};
-        return mat* q.GetMatrix4D();
+        Quaternion q{ angle };
+        return mat * q.GetMatrix4D();
     }
 
-     template <typename T>
+    template <typename T>
     inline void Decompose(const Matrix<4u, 4u, T>& m, Vector3D& translation, Vector3D& rotation, Vector3D& scale) noexcept {
         // Translation
         translation = Vector3D{ m[3][0], m[3][1], m[3][2] };
@@ -245,14 +249,14 @@ namespace adh {
         //     rotation.z = 0;
         // }
 
-		rotation.x = asinf(-rows[2][1]); // Pitch
-		if (cosf(rotation.x) > 0.0001) {
-			rotation.y = atan2f(rows[2][0], rows[2][2]);     // Yaw
-			rotation.z = atan2f(rows[0][1], rows[1][1]);     // Roll
-		} else {
-			rotation.y = 0.0f;                         // Yaw
-			rotation.z = atan2f(-rows[1][0], rows[0][0]);    // Roll
-		}
+        rotation.x = asinf(-rows[2][1]); // Pitch
+        if (cosf(rotation.x) > 0.0001) {
+            rotation.y = atan2f(rows[2][0], rows[2][2]); // Yaw
+            rotation.z = atan2f(rows[0][1], rows[1][1]); // Roll
+        } else {
+            rotation.y = 0.0f;                            // Yaw
+            rotation.z = atan2f(-rows[1][0], rows[0][0]); // Roll
+        }
     }
 
     template <typename T>
@@ -261,7 +265,8 @@ namespace adh {
             lhs[0],
             lhs[1],
             lhs[2],
-            lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2] + lhs[3]};
+            lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2] + lhs[3]
+        };
     }
 
     template <typename T>
@@ -270,14 +275,15 @@ namespace adh {
             lhs[0] * rhs[0],
             lhs[1] * rhs[1],
             lhs[2] * rhs[2],
-            lhs[3]};
+            lhs[3]
+        };
     }
 
     template <typename T>
     auto LookAtLH(const Vector<3u, T>& eyePos, const Vector<3u, T>& focusPos, const Vector<3u, T>& upVector) noexcept {
-        const Vector<3u, T> forward{Normalize(focusPos - eyePos)};
-        const Vector<3u, T> right{Normalize(Cross(forward, upVector))};
-        const Vector<3u, T> up{Cross(right, forward)};
+        const Vector<3u, T> forward{ Normalize(focusPos - eyePos) };
+        const Vector<3u, T> right{ Normalize(Cross(forward, upVector)) };
+        const Vector<3u, T> up{ Cross(right, forward) };
 
         return Matrix<4u, 4u, T>{
             -right[0],
@@ -301,9 +307,9 @@ namespace adh {
 
     template <typename T>
     auto LookAtRH(const Vector<3u, T>& eyePos, const Vector<3u, T>& focusPos, const Vector<3u, T>& upVector) noexcept {
-        const Vector<3u, T> forward{Normalize(focusPos - eyePos)};
-        const Vector<3u, T> right{Normalize(Cross(forward, upVector))};
-        const Vector<3u, T> up{Cross(right, forward)};
+        const Vector<3u, T> forward{ Normalize(focusPos - eyePos) };
+        const Vector<3u, T> right{ Normalize(Cross(forward, upVector)) };
+        const Vector<3u, T> up{ Cross(right, forward) };
 
         return Matrix<4u, 4u, T>{
             right[0],
@@ -378,7 +384,7 @@ namespace adh {
     template <typename T>
     auto PerspectiveLH(T fovY, T aspectRatio, T nearZ, T farZ) ADH_NOEXCEPT {
         ADH_THROW(nearZ > T(0), "NearZ needs to be bigger than zero!");
-        const T tanFov{std::sin(fovY / T(2)) / std::cos(fovY / T(2))};
+        const T tanFov{ std::sin(fovY / T(2)) / std::cos(fovY / T(2)) };
 
         Matrix<4u, 4u, T> returnValue{};
         returnValue[0][0] = T(1) / (aspectRatio * tanFov);
@@ -400,7 +406,7 @@ namespace adh {
     template <typename T>
     auto PerspectiveRH(T fovY, T aspectRatio, T nearZ, T farZ) ADH_NOEXCEPT {
         ADH_THROW(nearZ > T(0), "NearZ needs to be bigger than zero!");
-        const T tanFov{std::sin(fovY / T(2)) / std::cos(fovY / T(2))};
+        const T tanFov{ std::sin(fovY / T(2)) / std::cos(fovY / T(2)) };
 
         Matrix<4u, 4u, T> returnValue{};
         returnValue[0][0] = T(1) / (aspectRatio * tanFov);
@@ -421,22 +427,22 @@ namespace adh {
 
     template <typename T>
     auto Inverse(const Matrix<4u, 4u, T>& mat) noexcept {
-        const Vector<3u, T>& a{reinterpret_cast<const Vector<3u, T>&>(mat[0])};
-        const Vector<3u, T>& b{reinterpret_cast<const Vector<3u, T>&>(mat[1])};
-        const Vector<3u, T>& c{reinterpret_cast<const Vector<3u, T>&>(mat[2])};
-        const Vector<3u, T>& d{reinterpret_cast<const Vector<3u, T>&>(mat[3])};
+        const Vector<3u, T>& a{ reinterpret_cast<const Vector<3u, T>&>(mat[0]) };
+        const Vector<3u, T>& b{ reinterpret_cast<const Vector<3u, T>&>(mat[1]) };
+        const Vector<3u, T>& c{ reinterpret_cast<const Vector<3u, T>&>(mat[2]) };
+        const Vector<3u, T>& d{ reinterpret_cast<const Vector<3u, T>&>(mat[3]) };
 
-        const T& x{mat[0][3]};
-        const T& y{mat[1][3]};
-        const T& z{mat[2][3]};
-        const T& w{mat[3][3]};
+        const T& x{ mat[0][3] };
+        const T& y{ mat[1][3] };
+        const T& z{ mat[2][3] };
+        const T& w{ mat[3][3] };
 
-        Vector<3u, T> s{Cross(a, b)};
-        Vector<3u, T> t{Cross(c, d)};
-        Vector<3u, T> u{a * y - b * x};
-        Vector<3u, T> v{c * w - d * z};
+        Vector<3u, T> s{ Cross(a, b) };
+        Vector<3u, T> t{ Cross(c, d) };
+        Vector<3u, T> u{ a * y - b * x };
+        Vector<3u, T> v{ c * w - d * z };
 
-        T det{T(1) / (Dot(s, v) + Dot(t, u))};
+        T det{ T(1) / (Dot(s, v) + Dot(t, u)) };
         s *= det;
         t *= det;
         u *= det;
@@ -451,7 +457,8 @@ namespace adh {
             r0.x, r1.x, r2.x, r3.x,
             r0.y, r1.y, r2.y, r3.y,
             r0.z, r1.z, r2.z, r3.z,
-            -Dot(b, t), Dot(a, t), -Dot(d, s), Dot(c, s)};
+            -Dot(b, t), Dot(a, t), -Dot(d, s), Dot(c, s)
+        };
 
         return returnValue;
     }

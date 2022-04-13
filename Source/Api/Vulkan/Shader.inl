@@ -27,15 +27,15 @@ namespace adh {
         template <typename... Args>
         Shader::Shader(Args&&... args) {
             m_SpecializationEntry = initializers::SpecializationMapEntry(sizeof(std::uint32_t));
-            m_SpecializationInfo = initializers::SpecializationInfo(&m_SpecializationEntry, sizeof(std::uint32_t), &m_EnablePCF);
+            m_SpecializationInfo  = initializers::SpecializationInfo(&m_SpecializationEntry, sizeof(std::uint32_t), &m_EnablePCF);
             Create(Forward<Args>(args)...);
         }
 
         template <typename Head, typename... Args>
         void Shader::Create(Head&& head, Args&&... args) {
-            std::string shader{head};
-            auto pos{shader.find_last_of(".")};
-            auto stage{shader.substr(pos + 1, std::string::npos)};
+            std::string shader{ head };
+            auto pos{ shader.find_last_of(".") };
+            auto stage{ shader.substr(pos + 1, std::string::npos) };
             VkShaderStageFlagBits stageFlag{};
             if (stage == "vert") {
                 stageFlag = VK_SHADER_STAGE_VERTEX_BIT;

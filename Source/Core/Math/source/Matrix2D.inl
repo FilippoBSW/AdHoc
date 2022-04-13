@@ -38,7 +38,7 @@ namespace adh {
 
     template <typename T>
     template <typename... Args, typename>
-    Matrix<2u, 2u, T>::Matrix(Args&&... args) noexcept : m{std::forward<Args>(args)...} {
+    Matrix<2u, 2u, T>::Matrix(Args&&... args) noexcept : m{ std::forward<Args>(args)... } {
     }
 
     template <typename T>
@@ -63,7 +63,7 @@ namespace adh {
 
     template <typename T>
     void Matrix<2u, 2u, T>::Identity() noexcept {
-        *this = Matrix<2u, 2u, T>{T(1)};
+        *this = Matrix<2u, 2u, T>{ T(1) };
     }
 
     template <typename T>
@@ -94,14 +94,16 @@ namespace adh {
     auto Add(const Matrix<2u, 2u, T>& lhs, const Matrix<2u, 2u, T>& rhs) noexcept {
         return Matrix<2u, 2u, T>{
             lhs[0][0] + rhs[0][0], lhs[0][1] + rhs[0][1],
-            lhs[1][0] + rhs[1][0], lhs[1][1] + rhs[1][1]};
+            lhs[1][0] + rhs[1][0], lhs[1][1] + rhs[1][1]
+        };
     }
 
     template <typename T>
     auto Subtract(const Matrix<2u, 2u, T>& lhs, const Matrix<2u, 2u, T>& rhs) noexcept {
         return Matrix<2u, 2u, T>{
             lhs[0][0] - rhs[0][0], lhs[0][1] - rhs[0][1],
-            lhs[1][0] - rhs[1][0], lhs[1][1] - rhs[1][1]};
+            lhs[1][0] - rhs[1][0], lhs[1][1] - rhs[1][1]
+        };
     }
 
     template <typename T>
@@ -110,14 +112,16 @@ namespace adh {
             rhs[0][0] * lhs[0][0] + rhs[0][1] * lhs[1][0],
             rhs[0][0] * lhs[0][1] + rhs[0][1] * lhs[1][1],
             rhs[1][0] * lhs[0][0] + rhs[1][1] * lhs[1][0],
-            rhs[1][0] * lhs[0][1] + rhs[1][1] * lhs[1][1]};
+            rhs[1][0] * lhs[0][1] + rhs[1][1] * lhs[1][1]
+        };
     }
 
     template <typename T>
     auto Multiply(const Matrix<2u, 2u, T>& lhs, T rhs) noexcept {
         return Matrix<2u, 2u, T>{
             lhs[0][0] * rhs, lhs[0][1] * rhs,
-            lhs[1][0] * rhs, lhs[1][1] * rhs};
+            lhs[1][0] * rhs, lhs[1][1] * rhs
+        };
     }
 
     template <typename T>
@@ -132,12 +136,13 @@ namespace adh {
 
     template <typename T>
     auto Inverse(const Matrix<2u, 2u, T>& mat) noexcept {
-        T det{T(1) / (mat[0][0] * mat[1][1] - mat[1][0] * mat[0][1])};
+        T det{ T(1) / (mat[0][0] * mat[1][1] - mat[1][0] * mat[0][1]) };
 
         return Matrix<2u, 2u, T>{
             mat[1][1] * det,
             -mat[0][1] * det,
             -mat[1][0] * det,
-            mat[0][0] * det};
+            mat[0][0] * det
+        };
     }
 } // namespace adh

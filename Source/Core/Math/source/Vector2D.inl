@@ -111,17 +111,17 @@ namespace adh {
 namespace adh {
     template <typename T>
     Vector<2u, T> Add(const Vector<2u, T>& lhs, const Vector<2u, T>& rhs) noexcept {
-        return Vector<2u, T>{lhs[0] + rhs[0], +lhs[1] + rhs[1]};
+        return Vector<2u, T>{ lhs[0] + rhs[0], +lhs[1] + rhs[1] };
     }
 
     template <typename T>
     Vector<2u, T> Subtract(const Vector<2u, T>& lhs, const Vector<2u, T>& rhs) noexcept {
-        return Vector<2u, T>{lhs[0] - rhs[0], lhs[1] - rhs[1]};
+        return Vector<2u, T>{ lhs[0] - rhs[0], lhs[1] - rhs[1] };
     }
 
     template <typename T>
     Vector<2u, T> Multiply(const Vector<2u, T>& lhs, T rhs) noexcept {
-        return Vector<2u, T>{lhs[0] * rhs, lhs[1] * rhs};
+        return Vector<2u, T>{ lhs[0] * rhs, lhs[1] * rhs };
     }
 
     template <typename T>
@@ -139,13 +139,13 @@ namespace adh {
 
     template <typename T>
     Vector<2u, T> Multiply(const Vector<2u, T>& lhs, const Vector<2u, T>& rhs) noexcept {
-        return Vector<2u, T>{lhs[0] * rhs[0], lhs[1] * rhs[1]};
+        return Vector<2u, T>{ lhs[0] * rhs[0], lhs[1] * rhs[1] };
     }
 
     template <typename T>
     Vector<2u, T> Divide(const Vector<2u, T>& lhs, T rhs) noexcept {
-        auto d{(T(1) / rhs)};
-        return Vector<2u, T>{lhs[0] * d, lhs[1] * d};
+        auto d{ (T(1) / rhs) };
+        return Vector<2u, T>{ lhs[0] * d, lhs[1] * d };
     }
 
     template <typename T>
@@ -155,12 +155,12 @@ namespace adh {
 
     template <typename T>
     Vector<2u, T> Rotate(const Vector<2u, T>& vec, T angle) noexcept {
-        auto cos{std::cos(angle)};
-        auto sin{std::sin(angle)};
+        auto cos{ std::cos(angle) };
+        auto sin{ std::sin(angle) };
 
-        const T x{vec[0] * cos + vec[1] * -sin};
-        const T y{vec[0] * sin + vec[1] * cos};
+        const T x{ vec[0] * cos + vec[1] * -sin };
+        const T y{ vec[0] * sin + vec[1] * cos };
 
-        return Vector<2u, T>{x, y};
+        return Vector<2u, T>{ x, y };
     }
 } // namespace adh

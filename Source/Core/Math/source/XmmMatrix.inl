@@ -25,27 +25,27 @@
 #pragma once
 
 #if !defined(ADH_XMM_SHUFFLE_MASK)
-#define ADH_XMM_SHUFFLE_MASK(x, y, z, w) (x | (y << 2) | (z << 4) | (w << 6))
+#    define ADH_XMM_SHUFFLE_MASK(x, y, z, w) (x | (y << 2) | (z << 4) | (w << 6))
 #endif
 #if !defined(ADH_XMM_CAST_SHUFFLE)
-#define ADH_XMM_CAST_SHUFFLE(vec, x, y, z, w) _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(vec), ADH_XMM_SHUFFLE_MASK(x, y, z, w)))
+#    define ADH_XMM_CAST_SHUFFLE(vec, x, y, z, w) _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(vec), ADH_XMM_SHUFFLE_MASK(x, y, z, w)))
 #endif
 
 namespace adh {
     namespace xmm {
         inline Vector Multiply2x2(const Vector& lhs, const Vector& rhs) noexcept {
-            return lhs * Vector{ADH_XMM_CAST_SHUFFLE(rhs, 0, 3, 0, 3)} +
-                   Vector{ADH_XMM_CAST_SHUFFLE(lhs, 1, 0, 3, 2)} * Vector{ADH_XMM_CAST_SHUFFLE(rhs, 2, 1, 2, 1)};
+            return lhs * Vector{ ADH_XMM_CAST_SHUFFLE(rhs, 0, 3, 0, 3) } +
+                   Vector{ ADH_XMM_CAST_SHUFFLE(lhs, 1, 0, 3, 2) } * Vector{ ADH_XMM_CAST_SHUFFLE(rhs, 2, 1, 2, 1) };
         }
 
         inline Vector MultiplyAdjugate2x2(const Vector& lhs, const Vector& rhs) noexcept {
-            return Vector{ADH_XMM_CAST_SHUFFLE(lhs, 3, 3, 0, 0)} * rhs -
-                   Vector{ADH_XMM_CAST_SHUFFLE(lhs, 1, 1, 2, 2)} * Vector{ADH_XMM_CAST_SHUFFLE(rhs, 2, 3, 0, 1)};
+            return Vector{ ADH_XMM_CAST_SHUFFLE(lhs, 3, 3, 0, 0) } * rhs -
+                   Vector{ ADH_XMM_CAST_SHUFFLE(lhs, 1, 1, 2, 2) } * Vector{ ADH_XMM_CAST_SHUFFLE(rhs, 2, 3, 0, 1) };
         }
 
         inline Vector AdjugateMultiply2x2(const Vector& lhs, const Vector& rhs) noexcept {
-            return lhs * Vector{ADH_XMM_CAST_SHUFFLE(rhs, 3, 0, 3, 0)} -
-                   Vector{ADH_XMM_CAST_SHUFFLE(lhs, 1, 0, 3, 2)} * Vector{ADH_XMM_CAST_SHUFFLE(rhs, 2, 1, 2, 1)};
+            return lhs * Vector{ ADH_XMM_CAST_SHUFFLE(rhs, 3, 0, 3, 0) } -
+                   Vector{ ADH_XMM_CAST_SHUFFLE(lhs, 1, 0, 3, 2) } * Vector{ ADH_XMM_CAST_SHUFFLE(rhs, 2, 1, 2, 1) };
         }
     } // namespace xmm
 } // namespace adh
@@ -63,7 +63,7 @@ namespace adh {
         }
 
         template <typename... Args, typename>
-        Matrix::Matrix(Args&&... args) noexcept : f{std::forward<Args>(args)...} {
+        Matrix::Matrix(Args&&... args) noexcept : f{ std::forward<Args>(args)... } {
         }
 
         auto& Matrix::Add(const Matrix& rhs) noexcept {
@@ -83,7 +83,7 @@ namespace adh {
         }
 
         void Matrix::Identity() noexcept {
-            *this = Matrix{1.0f};
+            *this = Matrix{ 1.0f };
         }
 
         auto& Matrix::Transpose() noexcept {
@@ -110,7 +110,7 @@ namespace adh {
             return *this = adh::xmm::Rotate(*this, angle);
         }
 
-       void Matrix::Decompose(Vector3D& translation, Vector3D& rotation, Vector3D& scale) noexcept {
+        void Matrix::Decompose(Vector3D& translation, Vector3D& rotation, Vector3D& scale) noexcept {
             adh::xmm::Decompose(*this, translation, rotation, scale);
         }
 
@@ -174,9 +174,9 @@ namespace adh {
             Matrix returnValue;
 
             for (std::size_t i{}; i != 4u; ++i) {
-                Vector vec{lhs[0] * rhs[i]};
+                Vector vec{ lhs[0] * rhs[i] };
 
-                for (std::size_t j{1u}; j != 4u; ++j) {
+                for (std::size_t j{ 1u }; j != 4u; ++j) {
                     vec += lhs[j] * rhs[i][j];
                 }
 
@@ -218,38 +218,39 @@ namespace adh {
         }
 
         Matrix Inverse(const Matrix& mat) noexcept {
-            const Vector A{_mm_movelh_ps(mat[0], mat[1])};
-            const Vector B{_mm_movehl_ps(mat[1], mat[0])};
-            const Vector C{_mm_movelh_ps(mat[2], mat[3])};
-            const Vector D{_mm_movehl_ps(mat[3], mat[2])};
+            const Vector A{ _mm_movelh_ps(mat[0], mat[1]) };
+            const Vector B{ _mm_movehl_ps(mat[1], mat[0]) };
+            const Vector C{ _mm_movelh_ps(mat[2], mat[3]) };
+            const Vector D{ _mm_movehl_ps(mat[3], mat[2]) };
 
             const Vector detSub{
                 _mm_shuffle_ps(mat[0], mat[2], ADH_XMM_SHUFFLE_MASK(0, 2, 0, 2)) * _mm_shuffle_ps(mat[1], mat[3], ADH_XMM_SHUFFLE_MASK(1, 3, 1, 3)) -
-                _mm_shuffle_ps(mat[0], mat[2], ADH_XMM_SHUFFLE_MASK(1, 3, 1, 3)) * _mm_shuffle_ps(mat[1], mat[3], ADH_XMM_SHUFFLE_MASK(0, 2, 0, 2))};
+                _mm_shuffle_ps(mat[0], mat[2], ADH_XMM_SHUFFLE_MASK(1, 3, 1, 3)) * _mm_shuffle_ps(mat[1], mat[3], ADH_XMM_SHUFFLE_MASK(0, 2, 0, 2))
+            };
 
-            const Vector detA{ADH_XMM_CAST_SHUFFLE(detSub, 0, 0, 0, 0)};
-            const Vector detB{ADH_XMM_CAST_SHUFFLE(detSub, 1, 1, 1, 1)};
-            const Vector detC{ADH_XMM_CAST_SHUFFLE(detSub, 2, 2, 2, 2)};
-            const Vector detD{ADH_XMM_CAST_SHUFFLE(detSub, 3, 3, 3, 3)};
+            const Vector detA{ ADH_XMM_CAST_SHUFFLE(detSub, 0, 0, 0, 0) };
+            const Vector detB{ ADH_XMM_CAST_SHUFFLE(detSub, 1, 1, 1, 1) };
+            const Vector detC{ ADH_XMM_CAST_SHUFFLE(detSub, 2, 2, 2, 2) };
+            const Vector detD{ ADH_XMM_CAST_SHUFFLE(detSub, 3, 3, 3, 3) };
 
-            const Vector D_C{AdjugateMultiply2x2(D, C)};
-            const Vector A_B{AdjugateMultiply2x2(A, B)};
+            const Vector D_C{ AdjugateMultiply2x2(D, C) };
+            const Vector A_B{ AdjugateMultiply2x2(A, B) };
 
-            Vector X{(detD * A) - Multiply2x2(B, D_C)};
-            Vector W{(detA * D) - Multiply2x2(C, A_B)};
-            Vector Y{(detB * C) - MultiplyAdjugate2x2(D, A_B)};
-            Vector Z{(detC * B) - MultiplyAdjugate2x2(A, D_C)};
+            Vector X{ (detD * A) - Multiply2x2(B, D_C) };
+            Vector W{ (detA * D) - Multiply2x2(C, A_B) };
+            Vector Y{ (detB * C) - MultiplyAdjugate2x2(D, A_B) };
+            Vector Z{ (detC * B) - MultiplyAdjugate2x2(A, D_C) };
 
-            Vector tr{A_B * Vector{ADH_XMM_CAST_SHUFFLE(D_C, 0, 2, 1, 3)}};
+            Vector tr{ A_B * Vector{ ADH_XMM_CAST_SHUFFLE(D_C, 0, 2, 1, 3) } };
             tr = _mm_hadd_ps(tr, tr);
             tr = _mm_hadd_ps(tr, tr);
 
-            Vector detM{detA * detD};
+            Vector detM{ detA * detD };
             detM = detM + (detB * detC);
             detM = detM - tr;
 
-            const Vector adjSignMask{1.0f, -1.0f, -1.0f, 1.0f};
-            const Vector rDetM{adjSignMask / detM};
+            const Vector adjSignMask{ 1.0f, -1.0f, -1.0f, 1.0f };
+            const Vector rDetM{ adjSignMask / detM };
 
             X *= rDetM;
             Y *= rDetM;
@@ -286,12 +287,12 @@ namespace adh {
         }
 
         Matrix Rotate(const Matrix& mat, float angle, const Vector3D& axis) noexcept {
-            Quaternion q{angle, axis};
+            Quaternion q{ angle, axis };
             return mat * q.GetXmmMatrix();
         }
 
         Matrix Rotate(const Matrix& mat, const Vector3D& angle) noexcept {
-            Quaternion q{angle};
+            Quaternion q{ angle };
             return mat * q.GetXmmMatrix();
         }
 
@@ -324,20 +325,20 @@ namespace adh {
             //     rotation.z = 0;
             // }
 
-			rotation.x = asinf(-rows[2][1]); // Pitch
-			if (cosf(rotation.x) > 0.0001) {
-				rotation.y = atan2f(rows[2][0], rows[2][2]);     // Yaw
-				rotation.z = atan2f(rows[0][1], rows[1][1]);     // Roll
-			} else {
-				rotation.y = 0.0f;								 // Yaw
-				rotation.z = atan2f(-rows[1][0], rows[0][0]);    // Roll
-			}
+            rotation.x = asinf(-rows[2][1]); // Pitch
+            if (cosf(rotation.x) > 0.0001) {
+                rotation.y = atan2f(rows[2][0], rows[2][2]); // Yaw
+                rotation.z = atan2f(rows[0][1], rows[1][1]); // Roll
+            } else {
+                rotation.y = 0.0f;                            // Yaw
+                rotation.z = atan2f(-rows[1][0], rows[0][0]); // Roll
+            }
         }
 
         Matrix LookAtLH(const Vector3D& eyePos, const Vector3D& focusPos, const Vector3D& upVector) noexcept {
-            const Vector3D forward{Normalize(focusPos - eyePos)};
-            const Vector3D right{Normalize(Cross(forward, upVector))};
-            const Vector3D up{Cross(right, forward)};
+            const Vector3D forward{ Normalize(focusPos - eyePos) };
+            const Vector3D right{ Normalize(Cross(forward, upVector)) };
+            const Vector3D up{ Cross(right, forward) };
 
             Matrix returnValue{
                 -right[0],
@@ -362,9 +363,9 @@ namespace adh {
         }
 
         Matrix LookAtRH(const Vector3D& eyePos, const Vector3D& focusPos, const Vector3D& upVector) noexcept {
-            const Vector3D forward{Normalize(focusPos - eyePos)};
-            const Vector3D right{Normalize(Cross(forward, upVector))};
-            const Vector3D up{Cross(right, forward)};
+            const Vector3D forward{ Normalize(focusPos - eyePos) };
+            const Vector3D right{ Normalize(Cross(forward, upVector)) };
+            const Vector3D up{ Cross(right, forward) };
 
             Matrix returnValue{
                 right[0],
@@ -398,9 +399,7 @@ namespace adh {
                 returnValue[3][0] = -(right + left) / (right - left);
                 returnValue[3][1] = -(top + bottom) / (top - bottom);
                 returnValue[3][2] = -nearZ / (farZ - nearZ);
-            }
-
-            else {
+            } else {
                 returnValue[2][2] = 1.0f / (farZ - nearZ);
                 returnValue[3][0] = -(right + left) / (right - left);
                 returnValue[3][1] = -(top + bottom) / (top - bottom);
@@ -422,9 +421,7 @@ namespace adh {
                 returnValue[3][0] = -(right + left) / (right - left);
                 returnValue[3][1] = -(top + bottom) / (top - bottom);
                 returnValue[3][2] = -nearZ / (farZ - nearZ);
-            }
-
-            else {
+            } else {
                 returnValue[2][2] = -2.0f / (farZ - nearZ);
                 returnValue[3][0] = -(right + left) / (right - left);
                 returnValue[3][1] = -(top + bottom) / (top - bottom);
@@ -437,7 +434,7 @@ namespace adh {
 
         Matrix PerspectiveLH(float fovY, float aspectRatio, float nearZ, float farZ) ADH_NOEXCEPT {
             ADH_THROW(nearZ > 0.0f, "NearZ needs to be bigger than zero!");
-            const float tanFov{std::sin(fovY / 2.0f) / std::cos(fovY / 2.0f)};
+            const float tanFov{ std::sin(fovY / 2.0f) / std::cos(fovY / 2.0f) };
 
             Matrix returnValue{};
             returnValue[0][0] = 1.0f / (aspectRatio * tanFov);
@@ -447,9 +444,7 @@ namespace adh {
 
             if (!ADH_MATH_DEPTH_TO_MINUS_ONE) {
                 returnValue[3][2] = -(farZ * nearZ) / (farZ - nearZ);
-            }
-
-            else {
+            } else {
                 returnValue[3][2] = -(2.0f * farZ * nearZ) / (farZ - nearZ);
             }
 
@@ -458,7 +453,7 @@ namespace adh {
 
         Matrix PerspectiveRH(float fovY, float aspectRatio, float nearZ, float farZ) ADH_NOEXCEPT {
             ADH_THROW(nearZ > 0.0f, "NearZ needs to be bigger than zero!");
-            const float tanFov{std::sin(fovY / 2.0f) / std::cos(fovY / 2.0f)};
+            const float tanFov{ std::sin(fovY / 2.0f) / std::cos(fovY / 2.0f) };
 
             Matrix returnValue{};
             returnValue[0][0] = 1.0f / (aspectRatio * tanFov);
@@ -468,9 +463,7 @@ namespace adh {
 
             if (!ADH_MATH_DEPTH_TO_MINUS_ONE) {
                 returnValue[3][2] = -(farZ * nearZ) / (farZ - nearZ);
-            }
-
-            else {
+            } else {
                 returnValue[3][2] = -(2.0f * farZ * nearZ) / (farZ - nearZ);
             }
 

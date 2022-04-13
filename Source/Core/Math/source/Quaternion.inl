@@ -30,7 +30,7 @@ namespace adh {
     }
 
     template <typename T>
-    Quaternion<T>::Quaternion(T x, T y, T z, T w) noexcept : v{x, y, z, w} {
+    Quaternion<T>::Quaternion(T x, T y, T z, T w) noexcept : v{ x, y, z, w } {
     }
 
     template <typename T>
@@ -111,7 +111,7 @@ namespace adh {
     template <typename T>
     template <std::size_t N>
     void Quaternion<T>::Init(T angle, const Vector<N, T>& axis) noexcept {
-        Vector<3, T> temp{Normalize(axis) * std::sin(angle / T(2))};
+        Vector<3, T> temp{ Normalize(axis) * std::sin(angle / T(2)) };
         x = temp[0];
         y = temp[1];
         z = temp[2];
@@ -137,7 +137,7 @@ namespace adh {
         // z = c.x * c.y * s.z - s.x * s.y * c.z;
         // w = c.x * c.y * c.z + s.x * s.y * s.z;
 
-		x = s.x * c.y * c.z + c.x * s.y * s.z;
+        x = s.x * c.y * c.z + c.x * s.y * s.z;
         y = c.x * s.y * c.z - s.x * c.y * s.z;
         z = c.x * c.y * s.z - s.x * s.y * c.z;
         w = c.x * c.y * c.z + s.x * s.y * s.z;
@@ -208,38 +208,41 @@ namespace adh {
 
     template <typename T>
     auto Quaternion<T>::Get(const Vector<3, T>& vec) const noexcept {
-        Vector<3, T> temp{x, y, z};
+        Vector<3, T> temp{ x, y, z };
 
         return Vector<3, T>{
             (vec * (w * w - (x * x + y * y + z * z))) +
             (temp * (Dot(vec, temp) * T(2))) +
-            (Cross(vec, temp) * (w * T(2)))};
+            (Cross(vec, temp) * (w * T(2)))
+        };
     }
 
     template <typename T>
     auto Quaternion<T>::Get(const Vector<4, T>& vec) const noexcept {
-        Vector<3, T> lhs{x, y, z};
-        Vector<3, T> rhs{vec.x, vec.y, vec.z};
+        Vector<3, T> lhs{ x, y, z };
+        Vector<3, T> rhs{ vec.x, vec.y, vec.z };
 
         Vector<3, T> vec3D{
             (rhs * (w * w - (x * x + y * y + z * z))) +
             (lhs * (Dot(rhs, lhs) * T(2))) +
-            (Cross(rhs, lhs) * (w * T(2)))};
+            (Cross(rhs, lhs) * (w * T(2)))
+        };
 
-        return Vector<4, T>{vec3D[0], vec3D[1], vec3D[2], vec[3]};
+        return Vector<4, T>{ vec3D[0], vec3D[1], vec3D[2], vec[3] };
     }
 
     template <typename T>
     inline xmm::Vector Quaternion<T>::Get(const xmm::Vector& vec) const noexcept {
-        Vector<3, T> lhs{x, y, z};
-        Vector<3, T> rhs{vec[0], vec[1], vec[2]};
+        Vector<3, T> lhs{ x, y, z };
+        Vector<3, T> rhs{ vec[0], vec[1], vec[2] };
 
         Vector<3, T> vec3D{
             (rhs * (w * w - (x * x + y * y + z * z))) +
             (lhs * (Dot(rhs, lhs) * T(2))) +
-            (Cross(rhs, lhs) * (w * T(2)))};
+            (Cross(rhs, lhs) * (w * T(2)))
+        };
 
-        return xmm::Vector{vec3D[0], vec3D[1], vec3D[2], vec[3]};
+        return xmm::Vector{ vec3D[0], vec3D[1], vec3D[2], vec[3] };
     }
 
     template <typename T>
@@ -320,7 +323,8 @@ namespace adh {
             lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
             lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x,
             lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w,
-            lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z};
+            lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z
+        };
     }
 
     template <typename T>

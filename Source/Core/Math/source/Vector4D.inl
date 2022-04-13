@@ -126,17 +126,17 @@ namespace adh {
 namespace adh {
     template <typename T>
     Vector<4u, T> Add(const Vector<4u, T>& lhs, const Vector<4u, T>& rhs) noexcept {
-        return Vector<4u, T>{lhs[0] + rhs[0], lhs[1] + rhs[1], lhs[2] + rhs[2], lhs[3] + rhs[3]};
+        return Vector<4u, T>{ lhs[0] + rhs[0], lhs[1] + rhs[1], lhs[2] + rhs[2], lhs[3] + rhs[3] };
     }
 
     template <typename T>
     Vector<4u, T> Subtract(const Vector<4u, T>& lhs, const Vector<4u, T>& rhs) noexcept {
-        return Vector<4u, T>{lhs[0] - rhs[0], lhs[1] - rhs[1], lhs[2] - rhs[2], lhs[3] - rhs[3]};
+        return Vector<4u, T>{ lhs[0] - rhs[0], lhs[1] - rhs[1], lhs[2] - rhs[2], lhs[3] - rhs[3] };
     }
 
     template <typename T>
     Vector<4u, T> Multiply(const Vector<4u, T>& lhs, T rhs) noexcept {
-        return Vector<4u, T>{lhs[0] * rhs, lhs[1] * rhs, lhs[2] * rhs, lhs[3] * rhs};
+        return Vector<4u, T>{ lhs[0] * rhs, lhs[1] * rhs, lhs[2] * rhs, lhs[3] * rhs };
     }
 
     template <typename T>
@@ -156,13 +156,13 @@ namespace adh {
 
     template <typename T>
     Vector<4u, T> Multiply(const Vector<4u, T>& lhs, const Vector<4u, T>& rhs) noexcept {
-        return Vector<4u, T>{lhs[0] * rhs[0], lhs[1] * rhs[1], lhs[2] * rhs[2], lhs[3] * rhs[3]};
+        return Vector<4u, T>{ lhs[0] * rhs[0], lhs[1] * rhs[1], lhs[2] * rhs[2], lhs[3] * rhs[3] };
     }
 
     template <typename T>
     Vector<4u, T> Divide(const Vector<4u, T>& lhs, T rhs) noexcept {
-        auto d{(T(1) / rhs)};
-        return Vector<4u, T>{lhs[0] * d, lhs[1] * d, lhs[2] * d, lhs[3] * d};
+        auto d{ (T(1) / rhs) };
+        return Vector<4u, T>{ lhs[0] * d, lhs[1] * d, lhs[2] * d, lhs[3] * d };
     }
 
     template <typename T>
@@ -176,6 +176,7 @@ namespace adh {
             lhs[1] * rhs[2] - lhs[2] * rhs[1],
             lhs[2] * rhs[0] - lhs[0] * rhs[2],
             lhs[0] * rhs[1] - lhs[1] * rhs[0],
-            lhs[3]};
+            lhs[3]
+        };
     }
 } // namespace adh

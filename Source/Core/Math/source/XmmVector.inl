@@ -29,7 +29,7 @@ namespace adh {
         Vector::Vector() noexcept : v{} {
         }
 
-        Vector::Vector(__m128 vec) noexcept : v{vec} {
+        Vector::Vector(__m128 vec) noexcept : v{ vec } {
         }
 
         Vector::Vector(float rhs) noexcept {
@@ -178,14 +178,14 @@ namespace adh {
         }
 
         Vector Multiply(const Vector& lhs, float rhs) noexcept {
-            return Multiply(lhs, Vector{rhs});
+            return Multiply(lhs, Vector{ rhs });
         }
 
         Vector Multiply(const Vector& lhs, const Matrix& rhs) noexcept {
-            Vector returnValue{Vector{rhs.m[0] * lhs[0]}};
+            Vector returnValue{ Vector{ rhs.m[0] * lhs[0] } };
 
-            for (std::size_t i{1u}; i != 4u; ++i) {
-                returnValue += Vector{rhs.m[i]} * Vector{lhs[i]};
+            for (std::size_t i{ 1u }; i != 4u; ++i) {
+                returnValue += Vector{ rhs.m[i] } * Vector{ lhs[i] };
             }
 
             return returnValue;
@@ -196,17 +196,17 @@ namespace adh {
         }
 
         Vector Divide(const Vector& lhs, float rhs) noexcept {
-            return Divide(lhs, Vector{rhs});
+            return Divide(lhs, Vector{ rhs });
         }
 
         float Dot(const Vector& lhs, const Vector& rhs) noexcept {
-            return Vector{_mm_dp_ps(lhs, rhs, 0xff)}[0];
+            return Vector{ _mm_dp_ps(lhs, rhs, 0xff) }[0];
         }
 
         Vector Cross(const Vector& lhs, const Vector& rhs) noexcept {
-            return Vector{_mm_sub_ps(
+            return Vector{ _mm_sub_ps(
                 _mm_mul_ps(_mm_shuffle_ps(lhs, lhs, _MM_SHUFFLE(3, 0, 2, 1)), _mm_shuffle_ps(rhs, rhs, _MM_SHUFFLE(3, 1, 0, 2))),
-                _mm_mul_ps(_mm_shuffle_ps(lhs, lhs, _MM_SHUFFLE(3, 1, 0, 2)), _mm_shuffle_ps(rhs, rhs, _MM_SHUFFLE(3, 0, 2, 1))))};
+                _mm_mul_ps(_mm_shuffle_ps(lhs, lhs, _MM_SHUFFLE(3, 1, 0, 2)), _mm_shuffle_ps(rhs, rhs, _MM_SHUFFLE(3, 0, 2, 1)))) };
         }
 
         float Magnitude(const Vector& vec) noexcept {
@@ -222,31 +222,31 @@ namespace adh {
         }
 
         Vector Reflect(const Vector& lhs, const Vector& rhs) noexcept {
-            const Vector v1{lhs};
-            const Vector v2{Normalize(rhs)};
-            const float dot{Dot(v2, v1)};
+            const Vector v1{ lhs };
+            const Vector v2{ Normalize(rhs) };
+            const float dot{ Dot(v2, v1) };
 
-            return Vector{v1 - v2 * dot * 2.0f};
+            return Vector{ v1 - v2 * dot * 2.0f };
 
             return Vector{};
         }
 
         Vector Refract(const Vector& lhs, const Vector& rhs, float n) noexcept {
-            const Vector v1{lhs};
-            const Vector v2{Normalize(rhs)};
-            const float dot{Dot(v2, v1)};
-            const float k{1.0f - n * n * (1.0f - dot * dot)};
+            const Vector v1{ lhs };
+            const Vector v2{ Normalize(rhs) };
+            const float dot{ Dot(v2, v1) };
+            const float k{ 1.0f - n * n * (1.0f - dot * dot) };
 
-            return Vector{n * v1 - (n * dot + std::sqrt(k)) * v2};
+            return Vector{ n * v1 - (n * dot + std::sqrt(k)) * v2 };
         }
 
         Vector Rotate(const Vector& vec, float angle, const Vector3D& axis) noexcept {
-            Quaternion q{angle, axis};
+            Quaternion q{ angle, axis };
             return q.GetVector(vec);
         }
 
         Vector Rotate(const Vector& vec, const Vector3D& angle) noexcept {
-            Quaternion q{angle};
+            Quaternion q{ angle };
             return q.GetVector(vec);
         }
 
