@@ -135,15 +135,16 @@ namespace adh {
 
     void RigidBody::OnUpdate(Transform& transform) noexcept {
         physx::PxTransform t = actor->getGlobalPose();
-        transform.translate  = Vector3D{ t.p.x, t.p.y, t.p.z };
-        transform.q.x        = t.q.x;
-        transform.q.y        = t.q.y;
-        transform.q.z        = t.q.z;
-        transform.q.w        = t.q.w;
+        if (t.isValid()) {
+            transform.translate = Vector3D{ t.p.x, t.p.y, t.p.z };
+            transform.q.x       = t.q.x;
+            transform.q.y       = t.q.y;
+            transform.q.z       = t.q.z;
+            transform.q.w       = t.q.w;
 
-        translate = transform.translate;
-        rotation  = transform.rotation;
-
+            translate = transform.translate;
+            rotation  = transform.rotation;
+        }
         if (bodyType == PhysicsBodyType::eDynamic) {
             auto v          = static_cast<physx::PxRigidDynamic*>(actor)->getLinearVelocity();
             velocity        = Vector3D{ v.x, v.y, v.z };

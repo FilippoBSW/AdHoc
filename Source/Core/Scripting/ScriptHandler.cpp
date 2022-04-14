@@ -43,10 +43,6 @@ namespace adh {
         return 1;
     }
 
-    // int ScriptHandler::DispatchEvent(lua_State* L) {
-    //     return 0;
-    // }
-
     int ScriptHandler::CreateEntity(lua_State* L) {
         auto e{ scene->GetWorld().CreateEntity() };
         auto [tag, transform, mesh, material] =

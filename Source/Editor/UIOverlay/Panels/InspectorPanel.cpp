@@ -546,6 +546,12 @@ namespace adh {
                                      1.0f,
                                      0.5,
                                      meshPtr);
+                    physx::PxTransform t;
+                    t.p = physx::PxVec3{ transform.translate.x, transform.translate.y, transform.translate.z };
+                    Quaternion<float> qq(transform.rotation);
+                    physx::PxQuat q(qq.x, qq.y, qq.z, qq.w);
+                    t.q = q;
+                    rigidBody.actor->setGlobalPose(t);
                 }
                 ImGui::EndMenu();
             }

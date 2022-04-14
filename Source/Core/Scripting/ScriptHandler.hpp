@@ -50,8 +50,6 @@ namespace adh {
 
         static int DeltaTime(lua_State* L);
 
-        // static int DispatchEvent(lua_State* L);
-
         static int LogMessage(lua_State* L);
 
         static int LogError(lua_State* L);

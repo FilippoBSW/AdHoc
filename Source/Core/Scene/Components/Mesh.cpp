@@ -39,7 +39,7 @@ namespace adh {
             meshPath.data(),
             aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
 
-        ADH_THROW(pModel, "Assimp failed to load model!");
+        ADH_THROW(pModel, imp.GetErrorString());
 
         if (pModel) {
             if (vertexBuffer) {
