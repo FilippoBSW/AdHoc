@@ -11,6 +11,7 @@ cmake -DCMAKE_BUILD_TYPE=$1\
 	  -DBUILD_UNIT_TESTS=OFF\
 	  -DYAML_CPP_BUILD_TOOLS=OFF\
 	  -DUSE_GLUT=OFF\
+	  -DPX_GENERATE_STATIC_LIBRARIES=ON\
 	  '-DPHYSX_CXX_FLAGS=-w -arch arm64' ..
 cmake --build .
 open App/AdHoc.app

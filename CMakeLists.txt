@@ -54,14 +54,13 @@ set(PXSHARED_PATH ${PHYSX_ROOT_DIR}/../pxshared)
 set(PXSHARED_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(PX_PHYSX_ ${CMAKE_INSTALL_PREFIX})
 set(CMAKEMODULES_VERSION "1.27")
-set(PX_GENERATE_STATIC_LIBRARIES ON)
 set(CMAKEMODULES_PATH ${PHYSX_ROOT_DIR}/../externals/cmakemodules)
 set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/External/PhysX)
 set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/${LIB_PATH})
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/bullet3)
 add_subdirectory(${PHYSX_ROOT_DIR}/compiler/public)
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/assimp)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/Assimp)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/yaml-cpp)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGui)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGuizmo)
@@ -338,29 +337,29 @@ target_sources(${PROJECT_NAME} PRIVATE
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Math/Math.hpp
-    ${ADH_CORE_SRC}/Math/Source/Matrix.hpp
-    ${ADH_CORE_SRC}/Math/Source/Matrix.inl
-    ${ADH_CORE_SRC}/Math/Source/Matrix2D.hpp
-    ${ADH_CORE_SRC}/Math/Source/Matrix2D.inl
-    ${ADH_CORE_SRC}/Math/Source/Matrix3D.hpp
-    ${ADH_CORE_SRC}/Math/Source/Matrix3D.inl
-    ${ADH_CORE_SRC}/Math/Source/Matrix4D.hpp
-    ${ADH_CORE_SRC}/Math/Source/Matrix4D.inl
-    ${ADH_CORE_SRC}/Math/Source/Numbers.hpp
-    ${ADH_CORE_SRC}/Math/Source/Quaternion.hpp
-    ${ADH_CORE_SRC}/Math/Source/Quaternion.inl
-    ${ADH_CORE_SRC}/Math/Source/Vector.hpp
-    ${ADH_CORE_SRC}/Math/Source/Vector.inl
-    ${ADH_CORE_SRC}/Math/Source/Vector2D.hpp
-    ${ADH_CORE_SRC}/Math/Source/Vector2D.inl
-    ${ADH_CORE_SRC}/Math/Source/Vector3D.hpp
-    ${ADH_CORE_SRC}/Math/Source/Vector3D.inl
-    ${ADH_CORE_SRC}/Math/Source/Vector4D.hpp
-    ${ADH_CORE_SRC}/Math/Source/Vector4D.inl
-    ${ADH_CORE_SRC}/Math/Source/XmmMatrix.hpp
-    ${ADH_CORE_SRC}/Math/Source/XmmMatrix.inl
-    ${ADH_CORE_SRC}/Math/Source/XmmVector.hpp
-    ${ADH_CORE_SRC}/Math/Source/XmmVector.inl)
+    ${ADH_CORE_SRC}/Math/source/Matrix.hpp
+    ${ADH_CORE_SRC}/Math/source/Matrix.inl
+    ${ADH_CORE_SRC}/Math/source/Matrix2D.hpp
+    ${ADH_CORE_SRC}/Math/source/Matrix2D.inl
+    ${ADH_CORE_SRC}/Math/source/Matrix3D.hpp
+    ${ADH_CORE_SRC}/Math/source/Matrix3D.inl
+    ${ADH_CORE_SRC}/Math/source/Matrix4D.hpp
+    ${ADH_CORE_SRC}/Math/source/Matrix4D.inl
+    ${ADH_CORE_SRC}/Math/source/Numbers.hpp
+    ${ADH_CORE_SRC}/Math/source/Quaternion.hpp
+    ${ADH_CORE_SRC}/Math/source/Quaternion.inl
+    ${ADH_CORE_SRC}/Math/source/Vector.hpp
+    ${ADH_CORE_SRC}/Math/source/Vector.inl
+    ${ADH_CORE_SRC}/Math/source/Vector2D.hpp
+    ${ADH_CORE_SRC}/Math/source/Vector2D.inl
+    ${ADH_CORE_SRC}/Math/source/Vector3D.hpp
+    ${ADH_CORE_SRC}/Math/source/Vector3D.inl
+    ${ADH_CORE_SRC}/Math/source/Vector4D.hpp
+    ${ADH_CORE_SRC}/Math/source/Vector4D.inl
+    ${ADH_CORE_SRC}/Math/source/XmmMatrix.hpp
+    ${ADH_CORE_SRC}/Math/source/XmmMatrix.inl
+    ${ADH_CORE_SRC}/Math/source/XmmVector.hpp
+    ${ADH_CORE_SRC}/Math/source/XmmVector.inl)
 
 #**********************************************
 # Scene
