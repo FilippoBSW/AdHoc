@@ -121,6 +121,7 @@ endif()
 
 set_target_properties(
 	${PROJECT_NAME} 
+	Lua
 	ImGui 
     ImGuizmo
 	assimp 
