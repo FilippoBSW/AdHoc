@@ -467,6 +467,7 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("GetTranslation", &RigidBody::GetTranslation);
         state.RegisterTypeFunction<RigidBody>("SetMass", &RigidBody::SetMass);
         state.RegisterTypeFunction<RigidBody>("GetMass", &RigidBody::GetMass);
+        state.RegisterTypeFunction<RigidBody>("SetPosition", &RigidBody::SetPosition);
         state.RegisterTypeFunction<RigidBody>("SetRotation", &RigidBody::SetRotation);
         state.RegisterTypeFunction<RigidBody>("AddRotation", &RigidBody::AddRotation);
         state.RegisterTypeFunction<RigidBody>("GetRotation", &RigidBody::GetRotation);
@@ -480,5 +481,6 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("GetDynamicFriction", &RigidBody::GetDynamicFriction);
         state.RegisterTypeFunction<RigidBody>("SetDynamicFriction", &RigidBody::SetDynamicFriction);
         state.RegisterTypeFunction<RigidBody>("UpdateGeometry", &RigidBody::UpdateGeometry);
+        state.RegisterTypeFunction<RigidBody>("SetHasGravity", &RigidBody::SetHasGravity);
     }
 } // namespace adh

@@ -88,6 +88,8 @@ namespace adh {
 
         Vector3D& GetTranslation() noexcept;
 
+        void SetPosition(float x, float y, float z) noexcept;
+
         void SetRotation(float x, float y, float z) noexcept;
 
         void AddRotation(float x, float y, float z) noexcept;

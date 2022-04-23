@@ -23,6 +23,7 @@
 // *********************************************************************************
 
 #include "RigidBody.hpp"
+#include "foundation/PxVec3.h"
 #include <Event/Event.hpp>
 #include <Math/Math.hpp>
 #include <iostream>
@@ -161,6 +162,13 @@ namespace adh {
 
     Vector3D& RigidBody::GetTranslation() noexcept {
         return translate;
+    }
+
+    void RigidBody::SetPosition(float x, float y, float z) noexcept {
+        physx::PxTransform t = actor->getGlobalPose();
+        physx::PxVec3 p(x, y, z);
+        t.p = p;
+        actor->setGlobalPose(t);
     }
 
     void RigidBody::SetRotation(float x, float y, float z) noexcept {
