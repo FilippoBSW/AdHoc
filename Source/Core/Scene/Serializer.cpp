@@ -76,7 +76,7 @@ namespace adh {
             if (m_Scene->m_World.Contains<Mesh>(entity)) {
                 SerializeComponent(out, "Mesh", [&]() {
                     auto [mesh] = m_Scene->m_World.Get<Mesh>(entity);
-                    out << YAML::Key << "name" << YAML::Value << mesh.meshName;
+                    out << YAML::Key << "name" << YAML::Value << mesh.bufferData->meshName;
                     out << YAML::Key << "draw" << YAML::Value << mesh.toDraw;
                 });
             }

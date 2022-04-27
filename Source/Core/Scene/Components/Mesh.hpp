@@ -24,22 +24,34 @@
 
 #pragma once
 #include <Std/Array.hpp>
+#include <Std/SharedPtr.hpp>
 #include <Vulkan/IndexBuffer.hpp>
 #include <Vulkan/VertexBuffer.hpp>
 #include <string>
 
 #include <Vertex.hpp>
+#include <unordered_map>
 
 namespace adh {
+
+    struct MeshBufferData {
+        vk::IndexBuffer index;
+        vk::VertexBuffer vertex;
+        Array<Vertex> vertices;
+        Array<std::uint32_t> indices;
+        std::string meshName;
+        std::string meshFilePath;
+    };
+
     class Mesh {
       public:
         void Bind(VkCommandBuffer commandBuffer) noexcept {
-            indexBuffer.Bind(commandBuffer);
-            vertexBuffer.Bind(commandBuffer);
+            bufferData->index.Bind(commandBuffer);
+            bufferData->vertex.Bind(commandBuffer);
         }
 
         std::uint32_t GetIndexCount() const noexcept {
-            return indexBuffer.GetCount();
+            return bufferData->index.GetCount();
         }
 
         void Load(const std::string& meshPath);
@@ -47,14 +59,8 @@ namespace adh {
         void Load2(const char* fileName);
 
       public:
-        vk::IndexBuffer indexBuffer;
-        vk::VertexBuffer vertexBuffer;
-        std::string meshName;
-        std::string meshFilePath;
-
-        Array<Vertex> vertex;
-        Array<std::uint32_t> index;
-
+        SharedPtr<MeshBufferData> bufferData;
         bool toDraw{ true };
+        inline static std::unordered_map<std::string, SharedPtr<MeshBufferData>> meshes;
     };
 } // namespace adh

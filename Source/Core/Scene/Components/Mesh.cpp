@@ -33,50 +33,48 @@
 namespace adh {
     // FIXME: Assimp fails with big .obj files
     void Mesh::Load(const std::string& meshPath) {
-        Assimp::Importer imp;
 
-        auto pModel = imp.ReadFile(
-            meshPath.data(),
-            aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
+        bufferData = meshes[meshPath];
 
-        ADH_THROW(pModel, imp.GetErrorString());
+        if (!bufferData) {
+            meshes[meshPath] = bufferData;
+            bufferData       = MakeShared<MeshBufferData>();
 
-        if (pModel) {
-            if (vertexBuffer) {
-                vertexBuffer.Destroy();
-                vertex.Clear();
+            Assimp::Importer imp;
+
+            auto pModel = imp.ReadFile(
+                meshPath.data(),
+                aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
+
+            ADH_THROW(pModel, imp.GetErrorString());
+
+            if (pModel) {
+                auto pMesh = pModel->mMeshes[0];
+
+                bufferData->vertices.Reserve(pMesh->mNumVertices);
+
+                for (std::size_t i{}; i != pMesh->mNumVertices; ++i) {
+                    bufferData->vertices.EmplaceBack(
+                        Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z },
+                        Vector3D{ pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z });
+                }
+
+                bufferData->indices.Reserve(pMesh->mNumFaces * 3);
+                for (std::size_t i{}; i != pMesh->mNumFaces; ++i) {
+                    const auto& face = pMesh->mFaces[i];
+                    bufferData->indices.EmplaceBack(face.mIndices[0]);
+                    bufferData->indices.EmplaceBack(face.mIndices[1]);
+                    bufferData->indices.EmplaceBack(face.mIndices[2]);
+                }
+                bufferData->vertex.Create(bufferData->vertices);
+
+                bufferData->index.Create(bufferData->indices);
+
+                auto p = meshPath.find_last_of("/");
+
+                bufferData->meshName     = meshPath.substr(p + 1);
+                bufferData->meshFilePath = meshPath;
             }
-
-            if (indexBuffer) {
-                indexBuffer.Destroy();
-                index.Clear();
-            }
-
-            auto pMesh = pModel->mMeshes[0];
-
-            vertex.Reserve(pMesh->mNumVertices);
-
-            for (std::size_t i{}; i != pMesh->mNumVertices; ++i) {
-                vertex.EmplaceBack(
-                    Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z },
-                    Vector3D{ pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z });
-            }
-
-            index.Reserve(pMesh->mNumFaces * 3);
-            for (std::size_t i{}; i != pMesh->mNumFaces; ++i) {
-                const auto& face = pMesh->mFaces[i];
-                index.EmplaceBack(face.mIndices[0]);
-                index.EmplaceBack(face.mIndices[1]);
-                index.EmplaceBack(face.mIndices[2]);
-            }
-
-            vertexBuffer.Create(vertex);
-            indexBuffer.Create(index);
-
-            auto p = meshPath.find_last_of("/");
-
-            meshName     = meshPath.substr(p + 1);
-            meshFilePath = meshPath;
         }
     }
 

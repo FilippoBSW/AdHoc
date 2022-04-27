@@ -423,6 +423,8 @@ class AdHoc {
         switch (event->type) {
         case StatusEvent::Type::eRun:
             {
+                // TODO: temp
+                Mesh::meshes.clear();
                 scene.Save();
                 scene.ResetPhysicsWorld();
                 ReadyScript();
