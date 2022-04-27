@@ -508,6 +508,10 @@ namespace adh {
                 Clear();
             }
 
+            void ClearStack() noexcept {
+                lua_settop(m_State, 0);
+            }
+
             operator lua_State*() {
                 return m_State;
             }

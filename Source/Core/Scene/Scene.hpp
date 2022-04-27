@@ -70,8 +70,8 @@ namespace adh {
       private:
         std::string m_Tag;
         PhysicsWorld m_PhysicsWorld;
-        ecs::World m_World;
         lua::State m_State;
+        ecs::World m_World;
         Serializer m_Serializer;
     };
 } // namespace adh

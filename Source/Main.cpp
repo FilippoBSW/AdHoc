@@ -437,6 +437,7 @@ class AdHoc {
             {
                 if (g_IsPlaying) {
                     scene.Load();
+                    scene.GetState().ClearStack();
                     g_AreScriptsReady = false;
                     g_IsPlaying       = false;
                     g_IsPaused        = false;
