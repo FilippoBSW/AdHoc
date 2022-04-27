@@ -49,27 +49,29 @@ function Update()
     end
     
     if input:GetKeyUp(AdHoc.Key.r) == true then
-        entities[nextId] = CreateEntity()
+		if force > 20 then
+			entities[nextId] = CreateEntity()
 
-        local transforms = GetComponent(entities[nextId], "Transform")
-        transforms.scale.x = 0.5
-        transforms.scale.y = 0.5
-        transforms.scale.z = 0.5
+			local transforms = GetComponent(entities[nextId], "Transform")
+			transforms.scale.x = 0.5
+			transforms.scale.y = 0.5
+			transforms.scale.z = 0.5
 
-        local meshes = GetComponent(entities[nextId], "Mesh")
-        meshes:Load("sphere.glb")
+			local meshes = GetComponent(entities[nextId], "Mesh")
+			meshes:Load("sphere.glb")
 
-        forward = transform:GetForward()
+			forward = transform:GetForward()
 
-        AddComponent(entities[nextId], "RigidBody", "Sphere", "Dynamic");
-        local tempRigidbody = GetComponent(entities[nextId], "RigidBody")
-        tempRigidbody:SetTranslation(transform.translate.x + 2 * forward.x, transform.translate.y, transform.translate.z + 2 * forward.z)
-        tempRigidbody:AddVelocity(force * forward.x, forward.y * force, force * forward.z)
-        tempRigidbody.radius = 0.5
-        tempRigidbody:UpdateGeometry()
-        tempRigidbody:SetRestitution(0.2)
+			AddComponent(entities[nextId], "RigidBody", "Sphere", "Dynamic");
+			local tempRigidbody = GetComponent(entities[nextId], "RigidBody")
+			tempRigidbody:SetTranslation(transform.translate.x + 2 * forward.x, transform.translate.y, transform.translate.z + 2 * forward.z)
+			tempRigidbody:AddVelocity(force * forward.x, forward.y * force, force * forward.z)
+			tempRigidbody.radius = 0.5
+			tempRigidbody:UpdateGeometry()
+			tempRigidbody:SetRestitution(0.2)
         
-        nextId = nextId + 1
+			nextId = nextId + 1
+		end
 
         force = 0
         transform.translate.y = -4.5
