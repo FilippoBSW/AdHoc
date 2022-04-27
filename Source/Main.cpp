@@ -552,6 +552,14 @@ class AdHoc {
                 RecreateSwapchain();
                 RecreateEditor();
             }
+
+            if (ScriptHandler::loadSceneFilename) {
+                scene.LoadFromFile((Context::Get()->GetDataDirectory() + "Assets/Scenes/" + ScriptHandler::loadSceneFilename).data());
+                ScriptHandler::loadSceneFilename = nullptr;
+                scene.GetState().ClearStack();
+                scene.ResetPhysicsWorld();
+                ReadyScript();
+            }
         }
     }
 

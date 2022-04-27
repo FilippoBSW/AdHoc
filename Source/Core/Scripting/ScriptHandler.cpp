@@ -43,6 +43,11 @@ namespace adh {
         return 1;
     }
 
+    int ScriptHandler::LoadScene(lua_State* L) {
+        loadSceneFilename = lua_tostring(L, 1);
+        return 0;
+    }
+
     int ScriptHandler::CreateEntity(lua_State* L) {
         auto e{ scene->GetWorld().CreateEntity() };
         auto [tag, transform, mesh, material] =
@@ -289,6 +294,10 @@ namespace adh {
 
     void ScriptHandler::RegisterBindings() {
         auto& state = scene->GetState();
+
+        lua_pushstring(state, "LoadScene");
+        lua_pushcclosure(state, ScriptHandler::LoadScene, 1);
+        lua_setglobal(state, "LoadScene");
 
         lua_pushstring(state, "CreateEntity");
         lua_pushcclosure(state, ScriptHandler::CreateEntity, 1);

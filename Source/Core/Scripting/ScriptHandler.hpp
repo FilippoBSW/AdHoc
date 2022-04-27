@@ -34,6 +34,8 @@ namespace adh {
     class Scene;
 
     struct ScriptHandler {
+        static int LoadScene(lua_State* L);
+
         static int CreateEntity(lua_State* L);
 
         static int DestroyEntity(lua_State* L);
@@ -66,5 +68,7 @@ namespace adh {
         inline static Array<std::string> errorLog;
         inline static std::uint64_t currentEntity;
         inline static float deltaTime;
+
+        inline static const char* loadSceneFilename{ nullptr };
     };
 } // namespace adh
