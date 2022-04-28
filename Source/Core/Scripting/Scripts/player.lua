@@ -42,7 +42,7 @@ function Update()
         transforms.scale.z = 0.5
 
         local meshes = GetComponent(entities[nextId], "Mesh")
-        meshes:Load("sphere.glb")
+        meshes:Load("sphere.obj")
 
         forward = transform:GetForward()
 
