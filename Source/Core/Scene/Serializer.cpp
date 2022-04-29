@@ -76,7 +76,8 @@ namespace adh {
             if (m_Scene->m_World.Contains<Mesh>(entity)) {
                 SerializeComponent(out, "Mesh", [&]() {
                     auto [mesh] = m_Scene->m_World.Get<Mesh>(entity);
-                    out << YAML::Key << "name" << YAML::Value << mesh.bufferData->meshName;
+                    auto&& meshBuffer{ mesh.Get() };
+                    out << YAML::Key << "name" << YAML::Value << meshBuffer->meshName;
                     out << YAML::Key << "draw" << YAML::Value << mesh.toDraw;
                 });
             }
@@ -177,8 +178,6 @@ namespace adh {
         auto scene       = node["Scene"];
         m_Scene->m_Tag   = scene.as<std::string>();
         m_Scene->m_World.Reset();
-        // m_Scene->GetPhysics().Destroy();
-        // m_Scene->GetPhysics().Create();
         m_Scene->GetPhysics().ResetScene();
         m_Scene->m_State     = lua::NewState();
         ScriptHandler::scene = m_Scene;

@@ -33,12 +33,11 @@
 namespace adh {
     // FIXME: Assimp fails with big .obj files
     void Mesh::Load(const std::string& meshPath) {
-
-        bufferData = meshes[meshPath];
+        bufferData = Mesh::meshes[meshPath];
 
         if (!bufferData) {
-            meshes[meshPath] = bufferData;
-            bufferData       = MakeShared<MeshBufferData>();
+            bufferData             = MakeShared<MeshBufferData>();
+            Mesh::meshes[meshPath] = bufferData;
 
             Assimp::Importer imp;
 

@@ -218,10 +218,10 @@ namespace adh {
             "Mesh", entity, [](auto& component) {
                 std::string buffer;
                 buffer.resize(256);
-
-                if (!component.bufferData->meshName.empty()) {
-                    auto pos = component.bufferData->meshName.find_last_of('/');
-                    buffer   = component.bufferData->meshName.substr(pos + 1, component.bufferData->meshName.size());
+                auto&& meshBuffer{ component.Get() };
+                if (!meshBuffer->meshName.empty()) {
+                    auto pos = meshBuffer->meshName.find_last_of('/');
+                    buffer   = meshBuffer->meshName.substr(pos + 1, meshBuffer->meshName.size());
                 } else {
                     buffer = "Empty";
                 }
@@ -250,10 +250,10 @@ namespace adh {
 
                 if (open) {
 #if defined(ADH_APPLE)
-                    std::string cmd2 = "open " + component.bufferData->meshFilePath;
+                    std::string cmd2 = "open " + meshBuffer->meshFilePath;
                     system(cmd2.data());
 #elif defined(ADH_WINDOWS)
-                    std::string cmd2 = "start " + component.bufferData->meshFilePath;
+                    std::string cmd2 = "start " + meshBuffer->meshFilePath;
 
                     for (int i{}; i != cmd2.size(); ++i) {
                         if (cmd2[i] == '/') {
@@ -278,7 +278,7 @@ namespace adh {
                             }
                         }
 #endif
-                        if (component.bufferData->meshFilePath != buffer) {
+                        if (meshBuffer->meshFilePath != buffer) {
                             auto pos{ buffer.find_last_of('.') };
 
                             if (pos != std::string::npos) {

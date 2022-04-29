@@ -33,7 +33,6 @@
 #include <unordered_map>
 
 namespace adh {
-
     struct MeshBufferData {
         vk::IndexBuffer index;
         vk::VertexBuffer vertex;
@@ -58,9 +57,23 @@ namespace adh {
 
         void Load2(const char* fileName);
 
+        MeshBufferData* Get() noexcept {
+            return bufferData.Get();
+        }
+
+        const MeshBufferData* Get() const noexcept {
+            return bufferData.Get();
+        }
+
+        static void Clear() noexcept {
+            meshes.clear();
+        }
+
       public:
-        SharedPtr<MeshBufferData> bufferData;
         bool toDraw{ true };
+
+      private:
+        SharedPtr<MeshBufferData> bufferData;
         inline static std::unordered_map<std::string, SharedPtr<MeshBufferData>> meshes;
     };
 } // namespace adh

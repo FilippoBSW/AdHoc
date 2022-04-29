@@ -115,15 +115,16 @@ namespace adh {
     }
 
     [[nodiscard]] physx::PxShape* PhysicsWorld::CreateMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
+        auto&& meshBuffer{ mesh.Get() };
         PxTriangleMeshDesc meshDesc;
         meshDesc.setToDefault();
-        meshDesc.points.data      = mesh.bufferData->vertices.GetData();
-        meshDesc.points.stride    = sizeof(mesh.bufferData->vertices[0]);
-        meshDesc.points.count     = static_cast<physx::PxU32>(mesh.bufferData->vertices.GetSize());
-        meshDesc.triangles.count  = static_cast<physx::PxU32>(mesh.bufferData->indices.GetSize() / 3u);
-        meshDesc.triangles.stride = 3 * sizeof(mesh.bufferData->indices[0]);
-        meshDesc.triangles.data   = mesh.bufferData->indices.GetData();
-        if (sizeof(mesh.bufferData->indices[0]) == sizeof(uint16_t)) {
+        meshDesc.points.data      = meshBuffer->vertices.GetData();
+        meshDesc.points.stride    = sizeof(meshBuffer->vertices[0]);
+        meshDesc.points.count     = static_cast<physx::PxU32>(meshBuffer->vertices.GetSize());
+        meshDesc.triangles.count  = static_cast<physx::PxU32>(meshBuffer->indices.GetSize() / 3u);
+        meshDesc.triangles.stride = 3 * sizeof(meshBuffer->indices[0]);
+        meshDesc.triangles.data   = meshBuffer->indices.GetData();
+        if (sizeof(meshBuffer->indices[0]) == sizeof(uint16_t)) {
             meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
         }
 
@@ -134,14 +135,15 @@ namespace adh {
     }
 
     [[nodiscard]] physx::PxShape* PhysicsWorld::CreateConvexMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
+        auto&& meshBuffer{ mesh.Get() };
         PxBoundedData pointdata{};
-        pointdata.count  = static_cast<physx::PxU32>(mesh.bufferData->vertices.GetSize());
+        pointdata.count  = static_cast<physx::PxU32>(meshBuffer->vertices.GetSize());
         pointdata.stride = sizeof(PxVec3);
-        pointdata.data   = mesh.bufferData->vertices.GetData();
+        pointdata.data   = meshBuffer->vertices.GetData();
 
         PxConvexMeshDesc meshDesc;
         meshDesc.setToDefault();
-        meshDesc.points.count = static_cast<physx::PxU32>(mesh.bufferData->vertices.GetSize());
+        meshDesc.points.count = static_cast<physx::PxU32>(meshBuffer->vertices.GetSize());
         meshDesc.points       = pointdata;
         meshDesc.flags        = PxConvexFlag::eCOMPUTE_CONVEX;
 

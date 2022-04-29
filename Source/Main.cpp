@@ -361,7 +361,7 @@ class AdHoc {
             vkDestroySemaphore(device, renderSemaphore[i], nullptr);
             vkDestroyFence(device, fence1[i], nullptr);
         }
-        Mesh::meshes.clear(); // TODO: temp
+        Mesh::Clear(); // TODO: temp
     }
 
     void OnCollisionEvent(CollisionEvent* event) {
@@ -437,7 +437,7 @@ class AdHoc {
         case StatusEvent::Type::eStop:
             {
                 if (g_IsPlaying) {
-                    Mesh::meshes.clear(); // TODO: temp
+                    Mesh::Clear(); // TODO: temp
                     scene.Load();
                     scene.GetState().ClearStack();
                     g_AreScriptsReady = false;
