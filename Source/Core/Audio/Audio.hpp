@@ -55,7 +55,7 @@ namespace adh {
 
         void Create(const char* filePath, float seconds = {});
 
-        void Create2(const char* fileName, float second = {});
+        void Create2(const char* fileName, float seconds = {});
 
         void OnUpdate();
 
