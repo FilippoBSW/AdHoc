@@ -28,7 +28,7 @@
 #    include <AppKit/AppKit.h>
 #    include <Cocoa/Cocoa.h>
 #elif defined(ADH_WINDOWS)
-
+#    include <mmsystem.h>
 #else
 #    error Not supported platform!
 #endif
@@ -60,7 +60,8 @@ namespace adh {
 #if defined(ADH_APPLE)
         NSSound* mSound;
 #elif defined(ADH_WINDOWS)
-
+        MCI_WAVE_OPEN_PARMSA mWaveOpen;
+        MCI_STATUS_PARMS mStatus;
 #endif
     };
 } // namespace adh

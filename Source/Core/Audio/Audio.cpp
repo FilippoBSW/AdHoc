@@ -67,5 +67,42 @@ namespace adh {
 
 } // namespace adh
 #elif defined(ADH_WINDOWS)
+#    pragma comment(lib, "winmm.lib")
 
+namespace adh {
+    Audio::Audio(const char* filePath) {
+        Create(filePath);
+    }
+
+    Audio::~Audio() {
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_CLOSE, NULL, NULL);
+    }
+
+    void Audio::Create(const char* filePath) {
+        mWaveOpen = { 0, 0, reinterpret_cast<LPCSTR>(MCI_DEVTYPE_WAVEFORM_AUDIO), filePath, 0, 0 }, mStatus{ 0, 0, MCI_STATUS_MODE, 0 };
+        mciSendCommandA(NULL, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, reinterpret_cast<DWORD_PTR>(&mWaveOpen));
+    }
+
+    void Audio::Play() {
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_SEEK, MCI_SEEK_TO_START, NULL);
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_PLAY, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, NULL);
+    }
+
+    void Audio::Stop() {
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_STOP, MCI_WAIT, NULL);
+    }
+
+    void Audio::Pause() {
+    }
+
+    void Audio::Resume() {
+    }
+
+    void Audio::Loop(bool loop) {
+    }
+
+    bool Audio::IsPlaying() const noexcept {
+        return false;
+    }
+} // namespace adh
 #endif
