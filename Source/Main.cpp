@@ -53,6 +53,8 @@
 #include <Vulkan/Viewport.hpp>
 #include <Window.hpp>
 
+#include <Audio/Audio.hpp>
+
 #if defined(ADH_IOS)
 #    include <UIKit/UIKit.h>
 #endif
@@ -143,7 +145,8 @@ struct ShadowMap2D {
 
             pipelineLayout.Create();
 
-            graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE);
+            graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
+                                    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE);
 
             descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3);
             descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
@@ -467,6 +470,13 @@ class AdHoc {
             context.Create(window, "AdHoc", path);
             swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
             InitializeRenderPass();
+
+            Audio audio((Context::Get()->GetDataDirectory() + "Assets/Audio/attack.wav").data());
+            audio.Play();
+            if (audio.IsPlaying()) {
+                audio.Stop();
+                audio.Play();
+            }
 
             sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
             shadowMap.Create(renderPass, sampler);
@@ -966,7 +976,8 @@ class AdHoc {
 
         pipelineLayout.Create();
 
-        graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE);
+        graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
+                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE);
     }
 
     void InitializeDescriptorSets() {

@@ -388,6 +388,13 @@ target_sources(${PROJECT_NAME} PRIVATE
 	${ADH_CORE_SRC}/Scripting/Script.hpp
 	${ADH_CORE_SRC}/Scripting/ScriptHandler.hpp
 	${ADH_CORE_SRC}/Scripting/ScriptHandler.cpp)
+
+#**********************************************
+# Audio
+#**********************************************
+target_sources(${PROJECT_NAME} PRIVATE 
+	${ADH_CORE_SRC}/Audio/Audio.hpp
+	${ADH_CORE_SRC}/Audio/Audio.cpp)
  
 #**********************************************
 # Input
