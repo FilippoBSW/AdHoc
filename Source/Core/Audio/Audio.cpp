@@ -137,10 +137,12 @@ namespace adh {
     }
 
     void Audio::Play() {
-        mciSendCommand(mWaveOpen.wDeviceID, MCI_SEEK, MCI_SEEK_TO_START, NULL);
-        mciSendCommand(mWaveOpen.wDeviceID, MCI_PLAY, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, NULL);
-        mStart  = std::chrono::steady_clock::now();
-        mStatus = Status::ePlaying;
+        if (!IsPlaying()) {
+            mciSendCommand(mWaveOpen.wDeviceID, MCI_SEEK, MCI_SEEK_TO_START, NULL);
+            mciSendCommand(mWaveOpen.wDeviceID, MCI_PLAY, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, NULL);
+            mStart  = std::chrono::steady_clock::now();
+            mStatus = Status::ePlaying;
+        }
     }
 
     void Audio::Stop() {
