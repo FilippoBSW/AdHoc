@@ -464,6 +464,8 @@ class AdHoc {
         event->isHandled = true;
     }
 
+    Audio audio;
+
     void Initialize(const char* path) {
         try {
             window.Create(name, 1200, 800, true, false);
@@ -471,12 +473,11 @@ class AdHoc {
             swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
             InitializeRenderPass();
 
-            Audio audio((Context::Get()->GetDataDirectory() + "Assets/Audio/attack.wav").data());
-            audio.Play();
-            if (audio.IsPlaying()) {
-                audio.Stop();
-                audio.Play();
-            }
+            audio.Create((Context::Get()->GetDataDirectory() + "Assets/Audio/attack.wav").data());
+            //  audio.Loop(true);
+            //  audio.Play();
+            //  audio.Pause();
+            //  audio.Resume();
 
             sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
             shadowMap.Create(renderPass, sampler);
@@ -530,6 +531,9 @@ class AdHoc {
             while (window.IsMinimized()) {
                 window.PollEvents();
             }
+            // #if defined(ADH_WINDOWS)
+            // audio.OnUpdate();
+            // #endif
 
             deltaTime                = timer.Lap();
             ScriptHandler::deltaTime = deltaTime;

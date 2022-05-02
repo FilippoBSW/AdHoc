@@ -28,6 +28,9 @@
 #    include <AppKit/AppKit.h>
 #    include <Cocoa/Cocoa.h>
 #elif defined(ADH_WINDOWS)
+#    include <windows.h>
+
+#    include <digitalv.h>
 #    include <mmsystem.h>
 #else
 #    error Not supported platform!
@@ -43,6 +46,8 @@ namespace adh {
         Audio(const char* filePath);
 
         void Create(const char* filePath);
+
+        void OnUpdate();
 
         void Play();
 
@@ -60,8 +65,9 @@ namespace adh {
 #if defined(ADH_APPLE)
         NSSound* mSound;
 #elif defined(ADH_WINDOWS)
-        MCI_WAVE_OPEN_PARMSA mWaveOpen;
+        MCI_WAVE_OPEN_PARMS mWaveOpen;
         MCI_STATUS_PARMS mStatus;
+        bool mLoop{ false };
 #endif
     };
 } // namespace adh

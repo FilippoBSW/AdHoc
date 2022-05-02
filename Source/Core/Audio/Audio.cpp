@@ -41,6 +41,9 @@ namespace adh {
         }
     }
 
+    void Audio::OnUpdate() {
+    }
+
     void Audio::Play() {
         [mSound play];
     }
@@ -79,8 +82,23 @@ namespace adh {
     }
 
     void Audio::Create(const char* filePath) {
-        mWaveOpen = { 0, 0, reinterpret_cast<LPCSTR>(MCI_DEVTYPE_WAVEFORM_AUDIO), filePath, 0, 0 }, mStatus{ 0, 0, MCI_STATUS_MODE, 0 };
-        mciSendCommandA(NULL, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, reinterpret_cast<DWORD_PTR>(&mWaveOpen));
+        std::int32_t size{ MultiByteToWideChar(CP_UTF8, 0, filePath, -1, nullptr, 0) };
+        auto file = new wchar_t[size];
+        MultiByteToWideChar(CP_UTF8, 0, filePath, -1, file, size);
+
+        mWaveOpen = MCI_WAVE_OPEN_PARMS{ 0, 0, reinterpret_cast<LPCWSTR>(MCI_DEVTYPE_WAVEFORM_AUDIO), file, 0, 0 };
+        mStatus   = MCI_STATUS_PARMS{ 0, 0, MCI_STATUS_MODE, 0 };
+        mciSendCommand(NULL, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, reinterpret_cast<DWORD_PTR>(&mWaveOpen));
+
+        delete[] file;
+    }
+
+    void Audio::OnUpdate() {
+        if (mLoop) {
+            if (!IsPlaying()) {
+                Play();
+            }
+        }
     }
 
     void Audio::Play() {
@@ -93,16 +111,24 @@ namespace adh {
     }
 
     void Audio::Pause() {
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_PAUSE, MCI_WAIT, NULL);
     }
 
     void Audio::Resume() {
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_RESUME, MCI_WAIT, NULL);
     }
 
     void Audio::Loop(bool loop) {
+        mLoop = loop;
     }
 
     bool Audio::IsPlaying() const noexcept {
-        return false;
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_STATUS, MCI_STATUS_ITEM, reinterpret_cast<DWORD_PTR>(&mStatus));
+        if (mStatus.dwReturn == MCI_MODE_PLAY) {
+            return true;
+        } else {
+            return false;
+        }
     }
 } // namespace adh
 #endif
