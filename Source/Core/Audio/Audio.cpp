@@ -63,9 +63,11 @@ namespace adh {
 
     void Audio::Play() {
         if (!IsPlaying()) {
-            [mSound play];
-            mStart  = std::chrono::steady_clock::now();
-            mStatus = Status::ePlaying;
+            future = std::async(std::launch::async, [&]() {
+                [mSound play];
+                mStart  = std::chrono::steady_clock::now();
+                mStatus = Status::ePlaying;
+            });
         }
     }
 

@@ -25,6 +25,9 @@
 #pragma once
 #include <Std/Stopwatch.hpp>
 
+#include <atomic>
+#include <future>
+
 #if defined(ADH_APPLE)
 #    include <AppKit/AppKit.h>
 #    include <Cocoa/Cocoa.h>
@@ -71,6 +74,9 @@ namespace adh {
 
         bool IsPlaying() const noexcept;
 
+      public:
+        std::future<void> future;
+
       private:
 #if defined(ADH_APPLE)
         NSSound* mSound;
@@ -81,7 +87,7 @@ namespace adh {
         std::chrono::steady_clock::time_point mStart{};
         std::chrono::steady_clock::time_point mPause{};
         std::chrono::duration<float> mPauseDuration{};
-        Status mStatus{ Status::eInvalid };
+        std::atomic<Status> mStatus{ Status::eInvalid };
         int mDuration{};
         bool mLoop{ false };
     };
