@@ -44,6 +44,10 @@ namespace adh {
         mDuration = seconds;
     }
 
+    void Audio::Create2(const char* fileName, float seconds) {
+        Create((vk::Context::Get()->GetDataDirectory() + "Assets/Audio/" + fileName).data(), seconds);
+    }
+
     void Audio::OnUpdate() {
         if (mDuration && IsPlaying()) {
             if (std::chrono::duration<float>{ std::chrono::steady_clock::now() - mStart }.count() > mDuration + mPauseDuration.count()) {
