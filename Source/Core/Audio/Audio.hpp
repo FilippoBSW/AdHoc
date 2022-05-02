@@ -55,6 +55,8 @@ namespace adh {
 
         void Create(const char* filePath, float seconds = {});
 
+        void Create2(const char* fileName, float second = {});
+
         void OnUpdate();
 
         void Play();
@@ -74,7 +76,7 @@ namespace adh {
         NSSound* mSound;
 #elif defined(ADH_WINDOWS)
         MCI_WAVE_OPEN_PARMS mWaveOpen;
-        MCI_STATUS_PARMS mStatus;
+        MCI_STATUS_PARMS mMciStatus;
 #endif
         std::chrono::steady_clock::time_point mStart{};
         std::chrono::steady_clock::time_point mPause{};

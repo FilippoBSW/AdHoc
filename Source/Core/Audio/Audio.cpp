@@ -23,6 +23,7 @@
 // *********************************************************************************
 
 #include "Audio.hpp"
+#include <Vulkan/Context.hpp>
 #include <iostream>
 
 #if defined(ADH_APPLE)
@@ -100,18 +101,22 @@ namespace adh {
         mciSendCommand(mWaveOpen.wDeviceID, MCI_CLOSE, NULL, NULL);
     }
 
-    void Audio::Create(const char* filePath, std::chrono::milliseconds milliseconds) {
+    void Audio::Create(const char* filePath, float seconds) {
         std::int32_t size{ MultiByteToWideChar(CP_UTF8, 0, filePath, -1, nullptr, 0) };
         auto file = new wchar_t[size];
         MultiByteToWideChar(CP_UTF8, 0, filePath, -1, file, size);
 
-        mWaveOpen = MCI_WAVE_OPEN_PARMS{ 0, 0, reinterpret_cast<LPCWSTR>(MCI_DEVTYPE_WAVEFORM_AUDIO), file, 0, 0 };
-        mStatus   = MCI_STATUS_PARMS{ 0, 0, MCI_STATUS_MODE, 0 };
+        mWaveOpen  = MCI_WAVE_OPEN_PARMS{ 0, 0, reinterpret_cast<LPCWSTR>(MCI_DEVTYPE_WAVEFORM_AUDIO), file, 0, 0 };
+        mMciStatus = MCI_STATUS_PARMS{ 0, 0, MCI_STATUS_MODE, 0 };
         mciSendCommand(NULL, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, reinterpret_cast<DWORD_PTR>(&mWaveOpen));
 
         delete[] file;
 
-        mDuration = milliseconds;
+        mDuration = seconds;
+    }
+
+    void Audio::Create2(const char* fileName, float seconds) {
+        Create((vk::Context::Get()->GetDataDirectory() + "Assets/Audio/" + fileName).data(), seconds);
     }
 
     void Audio::OnUpdate() {
@@ -156,8 +161,8 @@ namespace adh {
     }
 
     bool Audio::IsPlaying() const noexcept {
-        mciSendCommand(mWaveOpen.wDeviceID, MCI_STATUS, MCI_STATUS_ITEM, reinterpret_cast<DWORD_PTR>(&mStatus));
-        if (mStatus.dwReturn == MCI_MODE_PLAY && mStatus == Status::ePlaying) {
+        mciSendCommand(mWaveOpen.wDeviceID, MCI_STATUS, MCI_STATUS_ITEM, reinterpret_cast<DWORD_PTR>(&mMciStatus));
+        if (mMciStatus.dwReturn == MCI_MODE_PLAY && mStatus == Status::ePlaying) {
             return true;
         } else {
             return false;

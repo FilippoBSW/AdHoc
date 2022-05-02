@@ -29,6 +29,8 @@
 #include <Scene/Scene.hpp>
 #include <Scripting/Script.hpp>
 
+#include <Audio/Audio.hpp>
+
 #include <Event/Event.hpp>
 #include <Vulkan/Context.hpp>
 
@@ -347,10 +349,6 @@ namespace adh {
         lua_pushcclosure(state, ScriptHandler::SetGravity, 1);
         lua_setglobal(state, "SetGravity");
 
-        // lua_pushstring(state, "DispatchEvent");
-        // lua_pushcclosure(state, ScriptHandler::DispatchEvent, 1);
-        // lua_setglobal(state, "DispatchEvent");
-
         state.RegisterType<Input>("Input");
         state.RegisterTypeFunction<Input>("GetKey", &Input::RepeatGetKey);
         state.RegisterTypeFunction<Input>("GetKeyDown", &Input::GetKeyDown);
@@ -491,5 +489,16 @@ namespace adh {
         state.RegisterTypeFunction<RigidBody>("SetDynamicFriction", &RigidBody::SetDynamicFriction);
         state.RegisterTypeFunction<RigidBody>("UpdateGeometry", &RigidBody::UpdateGeometry);
         state.RegisterTypeFunction<RigidBody>("SetHasGravity", &RigidBody::SetHasGravity);
+
+        state.RegisterType<Audio>("Audio");
+        state.RegisterTypeConstructor<Audio>("new");
+        state.RegisterTypeFunction<Audio>("OnUpdate", &Audio::OnUpdate);
+        state.RegisterTypeFunction<Audio>("Create", &Audio::Create2);
+        state.RegisterTypeFunction<Audio>("Play", &Audio::Play);
+        state.RegisterTypeFunction<Audio>("Stop", &Audio::Stop);
+        state.RegisterTypeFunction<Audio>("Pause", &Audio::Pause);
+        state.RegisterTypeFunction<Audio>("Resume", &Audio::Resume);
+        state.RegisterTypeFunction<Audio>("Loop", &Audio::Loop);
+        state.RegisterTypeFunction<Audio>("IsPlaying", &Audio::IsPlaying);
     }
 } // namespace adh
