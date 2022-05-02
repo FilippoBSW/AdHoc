@@ -473,9 +473,9 @@ class AdHoc {
             swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
             InitializeRenderPass();
 
-            audio.Create((Context::Get()->GetDataDirectory() + "Assets/Audio/attack.wav").data());
-            //  audio.Loop(true);
-            //  audio.Play();
+            audio.Create((Context::Get()->GetDataDirectory() + "Assets/Audio/overworld.wav").data(), 5.0f);
+            // audio.Loop(true);
+            audio.Play();
             //  audio.Pause();
             //  audio.Resume();
 
@@ -532,7 +532,7 @@ class AdHoc {
                 window.PollEvents();
             }
             // #if defined(ADH_WINDOWS)
-            // audio.OnUpdate();
+            audio.OnUpdate();
             // #endif
 
             deltaTime                = timer.Lap();
@@ -576,6 +576,24 @@ class AdHoc {
                 scene.ResetPhysicsWorld();
                 ReadyScript();
             }
+
+            // static bool once{ false };
+            // static float accum;
+            // accum += deltaTime;
+            // if (accum > 2.0f && !once) {
+            //     if (accum > 6.0f) {
+            //         audio.Resume();
+            //         once = true;
+            //         std::cout << "RESUME" << std::endl;
+            //     } else {
+            //         static bool o{ false };
+            //         if (!o) {
+
+            //             o = true;
+            //             audio.Pause();
+            //         }
+            //     }
+            // }
         }
     }
 

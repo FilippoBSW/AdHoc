@@ -23,6 +23,7 @@
 // *********************************************************************************
 
 #pragma once
+#include <Std/Stopwatch.hpp>
 
 #if defined(ADH_APPLE)
 #    include <AppKit/AppKit.h>
@@ -38,6 +39,13 @@
 
 namespace adh {
     class Audio {
+        enum class Status {
+            eInvalid,
+            ePlaying,
+            eStopped,
+            ePaused,
+        };
+
       public:
         Audio() = default;
 
@@ -45,7 +53,7 @@ namespace adh {
 
         Audio(const char* filePath);
 
-        void Create(const char* filePath);
+        void Create(const char* filePath, float seconds = {});
 
         void OnUpdate();
 
@@ -67,7 +75,12 @@ namespace adh {
 #elif defined(ADH_WINDOWS)
         MCI_WAVE_OPEN_PARMS mWaveOpen;
         MCI_STATUS_PARMS mStatus;
-        bool mLoop{ false };
 #endif
+        std::chrono::steady_clock::time_point mStart{};
+        std::chrono::steady_clock::time_point mPause{};
+        std::chrono::duration<float> mPauseDuration{};
+        Status mStatus{ Status::eInvalid };
+        int mDuration{};
+        bool mLoop{ false };
     };
 } // namespace adh
