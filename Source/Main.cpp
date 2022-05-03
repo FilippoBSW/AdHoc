@@ -535,7 +535,8 @@ class AdHoc {
                 }
                 if (!ScriptHandler::toDestroy.IsEmpty()) {
                     for (auto&& i : ScriptHandler::toDestroy) {
-                        scene.GetWorld().Destroy(i);
+                        // scene.GetWorld().Destroy(i);
+                        i(&scene);
                     }
                     ScriptHandler::toDestroy.Clear();
                 }

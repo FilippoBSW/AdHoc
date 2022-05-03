@@ -26,6 +26,7 @@
 
 #include <Entity/Entity.hpp>
 #include <Std/Array.hpp>
+#include <functional>
 #include <string>
 
 struct lua_State;
@@ -70,7 +71,7 @@ namespace adh {
         inline static std::uint64_t currentEntity;
         inline static float deltaTime;
 
-        inline static Array<ecs::Entity> toDestroy;
+        inline static Array<std::function<void(Scene* scene)>> toDestroy;
 
         inline static const char* loadSceneFilename{ nullptr };
     };

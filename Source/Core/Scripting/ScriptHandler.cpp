@@ -66,8 +66,9 @@ namespace adh {
 
     int ScriptHandler::DestroyEntity(lua_State* L) {
         auto e{ ecs::Entity(lua_tonumber(L, 1)) };
-        toDestroy.EmplaceBack(e);
-        // scene->GetWorld().Destroy(e);
+        toDestroy.EmplaceBack([e2 = e](Scene* scene) {
+            scene->GetWorld().Destroy(e2);
+        });
         return 0;
     }
 
@@ -176,32 +177,46 @@ namespace adh {
         auto name   = lua_tostring(L, 2);
 
         if (!std::strcmp(name, "Transform")) {
-            if (scene->GetWorld().Contains<Transform>(ecs::Entity(entity))) {
-                scene->GetWorld().Remove<Transform>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Transform>(static_cast<ecs::Entity>(entity))) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<Transform>(static_cast<ecs::Entity>(e));
+                });
             }
         } else if (!std::strcmp(name, "Material")) {
-            if (scene->GetWorld().Contains<Material>(ecs::Entity(entity))) {
-                scene->GetWorld().Remove<Material>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Material>(static_cast<ecs::Entity>(entity))) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<Material>(static_cast<ecs::Entity>(e));
+                });
             }
         } else if (!std::strcmp(name, "Mesh")) {
-            if (scene->GetWorld().Contains<Mesh>(ecs::Entity(entity))) {
-                scene->GetWorld().Remove<Mesh>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Mesh>(static_cast<ecs::Entity>(entity))) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<Mesh>(static_cast<ecs::Entity>(e));
+                });
             }
         } else if (!std::strcmp(name, "Tag")) {
-            if (scene->GetWorld().Contains<Tag>(ecs::Entity(entity))) {
-                scene->GetWorld().Remove<Tag>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Tag>(static_cast<ecs::Entity>(entity))) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<Tag>(static_cast<ecs::Entity>(e));
+                });
             }
         } else if (!std::strcmp(name, "Camera2D")) {
-            if (scene->GetWorld().Contains<Camera2D>(ecs::Entity(entity))) {
-                scene->GetWorld().Remove<Camera2D>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Camera2D>(static_cast<ecs::Entity>(entity))) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<Camera2D>(static_cast<ecs::Entity>(e));
+                });
             }
         } else if (!std::strcmp(name, "Camera3D")) {
-            if (scene->GetWorld().Contains<Camera3D>(ecs::Entity(entity))) {
-                scene->GetWorld().Remove<Camera3D>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Camera3D>(static_cast<ecs::Entity>(entity))) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<Camera3D>(static_cast<ecs::Entity>(e));
+                });
             }
         } else if (!std::strcmp(name, "RigidBody")) {
-            if (scene->GetWorld().Contains<RigidBody>(ecs::Entity(entity))) {
-                scene->GetWorld().Remove<RigidBody>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<RigidBody>(static_cast<ecs::Entity>(entity))) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<RigidBody>(static_cast<ecs::Entity>(e));
+                });
             }
         } else {
             std::string err = "Component: [" + std::string(name) + "] is invalid!\n";
