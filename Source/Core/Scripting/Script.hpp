@@ -664,7 +664,6 @@ namespace adh {
                 lua_getfield(m_State, LUA_REGISTRYINDEX, uniqueScript.data());
                 lua_setupvalue(m_State, 1, 1);
                 lua_setglobal(m_State, uniqueScript.data());
-                lua_pcall(m_State, 0, LUA_MULTRET, 0);
                 return Script(Move(uniqueScript), m_State, "Script.lua");
             }
 

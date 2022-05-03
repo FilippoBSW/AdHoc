@@ -101,11 +101,12 @@ namespace adh {
             }
         } else if (!std::strcmp(name, "Script")) {
             if (!scene->GetWorld().Contains<lua::Script>(entity)) {
-                auto [s]  = scene->GetWorld().Add<lua::Script>(entity, lua::Script{});
-                auto file = lua_tostring(L, 3);
-                s         = scene->GetState().CreateScript2(file);
+                auto [s]      = scene->GetWorld().Add<lua::Script>(entity, lua::Script{});
+                auto file     = lua_tostring(L, 3);
+                s             = scene->GetState().CreateScript2(file);
+                currentEntity = static_cast<std::uint64_t>(entity);
+                lua_pcall(scene->GetState(), 0, LUA_MULTRET, 0);
                 s.Bind();
-                ScriptHandler::currentEntity = static_cast<std::uint64_t>(entity);
                 s.Call("Start");
                 s.Unbind();
             }

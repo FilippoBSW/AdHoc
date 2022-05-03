@@ -527,20 +527,18 @@ class AdHoc {
                 RecreateEditor();
             }
 
-            if (currentFrame % swapchain.GetImageViewCount()) {
-                if (ScriptHandler::loadSceneFilename) {
-                    scene.LoadFromFile((Context::Get()->GetDataDirectory() + "Assets/Scenes/" + ScriptHandler::loadSceneFilename).data());
-                    ScriptHandler::loadSceneFilename = nullptr;
-                    scene.GetState().ClearStack();
-                    scene.ResetPhysicsWorld();
-                    ReadyScript();
+            if (ScriptHandler::loadSceneFilename) {
+                scene.LoadFromFile((Context::Get()->GetDataDirectory() + "Assets/Scenes/" + ScriptHandler::loadSceneFilename).data());
+                ScriptHandler::loadSceneFilename = nullptr;
+                scene.GetState().ClearStack();
+                scene.ResetPhysicsWorld();
+                ReadyScript();
+            }
+            if (!ScriptHandler::toDestroy.IsEmpty()) {
+                for (auto&& i : ScriptHandler::toDestroy) {
+                    i(&scene);
                 }
-                if (!ScriptHandler::toDestroy.IsEmpty()) {
-                    for (auto&& i : ScriptHandler::toDestroy) {
-                        i(&scene);
-                    }
-                    ScriptHandler::toDestroy.Clear();
-                }
+                ScriptHandler::toDestroy.Clear();
             }
         }
     }
