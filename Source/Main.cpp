@@ -382,41 +382,8 @@ class AdHoc {
                     call = true;
                 }
 
-                if (call) {
-                    script.Bind();
-                    switch (event->type) {
-                    case CollisionEvent::Type::eCollisionEnter:
-                        {
-                            script.Call("OnCollisionEnter", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eCollisionPersist:
-                        {
-                            script.Call("OnCollisionPersist", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eCollisionExit:
-                        {
-                            script.Call("OnCollisionExit", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eTriggerEnter:
-                        {
-                            script.Call("OnTriggerEnter", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eTriggerPersist:
-                        {
-                            script.Call("OnTriggerPersist", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eTriggerExit:
-                        {
-                            script.Call("OnTriggerExit", rhs);
-                            break;
-                        }
-                    }
-                    script.Unbind();
+                if (call && script.collisionEvent.type == CollisionEvent::Type::eCollisionInvalid) {
+                    script.collisionEvent = { event->type, 0, rhs };
                 }
             });
         }
@@ -558,12 +525,20 @@ class AdHoc {
                 RecreateEditor();
             }
 
-            if (ScriptHandler::loadSceneFilename) {
-                scene.LoadFromFile((Context::Get()->GetDataDirectory() + "Assets/Scenes/" + ScriptHandler::loadSceneFilename).data());
-                ScriptHandler::loadSceneFilename = nullptr;
-                scene.GetState().ClearStack();
-                scene.ResetPhysicsWorld();
-                ReadyScript();
+            if (currentFrame % swapchain.GetImageViewCount()) {
+                if (ScriptHandler::loadSceneFilename) {
+                    scene.LoadFromFile((Context::Get()->GetDataDirectory() + "Assets/Scenes/" + ScriptHandler::loadSceneFilename).data());
+                    ScriptHandler::loadSceneFilename = nullptr;
+                    scene.GetState().ClearStack();
+                    scene.ResetPhysicsWorld();
+                    ReadyScript();
+                }
+                if (!ScriptHandler::toDestroy.IsEmpty()) {
+                    for (auto&& i : ScriptHandler::toDestroy) {
+                        scene.GetWorld().Destroy(i);
+                    }
+                    ScriptHandler::toDestroy.Clear();
+                }
             }
         }
     }
@@ -633,6 +608,44 @@ class AdHoc {
                 if (script.fixedUpdateAcculumator >= 0.017f) {
                     script.Call("FixedUpdate");
                     script.fixedUpdateAcculumator = {};
+                }
+                switch (script.collisionEvent.type) {
+                case CollisionEvent::Type::eCollisionEnter:
+                    {
+                        script.Call("OnCollisionEnter", script.collisionEvent.entityB);
+                        script.collisionEvent = { CollisionEvent::Type::eCollisionInvalid, 0, 0 };
+                        break;
+                    }
+                case CollisionEvent::Type::eCollisionPersist:
+                    {
+                        script.Call("OnCollisionPersist", script.collisionEvent.entityB);
+                        script.collisionEvent = { CollisionEvent::Type::eCollisionInvalid, 0, 0 };
+                        break;
+                    }
+                case CollisionEvent::Type::eCollisionExit:
+                    {
+                        script.Call("OnCollisionExit", script.collisionEvent.entityB);
+                        script.collisionEvent = { CollisionEvent::Type::eCollisionInvalid, 0, 0 };
+                        break;
+                    }
+                case CollisionEvent::Type::eTriggerEnter:
+                    {
+                        script.Call("OnTriggerEnter", script.collisionEvent.entityB);
+                        script.collisionEvent = { CollisionEvent::Type::eCollisionInvalid, 0, 0 };
+                        break;
+                    }
+                case CollisionEvent::Type::eTriggerPersist:
+                    {
+                        script.Call("OnTriggerPersist", script.collisionEvent.entityB);
+                        script.collisionEvent = { CollisionEvent::Type::eCollisionInvalid, 0, 0 };
+                        break;
+                    }
+                case CollisionEvent::Type::eTriggerExit:
+                    {
+                        script.Call("OnTriggerExit", script.collisionEvent.entityB);
+                        script.collisionEvent = { CollisionEvent::Type::eCollisionInvalid, 0, 0 };
+                        break;
+                    }
                 }
                 script.Unbind();
             });

@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <Entity/Entity.hpp>
 #include <Std/Array.hpp>
 #include <string>
 
@@ -68,6 +69,8 @@ namespace adh {
         inline static Array<std::string> errorLog;
         inline static std::uint64_t currentEntity;
         inline static float deltaTime;
+
+        inline static Array<ecs::Entity> toDestroy;
 
         inline static const char* loadSceneFilename{ nullptr };
     };

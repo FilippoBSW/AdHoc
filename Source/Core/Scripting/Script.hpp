@@ -472,6 +472,7 @@ namespace adh {
             std::string fileName;
             std::string filePath;
             std::string errorText;
+            CollisionEvent collisionEvent{ CollisionEvent::Type::eCollisionInvalid, 0, 0 };
             float fixedUpdateAcculumator{};
 
           private:

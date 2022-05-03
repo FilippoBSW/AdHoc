@@ -167,6 +167,7 @@ namespace adh {
 
     struct CollisionEvent : BaseEvent {
         enum class Type {
+            eCollisionInvalid,
             eCollisionEnter,
             eCollisionPersist,
             eCollisionExit,

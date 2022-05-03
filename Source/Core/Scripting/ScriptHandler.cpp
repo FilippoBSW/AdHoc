@@ -66,7 +66,8 @@ namespace adh {
 
     int ScriptHandler::DestroyEntity(lua_State* L) {
         auto e{ ecs::Entity(lua_tonumber(L, 1)) };
-        scene->GetWorld().Destroy(e);
+        toDestroy.EmplaceBack(e);
+        // scene->GetWorld().Destroy(e);
         return 0;
     }
 
