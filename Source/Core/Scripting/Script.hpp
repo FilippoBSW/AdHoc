@@ -625,8 +625,11 @@ namespace adh {
             }
 
             [[nodiscard]] Script CreateScript(const std::string& script) {
-                static std::uint64_t uniqueId;
                 return CreateScript(script, uniqueId++);
+            }
+
+            [[nodiscard]] Script CreateScript2(const char* script) {
+                return CreateScript2(script, uniqueId++);
             }
 
             [[nodiscard]] Script CreateScript(const std::string& script, ecs::Entity* entity) {
@@ -647,6 +650,22 @@ namespace adh {
                 lua_setupvalue(m_State, 1, 1);
                 lua_setglobal(m_State, uniqueScript.data());
                 return Script(Move(uniqueScript), m_State, script);
+            }
+
+            Script CreateScript2(const char* script, std::uint64_t id) {
+                auto uniqueScript{ CreateUniqueScript("Script.lua", id) };
+                luaL_loadstring(m_State, script);
+                lua_newtable(m_State);
+                lua_newtable(m_State);
+                lua_getglobal(m_State, "_G");
+                lua_setfield(m_State, -2, "__index");
+                lua_setmetatable(m_State, -2);
+                lua_setfield(m_State, LUA_REGISTRYINDEX, uniqueScript.data());
+                lua_getfield(m_State, LUA_REGISTRYINDEX, uniqueScript.data());
+                lua_setupvalue(m_State, 1, 1);
+                lua_setglobal(m_State, uniqueScript.data());
+                lua_pcall(m_State, 0, LUA_MULTRET, 0);
+                return Script(Move(uniqueScript), m_State, "Script.lua");
             }
 
             std::string CreateUniqueScript(const std::string& script, std::uint64_t id) {
@@ -688,6 +707,7 @@ namespace adh {
             lua_State* m_State;
             inline static std::unordered_map<std::string, std::function<int(lua_State*)>> m_GlobalFunctions;
             Array<UniquePtr<BaseType>> m_Types;
+            inline static std::uint64_t uniqueId;
         };
 
         inline State NewState() {

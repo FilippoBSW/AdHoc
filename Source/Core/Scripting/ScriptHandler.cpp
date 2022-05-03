@@ -65,7 +65,7 @@ namespace adh {
     }
 
     int ScriptHandler::DestroyEntity(lua_State* L) {
-        auto e{ ecs::Entity(lua_tonumber(L, 1)) };
+        auto e{ static_cast<ecs::Entity>(lua_tonumber(L, 1)) };
         toDestroy.EmplaceBack([e2 = e](Scene* scene) {
             scene->GetWorld().Destroy(e2);
         });
@@ -76,31 +76,41 @@ namespace adh {
         auto entity = static_cast<ecs::Entity>(lua_tonumber(L, 1));
         auto name   = lua_tostring(L, 2);
         if (!std::strcmp(name, "Transform")) {
-            if (!scene->GetWorld().Contains<Transform>(ecs::Entity(entity))) {
+            if (!scene->GetWorld().Contains<Transform>(entity)) {
                 scene->GetWorld().Add<Transform>(entity, Transform{});
             }
         } else if (!std::strcmp(name, "Material")) {
-            if (!scene->GetWorld().Contains<Material>(ecs::Entity(entity))) {
+            if (!scene->GetWorld().Contains<Material>(entity)) {
                 scene->GetWorld().Add<Material>(entity, Material{});
             }
         } else if (!std::strcmp(name, "Mesh")) {
-            if (!scene->GetWorld().Contains<Mesh>(ecs::Entity(entity))) {
+            if (!scene->GetWorld().Contains<Mesh>(entity)) {
                 scene->GetWorld().Add<Mesh>(entity, Mesh{});
             }
         } else if (!std::strcmp(name, "Tag")) {
-            if (!scene->GetWorld().Contains<Tag>(ecs::Entity(entity))) {
+            if (!scene->GetWorld().Contains<Tag>(entity)) {
                 scene->GetWorld().Add<Tag>(entity, Tag{});
             }
         } else if (!std::strcmp(name, "Camera2D")) {
-            if (!scene->GetWorld().Contains<Camera2D>(ecs::Entity(entity))) {
+            if (!scene->GetWorld().Contains<Camera2D>(entity)) {
                 scene->GetWorld().Add<Camera2D>(entity, Camera2D{});
             }
         } else if (!std::strcmp(name, "Camera3D")) {
-            if (!scene->GetWorld().Contains<Camera3D>(ecs::Entity(entity))) {
+            if (!scene->GetWorld().Contains<Camera3D>(entity)) {
                 scene->GetWorld().Add<Camera3D>(entity, Camera3D{});
             }
+        } else if (!std::strcmp(name, "Script")) {
+            if (!scene->GetWorld().Contains<lua::Script>(entity)) {
+                auto [s]  = scene->GetWorld().Add<lua::Script>(entity, lua::Script{});
+                auto file = lua_tostring(L, 3);
+                s         = scene->GetState().CreateScript2(file);
+                s.Bind();
+                ScriptHandler::currentEntity = static_cast<std::uint64_t>(entity);
+                s.Call("Start");
+                s.Unbind();
+            }
         } else if (!std::strcmp(name, "RigidBody")) {
-            if (!scene->GetWorld().Contains<RigidBody>(ecs::Entity(entity))) {
+            if (!scene->GetWorld().Contains<RigidBody>(entity)) {
                 if (lua_isstring(L, 3)) {
                     auto type = lua_tostring(L, 3);
                     PhysicsColliderShape colliderShape{ PhysicsColliderShape::eInvalid };
@@ -173,49 +183,55 @@ namespace adh {
     }
 
     int ScriptHandler::RemoveComponent(lua_State* L) {
-        auto entity = lua_tonumber(L, 1);
+        auto entity = static_cast<ecs::Entity>(lua_tonumber(L, 1));
         auto name   = lua_tostring(L, 2);
 
         if (!std::strcmp(name, "Transform")) {
-            if (scene->GetWorld().Contains<Transform>(static_cast<ecs::Entity>(entity))) {
+            if (scene->GetWorld().Contains<Transform>(entity)) {
                 toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Transform>(static_cast<ecs::Entity>(e));
+                    scene->GetWorld().Remove<Transform>(e);
                 });
             }
         } else if (!std::strcmp(name, "Material")) {
-            if (scene->GetWorld().Contains<Material>(static_cast<ecs::Entity>(entity))) {
+            if (scene->GetWorld().Contains<Material>(entity)) {
                 toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Material>(static_cast<ecs::Entity>(e));
+                    scene->GetWorld().Remove<Material>(e);
                 });
             }
         } else if (!std::strcmp(name, "Mesh")) {
-            if (scene->GetWorld().Contains<Mesh>(static_cast<ecs::Entity>(entity))) {
+            if (scene->GetWorld().Contains<Mesh>(entity)) {
                 toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Mesh>(static_cast<ecs::Entity>(e));
+                    scene->GetWorld().Remove<Mesh>(e);
                 });
             }
         } else if (!std::strcmp(name, "Tag")) {
-            if (scene->GetWorld().Contains<Tag>(static_cast<ecs::Entity>(entity))) {
+            if (scene->GetWorld().Contains<Tag>(entity)) {
                 toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Tag>(static_cast<ecs::Entity>(e));
+                    scene->GetWorld().Remove<Tag>(e);
                 });
             }
         } else if (!std::strcmp(name, "Camera2D")) {
-            if (scene->GetWorld().Contains<Camera2D>(static_cast<ecs::Entity>(entity))) {
+            if (scene->GetWorld().Contains<Camera2D>(entity)) {
                 toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Camera2D>(static_cast<ecs::Entity>(e));
+                    scene->GetWorld().Remove<Camera2D>(e);
                 });
             }
         } else if (!std::strcmp(name, "Camera3D")) {
-            if (scene->GetWorld().Contains<Camera3D>(static_cast<ecs::Entity>(entity))) {
+            if (scene->GetWorld().Contains<Camera3D>(entity)) {
                 toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Camera3D>(static_cast<ecs::Entity>(e));
+                    scene->GetWorld().Remove<Camera3D>(e);
                 });
             }
         } else if (!std::strcmp(name, "RigidBody")) {
-            if (scene->GetWorld().Contains<RigidBody>(static_cast<ecs::Entity>(entity))) {
+            if (scene->GetWorld().Contains<RigidBody>(entity)) {
                 toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<RigidBody>(static_cast<ecs::Entity>(e));
+                    scene->GetWorld().Remove<RigidBody>(e);
+                });
+            }
+        } else if (!std::strcmp(name, "Script")) {
+            if (scene->GetWorld().Contains<lua::Script>(entity)) {
+                toDestroy.EmplaceBack([e = entity](Scene* scene) {
+                    scene->GetWorld().Remove<lua::Script>(e);
                 });
             }
         } else {
@@ -227,43 +243,43 @@ namespace adh {
     }
 
     int ScriptHandler::GetComponent(lua_State* L) {
-        auto entity = lua_tonumber(L, 1);
+        auto entity = static_cast<ecs::Entity>(lua_tonumber(L, 1));
         auto name   = lua_tostring(L, 2);
 
         if (!std::strcmp(name, "Transform")) {
-            if (scene->GetWorld().Contains<Transform>(ecs::Entity(entity))) {
-                auto [temp] = scene->GetWorld().Get<Transform>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Transform>(entity)) {
+                auto [temp] = scene->GetWorld().Get<Transform>(entity);
                 return scene->GetState().BindObject(&temp);
             }
         } else if (!std::strcmp(name, "Material")) {
-            if (scene->GetWorld().Contains<Material>(ecs::Entity(entity))) {
-                auto [temp] = scene->GetWorld().Get<Material>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Material>(entity)) {
+                auto [temp] = scene->GetWorld().Get<Material>(entity);
                 return scene->GetState().BindObject(&temp);
             }
         } else if (!std::strcmp(name, "Mesh")) {
-            if (scene->GetWorld().Contains<Mesh>(ecs::Entity(entity))) {
-                auto [temp] = scene->GetWorld().Get<Mesh>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Mesh>(entity)) {
+                auto [temp] = scene->GetWorld().Get<Mesh>(entity);
                 return scene->GetState().BindObject(&temp);
             }
         } else if (!std::strcmp(name, "Tag")) {
-            if (scene->GetWorld().Contains<Tag>(ecs::Entity(entity))) {
-                auto [temp] = scene->GetWorld().Get<Tag>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Tag>(entity)) {
+                auto [temp] = scene->GetWorld().Get<Tag>(entity);
                 lua_pushstring(L, temp.Get());
                 return 1;
             }
         } else if (!std::strcmp(name, "Camera2D")) {
-            if (scene->GetWorld().Contains<Camera2D>(ecs::Entity(entity))) {
-                auto [temp] = scene->GetWorld().Get<Camera2D>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Camera2D>(entity)) {
+                auto [temp] = scene->GetWorld().Get<Camera2D>(entity);
                 return scene->GetState().BindObject(&temp);
             }
         } else if (!std::strcmp(name, "Camera3D")) {
-            if (scene->GetWorld().Contains<Camera3D>(ecs::Entity(entity))) {
-                auto [temp] = scene->GetWorld().Get<Camera3D>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<Camera3D>(entity)) {
+                auto [temp] = scene->GetWorld().Get<Camera3D>(entity);
                 return scene->GetState().BindObject(&temp);
             }
         } else if (!std::strcmp(name, "RigidBody")) {
-            if (scene->GetWorld().Contains<RigidBody>(ecs::Entity(entity))) {
-                auto [temp] = scene->GetWorld().Get<RigidBody>(ecs::Entity(entity));
+            if (scene->GetWorld().Contains<RigidBody>(entity)) {
+                auto [temp] = scene->GetWorld().Get<RigidBody>(entity);
                 return scene->GetState().BindObject(&temp);
             }
         } else {

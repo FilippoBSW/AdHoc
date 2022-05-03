@@ -235,9 +235,9 @@ namespace adh {
             if (contactpair.events & PxPairFlag::eNOTIFY_TOUCH_FOUND) {
                 Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionEnter, a->entity, b->entity);
             } else if (contactpair.events & PxPairFlag::eNOTIFY_TOUCH_LOST) {
-                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionEnter, a->entity, b->entity);
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionExit, a->entity, b->entity);
             } else if (contactpair.events & PxPairFlag::eNOTIFY_TOUCH_PERSISTS) {
-                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionEnter, a->entity, b->entity);
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eCollisionPersist, a->entity, b->entity);
             }
         }
     }
@@ -256,9 +256,9 @@ namespace adh {
             if (triggerPair.status & PxPairFlag::eNOTIFY_TOUCH_FOUND) {
                 Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerEnter, a->entity, b->entity);
             } else if (triggerPair.status & PxPairFlag::eNOTIFY_TOUCH_LOST) {
-                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerEnter, a->entity, b->entity);
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerExit, a->entity, b->entity);
             } else if (triggerPair.status & PxPairFlag::eNOTIFY_TOUCH_PERSISTS) {
-                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerEnter, a->entity, b->entity);
+                Event::Dispatch<CollisionEvent>(CollisionEvent::Type::eTriggerPersist, a->entity, b->entity);
             }
         }
     }

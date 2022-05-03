@@ -382,7 +382,7 @@ class AdHoc {
                     call = true;
                 }
 
-                if (call && script.collisionEvent.type == CollisionEvent::Type::eCollisionInvalid) {
+                if (call) {
                     script.collisionEvent = { event->type, 0, rhs };
                 }
             });
@@ -414,6 +414,8 @@ class AdHoc {
                     g_IsPlaying       = false;
                     g_IsPaused        = false;
                     g_MaximizeOnPlay  = maximizeOnPlay2;
+
+                    ScriptHandler::toDestroy.Clear();
                 }
                 break;
             }
@@ -535,7 +537,6 @@ class AdHoc {
                 }
                 if (!ScriptHandler::toDestroy.IsEmpty()) {
                     for (auto&& i : ScriptHandler::toDestroy) {
-                        // scene.GetWorld().Destroy(i);
                         i(&scene);
                     }
                     ScriptHandler::toDestroy.Clear();
