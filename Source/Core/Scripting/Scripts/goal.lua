@@ -16,6 +16,8 @@ end
 
 function Update()
     if moving == true then
+		transform = GetComponent(this, "Transform")
+		rigidbody = GetComponent(this, "RigidBody")
         local y = transform.translate.y
         local force = 0;
 

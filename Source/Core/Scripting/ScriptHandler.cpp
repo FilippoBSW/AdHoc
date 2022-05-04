@@ -265,8 +265,7 @@ namespace adh {
         } else if (!std::strcmp(name, "Tag")) {
             if (scene->GetWorld().Contains<Tag>(entity)) {
                 auto [temp] = scene->GetWorld().Get<Tag>(entity);
-                lua_pushstring(L, temp.Get());
-                return 1;
+                return scene->GetState().BindObject(&temp);
             }
         } else if (!std::strcmp(name, "Camera2D")) {
             if (scene->GetWorld().Contains<Camera2D>(entity)) {
@@ -432,6 +431,11 @@ namespace adh {
         state.RegisterTypeVariable<Quaternion<float>>("y", &Quaternion<float>::y);
         state.RegisterTypeVariable<Quaternion<float>>("z", &Quaternion<float>::z);
         state.RegisterTypeVariable<Quaternion<float>>("w", &Quaternion<float>::w);
+
+        state.RegisterType<Tag>("Tag");
+        state.RegisterTypeConstructor<Tag>("new");
+        state.RegisterTypeFunction<Tag>("Get", &Tag::Get);
+        state.RegisterTypeFunction<Tag>("Set", &Tag::Set);
 
         state.RegisterType<Transform>("Transform");
         state.RegisterTypeConstructor<Transform>("new");

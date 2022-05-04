@@ -36,6 +36,9 @@ namespace adh {
             return tag.data();
         }
 
+        void Set(const char* tag) noexcept {
+            this->tag = tag;
+        }
         std::string tag;
     };
 } // namespace adh

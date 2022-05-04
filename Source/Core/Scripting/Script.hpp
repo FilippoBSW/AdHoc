@@ -328,7 +328,7 @@ namespace adh {
                             method, std::tuple_cat(std::forward_as_tuple(*p),
                                                    std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
 
-                        if constexpr (std::is_pointer<R>::value || std::is_reference<R>::value) {
+                        if constexpr ((std::is_pointer<R>::value || std::is_reference<R>::value) && !std::is_same<const char*, R>::value) {
                             auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
                             *ptr       = &retVal;
                             luaL_getmetatable(L, retTable);
@@ -366,7 +366,7 @@ namespace adh {
                             method, std::tuple_cat(std::forward_as_tuple(*p),
                                                    std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
 
-                        if constexpr (std::is_pointer<R>::value || std::is_reference<R>::value) {
+                        if constexpr ((std::is_pointer<R>::value || std::is_reference<R>::value) && !std::is_same<const char*, R>::value) {
                             auto** ptr = static_cast<std::decay_t<R>**>(lua_newuserdata(L, sizeof(std::decay_t<R>**)));
                             *ptr       = &retVal;
                             luaL_getmetatable(L, retTable);
