@@ -71,8 +71,6 @@ namespace adh {
         inline static std::uint64_t currentEntity;
         inline static float deltaTime;
 
-        inline static Array<std::function<void(Scene* scene)>> toDestroy;
-
         inline static const char* loadSceneFilename{ nullptr };
     };
 } // namespace adh

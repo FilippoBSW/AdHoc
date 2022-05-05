@@ -66,9 +66,7 @@ namespace adh {
 
     int ScriptHandler::DestroyEntity(lua_State* L) {
         auto e{ static_cast<ecs::Entity>(lua_tonumber(L, 1)) };
-        toDestroy.EmplaceBack([e2 = e](Scene* scene) {
-            scene->GetWorld().Destroy(e2);
-        });
+        scene->GetWorld().Destroy(e);
         return 0;
     }
 
@@ -189,51 +187,35 @@ namespace adh {
 
         if (!std::strcmp(name, "Transform")) {
             if (scene->GetWorld().Contains<Transform>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Transform>(e);
-                });
+                scene->GetWorld().Remove<Transform>(entity);
             }
         } else if (!std::strcmp(name, "Material")) {
             if (scene->GetWorld().Contains<Material>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Material>(e);
-                });
+                scene->GetWorld().Remove<Material>(entity);
             }
         } else if (!std::strcmp(name, "Mesh")) {
             if (scene->GetWorld().Contains<Mesh>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Mesh>(e);
-                });
+                scene->GetWorld().Remove<Mesh>(entity);
             }
         } else if (!std::strcmp(name, "Tag")) {
             if (scene->GetWorld().Contains<Tag>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Tag>(e);
-                });
+                scene->GetWorld().Remove<Tag>(entity);
             }
         } else if (!std::strcmp(name, "Camera2D")) {
             if (scene->GetWorld().Contains<Camera2D>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Camera2D>(e);
-                });
+                scene->GetWorld().Remove<Camera2D>(entity);
             }
         } else if (!std::strcmp(name, "Camera3D")) {
             if (scene->GetWorld().Contains<Camera3D>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<Camera3D>(e);
-                });
+                scene->GetWorld().Remove<Camera3D>(entity);
             }
         } else if (!std::strcmp(name, "RigidBody")) {
             if (scene->GetWorld().Contains<RigidBody>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<RigidBody>(e);
-                });
+                scene->GetWorld().Remove<RigidBody>(entity);
             }
         } else if (!std::strcmp(name, "Script")) {
             if (scene->GetWorld().Contains<lua::Script>(entity)) {
-                toDestroy.EmplaceBack([e = entity](Scene* scene) {
-                    scene->GetWorld().Remove<lua::Script>(e);
-                });
+                scene->GetWorld().Remove<lua::Script>(entity);
             }
         } else {
             std::string err = "Component: [" + std::string(name) + "] is invalid!\n";
