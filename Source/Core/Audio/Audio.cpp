@@ -63,12 +63,13 @@ namespace adh {
 
     void Audio::Play() {
         if (!IsPlaying()) {
-            future = std::async(std::launch::async, [&]() {
-                [mSound play];
-                mStart  = std::chrono::steady_clock::now();
-                mStatus = Status::ePlaying;
-            });
+            [mSound play];
+        } else {
+            [mSound stop];
+            [mSound play];
         }
+        mStart  = std::chrono::steady_clock::now();
+        mStatus = Status::ePlaying;
     }
 
     void Audio::Stop() {
@@ -144,9 +145,13 @@ namespace adh {
         if (!IsPlaying()) {
             mciSendCommand(mWaveOpen.wDeviceID, MCI_SEEK, MCI_SEEK_TO_START, NULL);
             mciSendCommand(mWaveOpen.wDeviceID, MCI_PLAY, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, NULL);
-            mStart  = std::chrono::steady_clock::now();
-            mStatus = Status::ePlaying;
+        } else {
+            mciSendCommand(mWaveOpen.wDeviceID, MCI_STOP, MCI_WAIT, NULL);
+            mciSendCommand(mWaveOpen.wDeviceID, MCI_SEEK, MCI_SEEK_TO_START, NULL);
+            mciSendCommand(mWaveOpen.wDeviceID, MCI_PLAY, MCI_OPEN_TYPE | MCI_OPEN_ELEMENT | MCI_OPEN_TYPE_ID, NULL);
         }
+        mStart  = std::chrono::steady_clock::now();
+        mStatus = Status::ePlaying;
     }
 
     void Audio::Stop() {

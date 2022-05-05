@@ -74,9 +74,6 @@ namespace adh {
 
         bool IsPlaying() const noexcept;
 
-      public:
-        std::future<void> future;
-
       private:
 #if defined(ADH_APPLE)
         NSSound* mSound;
