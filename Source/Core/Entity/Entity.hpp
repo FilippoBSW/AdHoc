@@ -82,27 +82,42 @@ namespace adh {
             std::unique_ptr<BaseContainer> Create() override {
                 return std::unique_ptr<BaseContainer>(new Container{});
             }
-
             void Move(std::uint32_t index, BaseContainer* ptr) override {
-                static_cast<Container*>(ptr)->Emplace(std::move(data[index]));
+                static_cast<Container*>(ptr)->Emplace(std::move(data[sparse[index]]));
                 Delete(index);
             }
 
             void Delete(std::uint32_t index) noexcept override {
-                data[index] = std::move(data[data.size() - 1u]);
+                data[sparse[index]]  = std::move(data[data.size() - 1u]);
+                dense[sparse[index]] = dense[dense.size() - 1u];
                 data.pop_back();
+                dense.pop_back();
+
+                if (sparse[index] < dense.size()) {
+                    sparse[dense[sparse[index]]] = sparse[index];
+                }
+                sparse[index] = std::numeric_limits<std::uint32_t>::max();
             }
 
             template <typename... Args>
             void Emplace(Args&&... args) {
                 data.emplace_back(std::forward<Args>(args)...);
+                dense.emplace_back(data.size() - 1u);
+
+                if (data.size() > sparse.size()) {
+                    sparse.emplace_back(data.size() - 1u);
+                } else {
+                    sparse[data.size() - 1u] = data.size() - 1u;
+                }
             }
 
             decltype(auto) Get(std::uint32_t index) {
-                return data[index];
+                return data[sparse[index]];
             }
 
             std::vector<T> data;
+            std::vector<std::uint32_t> sparse;
+            std::vector<std::uint32_t> dense;
         };
 
         struct Record {
