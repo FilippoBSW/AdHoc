@@ -92,6 +92,7 @@ namespace adh {
 
             if (!Contains(id)) {
                 auto& ret{ m_Dense.EmplaceBack(Forward<Args>(args)...) };
+                m_DenseIndex.EmplaceBack(id);
                 m_Sparse[GetPage(id)][GetOffset(id)] = m_Dense.GetSize() - 1u;
 
                 return ret;
@@ -100,28 +101,25 @@ namespace adh {
         }
 
         void Remove(const std::uint32_t& id) noexcept {
-            // Save last element index
             auto temp{ m_Dense.GetSize() - 1u };
 
             if (temp != m_Sparse[GetPage(id)][GetOffset(id)]) {
-                // Move last element to the index of the element
-                // to be deleted
                 m_Dense[m_Sparse[GetPage(id)][GetOffset(id)]] = Move(m_Dense[temp]);
 
-                // Update the sparse index to point to the new
-                // (previously last index) one
-                m_Sparse[GetPage(id)][GetOffset(temp)] = m_Sparse[GetPage(id)][GetOffset(id)];
+                auto t                                               = m_Sparse[GetPage(id)][GetOffset(m_DenseIndex[temp])];
+                m_Sparse[GetPage(id)][GetOffset(m_DenseIndex[temp])] = m_Sparse[GetPage(id)][GetOffset(id)];
+                m_DenseIndex[m_Sparse[GetPage(id)][GetOffset(id)]]   = m_DenseIndex[temp];
             }
 
-            // Set index to be deleted to null
             m_Sparse[GetPage(id)][GetOffset(id)] = nPos;
 
-            // Delete duplicate of data and the end of the array
             m_Dense.PopBack();
+            m_DenseIndex.PopBack();
         }
 
         void Reserve(std::size_t size) {
             m_Dense.Reserve(size);
+            m_DenseIndex.Reserve(size);
             m_Sparse.Resize(size / SparseSetPage<S>::PageMaxSize + 1u);
         }
 
@@ -200,5 +198,6 @@ namespace adh {
       private:
         Array<SparseSetPage<S>> m_Sparse;
         Array<T> m_Dense;
+        Array<std::uint32_t> m_DenseIndex;
     };
 } // namespace adh

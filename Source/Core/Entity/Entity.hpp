@@ -63,7 +63,6 @@ namespace adh {
         struct BaseContainer {
             virtual ~BaseContainer()                                   = default;
             virtual ComponentID GetID() const noexcept                 = 0;
-            virtual std::uint32_t GetIndex() const noexcept            = 0;
             virtual std::unique_ptr<BaseContainer> Create()            = 0;
             virtual void Move(std::uint32_t index, BaseContainer* ptr) = 0;
             virtual void Delete(std::uint32_t index) noexcept          = 0;
@@ -71,44 +70,42 @@ namespace adh {
 
         template <typename T>
         struct Container : BaseContainer {
+            static constexpr std::uint32_t NullPosition = std::numeric_limits<std::uint32_t>::max();
             ComponentID GetID() const noexcept override {
                 return TypeIDGenerator<ComponentID>::GetID<T>();
-            }
-
-            std::uint32_t GetIndex() const noexcept override {
-                return data.size() - 1u;
             }
 
             std::unique_ptr<BaseContainer> Create() override {
                 return std::unique_ptr<BaseContainer>(new Container{});
             }
             void Move(std::uint32_t index, BaseContainer* ptr) override {
-                static_cast<Container*>(ptr)->Emplace(std::move(data[sparse[index]]));
+                static_cast<Container*>(ptr)->Emplace(index, std::move(data[sparse[index]]));
                 Delete(index);
             }
 
             void Delete(std::uint32_t index) noexcept override {
-                data[sparse[index]]  = std::move(data[data.size() - 1u]);
-                dense[sparse[index]] = dense[dense.size() - 1u];
+                auto temp = data.size() - 1;
+
+                if (temp != sparse[index]) {
+                    data[sparse[index]]  = std::move(data[temp]);
+                    auto t               = sparse[dense[temp]];
+                    sparse[dense[temp]]  = sparse[index];
+                    dense[sparse[index]] = dense[temp];
+                }
+                sparse[index] = NullPosition;
+
                 data.pop_back();
                 dense.pop_back();
-
-                if (sparse[index] < dense.size()) {
-                    sparse[dense[sparse[index]]] = sparse[index];
-                }
-                sparse[index] = std::numeric_limits<std::uint32_t>::max();
             }
 
             template <typename... Args>
-            void Emplace(Args&&... args) {
-                data.emplace_back(std::forward<Args>(args)...);
-                dense.emplace_back(data.size() - 1u);
-
-                if (data.size() > sparse.size()) {
-                    sparse.emplace_back(data.size() - 1u);
-                } else {
-                    sparse[data.size() - 1u] = data.size() - 1u;
+            void Emplace(std::uint32_t index, Args&&... args) {
+                if (index >= sparse.size()) {
+                    sparse.resize(index + 1);
                 }
+                data.emplace_back(std::forward<Args>(args)...);
+                dense.emplace_back(index);
+                sparse[index] = data.size() - 1;
             }
 
             decltype(auto) Get(std::uint32_t index) {
@@ -116,13 +113,12 @@ namespace adh {
             }
 
             std::vector<T> data;
-            std::vector<std::uint32_t> sparse;
             std::vector<std::uint32_t> dense;
+            std::vector<std::uint32_t> sparse;
         };
 
         struct Record {
             Archetype* archetype;
-            std::uint32_t index{};
         };
 
         struct Edge {
@@ -230,7 +226,7 @@ namespace adh {
                         auto& typeIDs{ r.archetype->type };
                         for (std::size_t i{}; i != components.GetSize(); ++i) {
                             node->components.Add(typeIDs[i], components[typeIDs[i]]->Create());
-                            components[typeIDs[i]]->Move(r.index, node->components[typeIDs[i]].get());
+                            components[typeIDs[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[typeIDs[i]].get());
                         }
                     }
                     (AddComponent<T>(node),
@@ -240,22 +236,21 @@ namespace adh {
                         auto& components{ r.archetype->components };
                         auto& typeIDs{ r.archetype->type };
                         for (std::size_t i{}; i != components.GetSize(); ++i) {
-                            components[typeIDs[i]]->Move(r.index, node->components[typeIDs[i]].get());
+                            components[typeIDs[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[typeIDs[i]].get());
                         }
                     }
                 }
 
                 if constexpr (sizeof...(Args) == sizeof...(T)) {
-                    (EmplaceData<T>(node, std::forward<Args>(args)), ...);
+                    (EmplaceData<T>(node, GetIndex(GetType(entity)) - 1, std::forward<Args>(args)), ...);
                 } else if constexpr (sizeof...(T) == 1) {
-                    GetPointer<std::decay<T...>>(node)->Emplace(std::forward<Args>(args)...);
+                    GetPointer<std::decay<T...>>(node)->Emplace(GetIndex(GetType(entity)) - 1, std::forward<Args>(args)...);
                 } else {
                     throw std::runtime_error("Invalid T... and Args... combination");
                 }
                 r.archetype = node;
-                r.index     = node->components[node->type[0]]->GetIndex();
                 r.archetype->entities.emplace_back(entity);
-                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(r.index)...);
+                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(GetIndex(GetType(entity)) - 1)...);
             }
 
             template <typename... T>
@@ -272,7 +267,7 @@ namespace adh {
                 }
 
                 for (std::size_t i{}; i != toRemoveIDs.size(); ++i) {
-                    r.archetype->components[toRemoveIDs[i]]->Delete(r.index);
+                    r.archetype->components[toRemoveIDs[i]]->Delete(GetIndex(GetType(entity)));
                     archetypeID.erase(std::find(archetypeID.begin(), archetypeID.end(), toRemoveIDs[i]));
                 }
 
@@ -284,16 +279,15 @@ namespace adh {
                 if (node->components.IsEmpty()) {
                     for (std::size_t i{}; i != type.size(); ++i) {
                         node->components.Add(type[i], components[type[i]]->Create());
-                        components[type[i]]->Move(r.index, node->components[type[i]].get());
+                        components[type[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[type[i]].get());
                     }
                 } else {
                     for (std::size_t i{}; i != type.size(); ++i) {
-                        components[type[i]]->Move(r.index, node->components[type[i]].get());
+                        components[type[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[type[i]].get());
                     }
                 }
 
                 r.archetype = node;
-                r.index     = node->components[type[0]]->GetIndex();
                 r.archetype->entities.emplace_back(entity);
             }
 
@@ -303,11 +297,10 @@ namespace adh {
                     return;
                 }
                 for (std::size_t i{}; i != r.archetype->components.GetSize(); ++i) {
-                    r.archetype->components[r.archetype->type[i]]->Delete(r.index);
+                    r.archetype->components[r.archetype->type[i]]->Delete(GetIndex(GetType(entity)) - 1);
                 }
                 PopEntity(entity, r.archetype);
                 r.archetype = nullptr;
-                r.index     = 0u;
             }
 
             template <typename... T>
@@ -323,7 +316,7 @@ namespace adh {
             decltype(auto) Get(Entity entity) {
                 Record& r{ m_EntityArchetype[entity] };
                 ADH_THROW(Contains<T...>(entity), "Entity doesn't have component!");
-                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(r.index)...);
+                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(GetIndex(GetType(entity)) - 1)...);
             }
 
             void Destroy(Entity entity) {
@@ -405,7 +398,7 @@ namespace adh {
             Entity GenerateID() {
                 Entity id{ CreateID(m_Entities.GetSize() + 1, 0u) };
                 m_Entities.EmplaceBack(id);
-                m_EntityArchetype.emplace(id, Record{ nullptr, 0u });
+                m_EntityArchetype.emplace(id, Record{ nullptr });
                 return id;
             }
 
@@ -414,7 +407,7 @@ namespace adh {
                 m_RecicledEntities.Pop();
                 Entity id                                = CreateID(GetIndex(GetType(temp)), GetVersion(GetType(temp)) + 1u);
                 m_Entities[GetIndex(GetType(temp)) - 1u] = id;
-                m_EntityArchetype.emplace(id, Record{ nullptr, 0u });
+                m_EntityArchetype.emplace(id, Record{ nullptr });
                 return id;
             }
 
@@ -499,8 +492,8 @@ namespace adh {
             }
 
             template <typename T, typename... Args>
-            void EmplaceData(Archetype* node, Args&&... args) {
-                GetPointer<T>(node)->Emplace(std::forward<Args>(args)...);
+            void EmplaceData(Archetype* node, std::uint32_t index, Args&&... args) {
+                GetPointer<T>(node)->Emplace(index, std::forward<Args>(args)...);
             }
 
             template <typename T>
