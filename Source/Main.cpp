@@ -353,6 +353,8 @@ class AdHoc {
 
     ShadowMap2D shadowMap;
 
+    std::vector<std::function<void()>> collisionCallbacks;
+
   public:
     ~AdHoc() {
         auto device{ Context::Get()->GetDevice() };
@@ -383,40 +385,43 @@ class AdHoc {
                 }
 
                 if (call) {
-                    script.Bind();
-                    switch (event->type) {
-                    case CollisionEvent::Type::eCollisionEnter:
-                        {
-                            script.Call("OnCollisionEnter", rhs);
-                            break;
+                    collisionCallbacks.emplace_back([&scene = scene, ent = ent, eventType = event->type, rhs = rhs]() {
+                        auto [script] = scene.GetWorld().Get<lua::Script>(ent);
+                        script.Bind();
+                        switch (eventType) {
+                        case CollisionEvent::Type::eCollisionEnter:
+                            {
+                                script.Call("OnCollisionEnter", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eCollisionPersist:
+                            {
+                                script.Call("OnCollisionPersist", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eCollisionExit:
+                            {
+                                script.Call("OnCollisionExit", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eTriggerEnter:
+                            {
+                                script.Call("OnTriggerEnter", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eTriggerPersist:
+                            {
+                                script.Call("OnTriggerPersist", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eTriggerExit:
+                            {
+                                script.Call("OnTriggerExit", rhs);
+                                break;
+                            }
                         }
-                    case CollisionEvent::Type::eCollisionPersist:
-                        {
-                            script.Call("OnCollisionPersist", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eCollisionExit:
-                        {
-                            script.Call("OnCollisionExit", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eTriggerEnter:
-                        {
-                            script.Call("OnTriggerEnter", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eTriggerPersist:
-                        {
-                            script.Call("OnTriggerPersist", rhs);
-                            break;
-                        }
-                    case CollisionEvent::Type::eTriggerExit:
-                        {
-                            script.Call("OnTriggerExit", rhs);
-                            break;
-                        }
-                    }
-                    script.Unbind();
+                        script.Unbind();
+                    });
                 }
             });
         }
@@ -435,6 +440,7 @@ class AdHoc {
                 g_IsPaused        = false;
 
                 maximizeOnPlay2 = g_MaximizeOnPlay;
+                collisionCallbacks.clear();
                 break;
             }
         case StatusEvent::Type::eStop:
@@ -447,6 +453,7 @@ class AdHoc {
                     g_IsPlaying       = false;
                     g_IsPaused        = false;
                     g_MaximizeOnPlay  = maximizeOnPlay2;
+                    collisionCallbacks.clear();
                 }
                 break;
             }
@@ -536,6 +543,14 @@ class AdHoc {
 
             if (g_IsPlaying && !g_IsPaused) {
                 scene.GetPhysics().StepSimulation(deltaTime);
+
+                if (!collisionCallbacks.empty()) {
+                    for (auto&& i : collisionCallbacks) {
+                        i();
+                    }
+                    collisionCallbacks.clear();
+                }
+
                 scene.GetWorld().GetSystem<Transform, RigidBody>().ForEach([&](Transform& transform, RigidBody& rigidBody) {
                     rigidBody.OnUpdate(transform);
                 });
