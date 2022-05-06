@@ -70,6 +70,8 @@ namespace adh {
 
         bool opened{ ui::TreeNodeEx(reinterpret_cast<void*>(entity), flags, tag.Get()) };
         bool entityDeleted{};
+        bool copyEntity{};
+        static int inc;
 
         if (ui::IsItemClicked()) {
             *selectedEntity = entity;
@@ -78,6 +80,9 @@ namespace adh {
         if (ui::BeginPopupContextItem(tag.Get())) {
             if (ui::MenuItem("Delete Entity")) {
                 entityDeleted = true;
+            }
+            if (ui::MenuItem("Copy Entity")) {
+                copyEntity = true;
             }
 
             ui::EndPopup();
@@ -89,6 +94,68 @@ namespace adh {
 
         if (entityDeleted) {
             currentScene->GetWorld().Destroy(entity);
+        } else if (copyEntity) {
+            auto& world = currentScene->GetWorld();
+            auto e      = world.CreateEntity();
+
+            if (world.Contains<Tag>(entity)) {
+                auto [tag] = world.Get<Tag>(entity);
+                world.Add<Tag>(e, tag.tag + "(duplicate " + std::to_string(inc++) + ")");
+            }
+            if (world.Contains<Transform>(entity)) {
+                auto [transform] = world.Get<Transform>(entity);
+                world.Add<Transform>(e, transform);
+            }
+            if (world.Contains<Material>(entity)) {
+                auto [material] = world.Get<Material>(entity);
+                world.Add<Material>(e, material);
+            }
+            if (world.Contains<Camera2D>(entity)) {
+                auto [camera] = world.Get<Camera2D>(entity);
+                world.Add<Camera2D>(e, camera);
+            }
+            if (world.Contains<Camera3D>(entity)) {
+                auto [camera] = world.Get<Camera3D>(entity);
+                world.Add<Camera3D>(e, camera);
+            }
+            if (world.Contains<Mesh>(entity)) {
+                auto [m]             = world.Add<Mesh>(e, Mesh{});
+                auto [mesh]          = world.Get<Mesh>(entity);
+                std::string filePath = vk::Context::Get()->GetDataDirectory() + "Assets/Models/" + mesh.Get()->meshName;
+                m.Load(filePath);
+                m.toDraw = mesh.toDraw;
+            }
+            if (world.Contains<RigidBody>(entity) && world.Contains<Transform>(entity)) {
+                auto [r]{ world.Add<RigidBody>(e, RigidBody{}) };
+                auto [rb] = world.Get<RigidBody>(entity);
+                auto [t]{ world.Get<Transform>(e) };
+
+                Mesh* p{ nullptr };
+                if (world.Contains<Mesh>(entity)) {
+                    auto [m]{ world.Get<Mesh>(entity) };
+                    p = &m;
+                }
+                r.Create(static_cast<std::uint64_t>(e),
+                         rb.staticFriction,
+                         rb.dynamicFriction,
+                         rb.restitution,
+                         rb.bodyType,
+                         rb.mass,
+                         rb.isKinematic,
+                         rb.isTrigger,
+                         rb.scaleSameAsModel,
+                         rb.colliderShape,
+                         rb.colliderType,
+                         rb.scale,
+                         rb.radius,
+                         rb.halfHeight,
+                         p);
+            }
+            if (world.Contains<lua::Script>(entity)) {
+                auto [script]        = world.Get<lua::Script>(entity);
+                std::string filePath = vk::Context::Get()->GetDataDirectory() + "Assets/Scripts/" + script.fileName;
+                world.Add<lua::Script>(e, currentScene->GetState().CreateScript(filePath));
+            }
         }
     }
 } // namespace adh
