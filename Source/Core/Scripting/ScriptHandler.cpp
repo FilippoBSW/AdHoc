@@ -35,6 +35,10 @@
 #include <Vulkan/Context.hpp>
 
 namespace adh {
+    int ScriptHandler::GetScene(lua_State* L) {
+        lua_pushstring(L, scene->GetTag().data());
+        return 1;
+    }
     int ScriptHandler::GetThis(lua_State* L) {
         lua_pushinteger(L, currentEntity);
         return 1;
@@ -310,6 +314,10 @@ namespace adh {
 
     void ScriptHandler::RegisterBindings() {
         auto& state = scene->GetState();
+
+        lua_pushstring(state, "GetScene");
+        lua_pushcclosure(state, ScriptHandler::GetScene, 1);
+        lua_setglobal(state, "GetScene");
 
         lua_pushstring(state, "LoadScene");
         lua_pushcclosure(state, ScriptHandler::LoadScene, 1);

@@ -36,6 +36,8 @@ namespace adh {
     class Scene;
 
     struct ScriptHandler {
+        static int GetScene(lua_State* L);
+
         static int LoadScene(lua_State* L);
 
         static int CreateEntity(lua_State* L);
