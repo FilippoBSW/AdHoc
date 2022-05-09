@@ -44,8 +44,8 @@ struct Attenuation {
 struct Material {
 	float roughness;
 	float metallicness;
+	float transparency;
 	vec3  albedo;
-	int   textureIndex;
 };
 
 struct DirectionalLight {

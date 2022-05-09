@@ -87,6 +87,7 @@ namespace adh {
                     auto [material] = m_Scene->m_World.Get<Material>(entity);
                     out << YAML::Key << "roughness" << YAML::Value << material.roughness;
                     out << YAML::Key << "metallicness" << YAML::Value << material.metallicness;
+                    out << YAML::Key << "transparency" << YAML::Value << material.transparency;
                     out << YAML::Key << "albedo" << YAML::Value << material.albedo;
                 });
             }
@@ -215,6 +216,7 @@ namespace adh {
                     world.Add<Material>(e,
                                         Material(material["roughness"].as<float>(),
                                                  material["metallicness"].as<float>(),
+                                                 material["transparency"].as<float>(),
                                                  material["albedo"].as<Vector3D>()));
                 }
 

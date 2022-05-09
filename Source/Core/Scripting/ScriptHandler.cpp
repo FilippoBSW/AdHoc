@@ -438,6 +438,7 @@ namespace adh {
         state.RegisterTypeConstructor<Material>("new");
         state.RegisterTypeVariable<Material>("roughness", &Material::roughness);
         state.RegisterTypeVariable<Material>("metallicness", &Material::metallicness);
+        state.RegisterTypeVariable<Material>("transparency", &Material::transparency);
         state.RegisterTypeVariable<Material>("albedo", &Material::albedo);
 
         state.RegisterType<Mesh>("Mesh");

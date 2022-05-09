@@ -327,6 +327,7 @@ namespace adh {
                 ImGui::ColorEdit3("Albedo", (float*)component.albedo.v);
                 ImGui::DragFloat("Roughness", &component.roughness, 0.001f, 0.0f, 1.0f);
                 ImGui::DragFloat("Metallicness", &component.metallicness, 0.001f, 0.0f, 1.0f);
+                ImGui::DragFloat("Transparency", &component.transparency, 0.001f, 0.0f, 1.0f);
             },
             currentScene);
 

@@ -254,5 +254,5 @@ float ShadowCalculation(vec4 shadowCoords, int pcf) {
 	color      = color / (color + vec3(1.0f));
 	color      = pow(color, vec3(1.0f / 2.2f));
 
-	outFragColor = vec4(color, 1.0f);
+	outFragColor = vec4(color, material.transparency);
 }
