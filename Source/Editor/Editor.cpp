@@ -78,6 +78,7 @@ namespace adh {
                 VkImageCreateFlagBits(0),
                 1,
                 1u,
+                VK_SAMPLE_COUNT_1_BIT,
                 VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
                 VK_IMAGE_ASPECT_COLOR_BIT,
                 VK_IMAGE_VIEW_TYPE_2D,

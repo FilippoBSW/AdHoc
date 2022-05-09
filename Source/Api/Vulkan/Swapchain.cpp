@@ -180,6 +180,7 @@ namespace adh {
                 VkImageCreateFlagBits(0u),
                 1u,
                 1u,
+                VK_SAMPLE_COUNT_1_BIT,
                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                 VK_IMAGE_ASPECT_DEPTH_BIT,
                 VK_IMAGE_VIEW_TYPE_2D,

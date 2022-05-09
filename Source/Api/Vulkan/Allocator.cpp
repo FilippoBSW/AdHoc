@@ -41,6 +41,7 @@ namespace adh {
             VkImageCreateFlagBits imageCreateFlags,
             std::uint32_t mipLevels,
             std::uint32_t arrayLayers,
+            VkSampleCountFlagBits samples,
             VkImageUsageFlagBits imageUsageFlag,
             VkMemoryPropertyFlagBits memoryPropertyFlag,
             VkSharingMode sharingMode,
@@ -53,6 +54,7 @@ namespace adh {
                 imageCreateFlags,
                 mipLevels,
                 arrayLayers,
+                samples,
                 imageUsageFlag,
                 memoryPropertyFlag,
                 sharingMode,
@@ -136,6 +138,7 @@ namespace adh {
             VkImageCreateFlagBits imageCreateFlags,
             std::uint32_t mipLevels,
             std::uint32_t arrayLayers,
+            VkSampleCountFlagBits samples,
             VkImageUsageFlagBits imageUsageFlag,
             VkMemoryPropertyFlagBits memoryPropertyFlag,
             VkSharingMode sharingMode,
@@ -149,6 +152,7 @@ namespace adh {
                     imageCreateFlags,
                     mipLevels,
                     arrayLayers,
+                    samples,
                     imageUsageFlag,
                     sharingMode)
             };

@@ -256,6 +256,7 @@ namespace adh {
                 VkImageCreateFlagBits imageCreateFlags,
                 std::uint32_t mipLevels,
                 std::uint32_t arrayLayers,
+                VkSampleCountFlagBits samples,
                 VkImageUsageFlagBits imageUsageFlag,
                 VkSharingMode sharingMode) noexcept {
                 VkImageCreateInfo info{};
@@ -267,7 +268,7 @@ namespace adh {
                 info.extent                = extent;
                 info.mipLevels             = mipLevels;
                 info.arrayLayers           = arrayLayers;
-                info.samples               = VK_SAMPLE_COUNT_1_BIT;
+                info.samples               = samples;
                 info.tiling                = imageTiling;
                 info.usage                 = imageUsageFlag;
                 info.sharingMode           = sharingMode;
