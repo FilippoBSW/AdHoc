@@ -39,6 +39,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 0
+      transparency: 1
       albedo: [0.0849421024, 0.0849412531, 0.0849412531]
     Script:
       name: SpawnCubes.lua

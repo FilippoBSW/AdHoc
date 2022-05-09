@@ -39,6 +39,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 0
+      transparency: 1
       albedo: [1, 1, 1]
     Script:
       name: player.lua
@@ -70,6 +71,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 0
+      transparency: 1
       albedo: [1, 1, 1]
     RigidBody:
       mass: 1

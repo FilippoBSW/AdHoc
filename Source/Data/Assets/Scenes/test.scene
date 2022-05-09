@@ -13,6 +13,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 1
+      transparency: 1
       albedo: [0, 1, 0.154761553]
     Script:
       name: goal.lua
@@ -44,6 +45,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 1
+      transparency: 1
       albedo: [0, 0.107177496, 1]
     RigidBody:
       mass: 1
@@ -73,6 +75,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 1
+      transparency: 1
       albedo: [0.239382267, 0.239379868, 0.239379868]
     RigidBody:
       mass: 1
@@ -102,6 +105,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 1
+      transparency: 1
       albedo: [1, 0, 0]
     Script:
       name: movement.lua
@@ -144,6 +148,7 @@ Entities:
     Material:
       roughness: 0.600000024
       metallicness: 1
+      transparency: 1
       albedo: [1, 0, 0]
     RigidBody:
       mass: 1
