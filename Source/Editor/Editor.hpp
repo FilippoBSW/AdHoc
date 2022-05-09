@@ -64,6 +64,9 @@ namespace adh {
                                  VkPrimitiveTopology topology,
                                  VkCullModeFlagBits cullMode,
                                  VkFrontFace frontFace,
+                                 VkSampleCountFlagBits rasterizationSamples,
+                                 VkBool32 sampleShadingEnable,
+                                 float minSampleShading,
                                  VkBool32 enableBlending);
 
         void AddGraphicsPipeline(VkGraphicsPipelineCreateInfo pipelineCreateInfo);

@@ -39,8 +39,11 @@ namespace adh {
             VkPrimitiveTopology topology,
             VkCullModeFlagBits cullMode,
             VkFrontFace frontFace,
+            VkSampleCountFlagBits rasterizationSamples,
+            VkBool32 sampleShadingEnable,
+            float minSampleShading,
             VkBool32 enableBlending) {
-            Create(shader, vertexLayout, layout, renderPass, topology, cullMode, frontFace, enableBlending);
+            Create(shader, vertexLayout, layout, renderPass, topology, cullMode, frontFace, rasterizationSamples, sampleShadingEnable, minSampleShading, enableBlending);
         }
 
         GraphicsPipeline::GraphicsPipeline(VkGraphicsPipelineCreateInfo createInfo) {
@@ -70,11 +73,14 @@ namespace adh {
             VkPrimitiveTopology topology,
             VkCullModeFlagBits cullMode,
             VkFrontFace frontFace,
+            VkSampleCountFlagBits rasterizationSamples,
+            VkBool32 sampleShadingEnable,
+            float minSampleShading,
             VkBool32 enableBlending) {
             auto inputAssembly{ initializers::PipelineInputAssemblyStateCreateInfo(topology) };
             auto viewportState{ initializers::PipelineViewportStateCreateInfo() };
             auto rasterizationState{ initializers::PipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, cullMode, frontFace) };
-            auto multisample{ initializers::PipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT) };
+            auto multisample{ initializers::PipelineMultisampleStateCreateInfo(rasterizationSamples, sampleShadingEnable, minSampleShading) };
             auto depthStencil{ initializers::PipelineDepthStencilStateCreateInfo(VK_COMPARE_OP_LESS_OR_EQUAL) };
             auto colorBlendAttachmentState{ initializers::PipelineColorBlendAttachmentState(static_cast<VkBool32>(enableBlending)) };
             auto colorBlendStateInfo{ initializers::PipelineColorBlendStateCreateInfo(1u, &colorBlendAttachmentState) };

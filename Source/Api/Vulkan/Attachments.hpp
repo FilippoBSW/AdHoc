@@ -30,6 +30,14 @@ namespace adh {
     namespace vk {
         class Attachment {
           public:
+            enum class Type {
+                eColor,
+                eDepth,
+                eResolve,
+                eInput
+            };
+
+          public:
             void AddDescription(VkFormat format,
                                 VkSampleCountFlagBits samplerCount,
                                 VkAttachmentLoadOp loadOp,
@@ -37,7 +45,8 @@ namespace adh {
                                 VkAttachmentLoadOp stencilLoadOp,
                                 VkAttachmentStoreOp stencilStoreOp,
                                 VkImageLayout finalLayout,
-                                VkImageLayout attachment);
+                                VkImageLayout attachment,
+                                Type type);
 
             void AddInputReference(VkImageLayout attachment, std::uint32_t index);
 
@@ -53,6 +62,10 @@ namespace adh {
 
             const Array<VkAttachmentReference>& GetDepthReferences() const noexcept;
 
+            Array<VkAttachmentReference>& GetResolveReferences() noexcept;
+
+            const Array<VkAttachmentReference>& GetResolveReferences() const noexcept;
+
             Array<VkAttachmentReference>& GetInputReferences() noexcept;
 
             const Array<VkAttachmentReference>& GetInputReferences() const noexcept;
@@ -61,6 +74,7 @@ namespace adh {
             Array<VkAttachmentDescription> m_Descriptions;
             Array<VkAttachmentReference> m_ColorReferences;
             Array<VkAttachmentReference> m_DepthReferences;
+            Array<VkAttachmentReference> m_ResolveReferences;
             Array<VkAttachmentReference> m_InputReferences;
         };
     } // namespace vk

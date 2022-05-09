@@ -33,6 +33,7 @@ namespace adh {
                     static_cast<VkPipelineBindPoint>(bindPoint), // Bind point
                     attachment.GetColorReferences().GetSize(),   // color count
                     attachment.GetColorReferences().GetData(),   // color ptr
+                    attachment.GetResolveReferences().GetData(), // resolve ptr
                     attachment.GetDepthReferences().GetData(),   // depth ptr
                     attachment.GetInputReferences().GetSize(),   // input count
                     attachment.GetInputReferences().GetData())); // input ptr

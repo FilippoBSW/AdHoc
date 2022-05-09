@@ -64,6 +64,8 @@ namespace adh {
 
             VkExtent2D GetExtent() const noexcept;
 
+            Image& GetColorBuffer() noexcept;
+
             Image& GetDepthBuffer() noexcept;
 
             std::uint32_t GetImageViewCount() const noexcept;
@@ -98,6 +100,7 @@ namespace adh {
             Array<VkImage> m_Images;
             Array<VkImageView> m_ImageViews;
             Image m_DepthBuffer;
+            Image m_ColorBuffer;
             std::uint32_t m_ImageBuffersCount;
         };
     } // namespace vk

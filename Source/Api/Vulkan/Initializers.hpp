@@ -399,6 +399,7 @@ namespace adh {
                 VkPipelineBindPoint bindPoint,
                 std::uint32_t colorAttachmentCount,
                 const VkAttachmentReference* colorAttachments,
+                const VkAttachmentReference* resolveAttachments,
                 const VkAttachmentReference* depthStencilAttachment,
                 std::uint32_t inputAttachmentCount,
                 const VkAttachmentReference* inputAttachments) noexcept {
@@ -408,7 +409,7 @@ namespace adh {
                 description.pInputAttachments       = inputAttachments;
                 description.colorAttachmentCount    = colorAttachmentCount;
                 description.pColorAttachments       = colorAttachments;
-                description.pResolveAttachments     = nullptr;
+                description.pResolveAttachments     = resolveAttachments;
                 description.pDepthStencilAttachment = depthStencilAttachment;
                 description.preserveAttachmentCount = 0u;
                 description.pPreserveAttachments    = nullptr;
@@ -539,12 +540,12 @@ namespace adh {
                 return rasterizer;
             }
 
-            inline auto PipelineMultisampleStateCreateInfo(VkSampleCountFlagBits rasterizationSamples) noexcept {
+            inline auto PipelineMultisampleStateCreateInfo(VkSampleCountFlagBits rasterizationSamples, VkBool32 sampleShadingEnable, float minSampleShading) noexcept {
                 VkPipelineMultisampleStateCreateInfo multisampling{};
                 multisampling.sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-                multisampling.sampleShadingEnable   = VK_FALSE;
+                multisampling.sampleShadingEnable   = sampleShadingEnable;
                 multisampling.rasterizationSamples  = rasterizationSamples;
-                multisampling.minSampleShading      = 0.0f;
+                multisampling.minSampleShading      = minSampleShading;
                 multisampling.pSampleMask           = nullptr;
                 multisampling.alphaToCoverageEnable = VK_FALSE;
                 multisampling.alphaToOneEnable      = VK_FALSE;

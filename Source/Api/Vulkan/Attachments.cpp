@@ -35,7 +35,8 @@ namespace adh {
                                         VkAttachmentLoadOp stencilLoadOp,
                                         VkAttachmentStoreOp stencilStoreOp,
                                         VkImageLayout finalLayout,
-                                        VkImageLayout attachment) {
+                                        VkImageLayout attachment,
+                                        Type type) {
             m_Descriptions.EmplaceBack(initializers::AttachmentDescription(
                 format,
                 samplerCount,
@@ -45,15 +46,21 @@ namespace adh {
                 stencilStoreOp,
                 finalLayout));
 
-            switch (attachment) {
-            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+            switch (type) {
+            case Type::eColor:
                 m_ColorReferences.EmplaceBack(initializers::AttachmentReference(
                     static_cast<std::uint32_t>(m_Descriptions.GetSize() - 1u),
                     static_cast<VkImageLayout>(attachment)));
                 break;
 
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+            case Type::eDepth:
                 m_DepthReferences.EmplaceBack(initializers::AttachmentReference(
+                    static_cast<std::uint32_t>(m_Descriptions.GetSize() - 1u),
+                    static_cast<VkImageLayout>(attachment)));
+                break;
+
+            case Type::eResolve:
+                m_ResolveReferences.EmplaceBack(initializers::AttachmentReference(
                     static_cast<std::uint32_t>(m_Descriptions.GetSize() - 1u),
                     static_cast<VkImageLayout>(attachment)));
                 break;
@@ -88,6 +95,14 @@ namespace adh {
 
         const Array<VkAttachmentReference>& Attachment::GetDepthReferences() const noexcept {
             return m_DepthReferences;
+        }
+
+        Array<VkAttachmentReference>& Attachment::GetResolveReferences() noexcept {
+            return m_ResolveReferences;
+        }
+
+        const Array<VkAttachmentReference>& Attachment::GetResolveReferences() const noexcept {
+            return m_ResolveReferences;
         }
 
         Array<VkAttachmentReference>& Attachment::GetInputReferences() noexcept {

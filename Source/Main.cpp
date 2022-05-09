@@ -146,7 +146,8 @@ struct ShadowMap2D {
             pipelineLayout.Create();
 
             graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
-                                    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE);
+                                    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE,
+                                    tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()), VK_TRUE, 0.25f, VK_TRUE);
 
             descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3);
             descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
@@ -168,7 +169,6 @@ struct ShadowMap2D {
     };
 
     void Create(RenderPass& renderPass, Sampler& sampler) {
-
         m_Extent.width  = 2048;
         m_Extent.height = 2048;
 
@@ -196,7 +196,8 @@ struct ShadowMap2D {
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eDepth);
 
         Subpass subpass;
         subpass.AddDescription(VK_PIPELINE_BIND_POINT_GRAPHICS, attachment);
@@ -253,7 +254,9 @@ struct ShadowMap2D {
         pipelineLayout.AddPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(xmm::Matrix), 0);
         pipelineLayout.Create();
 
-        graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, m_RenderPass, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE);
+        graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, m_RenderPass,
+                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE,
+                                VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
 
         descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3);
         descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
@@ -903,23 +906,36 @@ class AdHoc {
         Attachment attachment;
         attachment.AddDescription(
             VK_FORMAT_B8G8R8A8_UNORM,
+            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eColor);
+
+        attachment.AddDescription(
+            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eDepth);
+
+        attachment.AddDescription(
+            VK_FORMAT_B8G8R8A8_UNORM,
             VK_SAMPLE_COUNT_1_BIT,
             VK_ATTACHMENT_LOAD_OP_CLEAR,
             VK_ATTACHMENT_STORE_OP_STORE,
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-        attachment.AddDescription(
-            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
-            VK_SAMPLE_COUNT_1_BIT,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_STORE,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eResolve);
 
         Subpass subpass;
         subpass.AddDescription(VK_PIPELINE_BIND_POINT_GRAPHICS, attachment);
@@ -945,12 +961,13 @@ class AdHoc {
         };
 
         Array<VkClearValue> clearValues;
-        clearValues.Resize(2);
+        clearValues.Resize(3);
         clearValues[0].color        = { 0.1f, 0.1f, 0.1f, 1.0f };
         clearValues[1].depthStencil = {
             1.0f, // float    depth
             0u    // uint32_t stencil
         };
+        clearValues[2].color = { 0.1f, 0.1f, 0.1f, 1.0f };
 
         renderPass.Create(attachment, subpass, renderArea, Move(clearValues));
         renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
@@ -980,7 +997,8 @@ class AdHoc {
         pipelineLayout.Create();
 
         graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
-                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_TRUE);
+                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE,
+                                tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()), VK_TRUE, 0.25f, VK_TRUE);
     }
 
     void InitializeDescriptorSets() {
@@ -1163,8 +1181,9 @@ class AdHoc {
     void InitializeFramebuffers() {
         for (std::size_t i{}; i != swapchain.GetImageViewCount(); ++i) {
             VkImageView viewAttachments[]{
+                swapchain.GetColorBuffer().GetImageView(),
+                swapchain.GetDepthBuffer().GetImageView(),
                 swapchain.GetImageView()[i],
-                swapchain.GetDepthBuffer().GetImageView()
             };
             auto info{ initializers::FramebufferCreateInfo(renderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
             ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &swapchainFramebuffers.EmplaceBack()) == VK_SUCCESS,
@@ -1196,7 +1215,51 @@ class AdHoc {
     }
 
     void CreateEditor() {
+        // Attachment attachment;
+        // attachment.AddDescription(
+        //     VK_FORMAT_B8G8R8A8_UNORM,
+        //     VK_SAMPLE_COUNT_1_BIT,
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_STORE,
+        //     VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        //     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        //     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        //     Attachment::Type::eColor);
+        // attachment.AddDescription(
+        //     tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+        //     VK_SAMPLE_COUNT_1_BIT,
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_STORE,
+        //     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        //     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        //     Attachment::Type::eDepth);
+
         Attachment attachment;
+        attachment.AddDescription(
+            VK_FORMAT_B8G8R8A8_UNORM,
+            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eColor);
+
+        attachment.AddDescription(
+            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eDepth);
+
         attachment.AddDescription(
             VK_FORMAT_B8G8R8A8_UNORM,
             VK_SAMPLE_COUNT_1_BIT,
@@ -1205,16 +1268,8 @@ class AdHoc {
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        attachment.AddDescription(
-            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
-            VK_SAMPLE_COUNT_1_BIT,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_STORE,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eResolve);
 
         Subpass subpass;
         subpass.AddDescription(VK_PIPELINE_BIND_POINT_GRAPHICS, attachment);
@@ -1239,12 +1294,13 @@ class AdHoc {
         };
 
         Array<VkClearValue> clearValues;
-        clearValues.Resize(2);
+        clearValues.Resize(3);
         clearValues[0].color        = { 0.1f, 0.1f, 0.1, 1.0f };
         clearValues[1].depthStencil = {
             1.0f, // float    depth
             0u    // uint32_t stencil
         };
+        clearValues[2].color = { 0.1f, 0.1f, 0.1, 1.0f };
         editor.CreateRenderPass(attachment, subpass, renderArea, Move(clearValues));
 
         VertexLayout vertexLayout;
@@ -1262,6 +1318,9 @@ class AdHoc {
             VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
             VK_CULL_MODE_BACK_BIT,
             VK_FRONT_FACE_COUNTER_CLOCKWISE,
+            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+            VK_TRUE,
+            0.25f,
             VK_TRUE);
 
         editor.CreateFramebuffers(swapchain);

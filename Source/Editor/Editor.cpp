@@ -29,6 +29,7 @@
 #include <Vulkan/Initializers.hpp>
 #include <Vulkan/Memory.hpp>
 #include <Vulkan/Sampler.hpp>
+#include <Vulkan/Tools.hpp>
 
 namespace adh {
     Editor::Editor(Editor&& rhs) noexcept {
@@ -58,8 +59,12 @@ namespace adh {
                                      VkPrimitiveTopology topology,
                                      VkCullModeFlagBits cullMode,
                                      VkFrontFace frontFace,
+                                     VkSampleCountFlagBits rasterizationSamples,
+                                     VkBool32 sampleShadingEnable,
+                                     float minSampleShading,
                                      VkBool32 enableBlending) {
-        m_GraphicsPipelines.EmplaceBack().Create(shader, vertexLayout, layout, m_RenderPass, topology, cullMode, frontFace, enableBlending);
+        m_GraphicsPipelines.EmplaceBack().Create(shader, vertexLayout, layout, m_RenderPass, topology, cullMode,
+                                                 frontFace, rasterizationSamples, sampleShadingEnable, minSampleShading, enableBlending);
     }
 
     void Editor::AddGraphicsPipeline(VkGraphicsPipelineCreateInfo pipelineCreateInfo) {
@@ -92,8 +97,9 @@ namespace adh {
                 VK_IMAGE_ASPECT_COLOR_BIT);
 
             VkImageView viewAttachments[]{
+                swapchain.GetColorBuffer().GetImageView(),
+                swapchain.GetDepthBuffer().GetImageView(),
                 m_Images[i].GetImageView(),
-                swapchain.GetDepthBuffer().GetImageView()
             };
 
             auto info{ vk::initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
