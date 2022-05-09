@@ -193,15 +193,19 @@ namespace adh {
     }
 
     void RigidBody::SetVelocity(float x, float y, float z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3(x, y, z));
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3(x, y, z));
+        }
     }
 
     void RigidBody::AddVelocity(float x, float y, float z) noexcept {
-        auto vel{ static_cast<physx::PxRigidDynamic*>(actor)->getLinearVelocity() };
-        vel.x += x;
-        vel.y += y;
-        vel.z += z;
-        static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(vel);
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            auto vel{ static_cast<physx::PxRigidDynamic*>(actor)->getLinearVelocity() };
+            vel.x += x;
+            vel.y += y;
+            vel.z += z;
+            static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(vel);
+        }
     }
 
     Vector3D& RigidBody::GetVelocity() noexcept {
@@ -209,11 +213,15 @@ namespace adh {
     }
 
     void RigidBody::AddForce(float x, float y, float z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->addForce(physx::PxVec3(x, y, z));
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            static_cast<physx::PxRigidDynamic*>(actor)->addForce(physx::PxVec3(x, y, z));
+        }
     }
 
     void RigidBody::AddTorque(float x, float y, float z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->addTorque(physx::PxVec3(x, y, z));
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            static_cast<physx::PxRigidDynamic*>(actor)->addTorque(physx::PxVec3(x, y, z));
+        }
     }
 
     float RigidBody::GetRestitution() const noexcept {
@@ -253,15 +261,19 @@ namespace adh {
     }
 
     void RigidBody::SetAngularVelocity(float x, float y, float z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3(x, y, z));
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3(x, y, z));
+        }
     }
 
     void RigidBody::AddAngularVelocity(float x, float y, float z) noexcept {
-        auto vel{ static_cast<physx::PxRigidDynamic*>(actor)->getAngularVelocity() };
-        vel.x += x;
-        vel.y += y;
-        vel.z += z;
-        static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(vel);
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            auto vel{ static_cast<physx::PxRigidDynamic*>(actor)->getAngularVelocity() };
+            vel.x += x;
+            vel.y += y;
+            vel.z += z;
+            static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(vel);
+        }
     }
 
     Vector3D& RigidBody::GetAngularVelocity() noexcept {
@@ -286,15 +298,19 @@ namespace adh {
     }
 
     void RigidBody::SetLinearFactor(bool x, bool y, bool z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, x);
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, y);
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, z);
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, x);
+            static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, y);
+            static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, z);
+        }
     }
 
     void RigidBody::SetAngularFactor(bool x, bool y, bool z) noexcept {
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, x);
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, y);
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, z);
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, x);
+            static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, y);
+            static_cast<physx::PxRigidDynamic*>(actor)->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, z);
+        }
     }
 
     bool RigidBody::GetIsTrigger() const noexcept {
@@ -302,8 +318,10 @@ namespace adh {
     }
 
     void RigidBody::SetKinematic(bool isKinematic) noexcept {
-        this->isKinematic = isKinematic;
-        static_cast<physx::PxRigidDynamic*>(actor)->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, isKinematic);
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            this->isKinematic = isKinematic;
+            static_cast<physx::PxRigidDynamic*>(actor)->setRigidBodyFlag(physx::PxRigidBodyFlag::Enum::eKINEMATIC, isKinematic);
+        }
     }
 
     void RigidBody::SetGeometry(const physx::PxGeometry& geometry) {
@@ -321,14 +339,16 @@ namespace adh {
     }
 
     void RigidBody::ClearForces() noexcept {
-        if (!isKinematic) {
-            static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eFORCE);
-            static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eIMPULSE);
-            static_cast<physx::PxRigidDynamic*>(actor)->clearTorque();
-            static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{});
-            static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{});
-            velocity        = {};
-            angularVelocity = {};
+        if (bodyType == PhysicsBodyType::eDynamic) {
+            if (!isKinematic) {
+                static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eFORCE);
+                static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eIMPULSE);
+                static_cast<physx::PxRigidDynamic*>(actor)->clearTorque();
+                static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{});
+                static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{});
+                velocity        = {};
+                angularVelocity = {};
+            }
         }
     }
 

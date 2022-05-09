@@ -472,30 +472,25 @@ class AdHoc {
     }
 
     void Initialize(const char* path) {
-        try {
-            window.Create(name, 1200, 800, true, false);
-            context.Create(window, "AdHoc", path);
-            swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
-            InitializeRenderPass();
+        window.Create(name, 1200, 800, true, false);
+        context.Create(window, "AdHoc", path);
+        swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
+        InitializeRenderPass();
 
-            sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
-            shadowMap.Create(renderPass, sampler);
+        sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
+        shadowMap.Create(renderPass, sampler);
 
-            lightSpace = lightSpaceBias * shadowMap.lightSpace;
+        lightSpace = lightSpaceBias * shadowMap.lightSpace;
 
-            InitializePipeline();
-            InitializeDescriptorSets();
-            InitializeEditorDescriptorSets();
-            commandBuffer.Create(VK_COMMAND_BUFFER_LEVEL_PRIMARY, swapchain.GetImageViewCount(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, DeviceQueues::Family::eGraphics);
-            InitializeFramebuffers();
-            InitializeSyncData();
+        InitializePipeline();
+        InitializeDescriptorSets();
+        InitializeEditorDescriptorSets();
+        commandBuffer.Create(VK_COMMAND_BUFFER_LEVEL_PRIMARY, swapchain.GetImageViewCount(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, DeviceQueues::Family::eGraphics);
+        InitializeFramebuffers();
+        InitializeSyncData();
 
-            InitializeScripting();
-            CreateEditor();
-        } catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
-            throw;
-        }
+        InitializeScripting();
+        CreateEditor();
 
         auto runtimeCamera = scene.GetWorld().CreateEntity();
         scene.GetWorld().Add<Tag>(runtimeCamera, "Runtime Camera");
@@ -1331,7 +1326,12 @@ ENTRY_POINT {
 #if defined(ADH_WINDOWS) && defined(ADH_DEBUG)
     ADH_WIN_CONSOLE;
 #endif
-    AdHoc adhoc;
-    adhoc.Initialize(EXE_PATH);
-    adhoc.Run();
+    try {
+        AdHoc adhoc;
+        adhoc.Initialize(EXE_PATH);
+        adhoc.Run();
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        throw;
+    }
 }
