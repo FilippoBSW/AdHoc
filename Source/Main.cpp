@@ -169,8 +169,8 @@ struct ShadowMap2D {
     };
 
     void Create(RenderPass& renderPass, Sampler& sampler) {
-        m_Extent.width  = 2048;
-        m_Extent.height = 2048;
+        m_Extent.width  = 2048 * 2;
+        m_Extent.height = 2048 * 2;
 
         m_Image.Create(
             { m_Extent.width, m_Extent.height, 1u },
@@ -358,6 +358,9 @@ class AdHoc {
     ShadowMap2D shadowMap;
 
     std::vector<std::function<void()>> collisionCallbacks;
+
+    bool clearFramebuffers;
+    int clearFramebuffersCount;
 
   public:
     ~AdHoc() {
@@ -766,9 +769,6 @@ class AdHoc {
 
         g_AspectRatio.CalculateViewport(swapchain.GetExtent(), editor.GetSelectedAspectRatioWidth(), editor.GetSelectedAspectRatioHeight());
 
-        static bool clearFramebuffers;
-        static int clearFramebuffersCount;
-
         if (g_DrawEditor == true) {
             clearFramebuffers = true;
             renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
@@ -1007,7 +1007,7 @@ class AdHoc {
 
         directionalLight.direction = sunPosition;
         directionalLight.color     = { 1.0f, 1.0f, 1.0f };
-        directionalLight.intensity = 1.0f;
+        directionalLight.intensity = 10.0f;
 
         descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
         descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4);
@@ -1069,7 +1069,7 @@ class AdHoc {
         fragmentUbo.cameraPosition = { 0.0f, 0.0, -8.0f };
         directionalLight.direction = sunPosition;
         directionalLight.color     = { 1.0f, 1.0f, 1.0f };
-        directionalLight.intensity = 1.0f;
+        directionalLight.intensity = 10.0f;
         {
             editorDescriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
             editorDescriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4);
@@ -1343,6 +1343,9 @@ class AdHoc {
         InitializeFramebuffers();
 
         renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
+
+        clearFramebuffers      = true;
+        clearFramebuffersCount = 0;
     }
 
     void RecreateEditor() {

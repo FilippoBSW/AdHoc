@@ -214,28 +214,28 @@ vec3 CalculateSpotLights(vec3 N, vec3 V, vec3 reflectivity, SpotLight light) {
 
 float ShadowCalculation(vec4 shadowCoords, int pcf) {
     vec3 projCoords    = shadowCoords.xyz / shadowCoords.w;
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    /* float closestDepth = texture(shadowMap, projCoords.xy).r;  */
     float currentDepth = projCoords.z;
 
-	return  currentDepth > closestDepth ? 1.0f : 0.0f;
+	/* return  currentDepth > closestDepth ? 1.0f : 0.0f; */
 
 	// TODO: pcf
-	// float shadow = 0.0;
-	// vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
-	// float retDiv = 0.0;
-	// for(int x = -pcf; x <= pcf; ++x)
-	// {
-    // 	for(int y = -pcf; y <= pcf; ++y)
-   	// 	{
-    //     	float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-    //     	shadow += currentDepth > pcfDepth ? 1.0 : 0.0; 
-	// 		retDiv += 1.0;
-    // 	}    	
-	// }
+	float retDiv = 0.0;
+	for(int x = -pcf; x <= pcf; ++x)
+	{
+    	for(int y = -pcf; y <= pcf; ++y)
+   		{
+        	float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+        	shadow += currentDepth > pcfDepth ? 1.0 : 0.0; 
+			retDiv += 1.0;
+    	}    	
+	}
 
-	// shadow /= retDiv;
-    // return shadow;
+	shadow /= retDiv;
+    return shadow;
 } 
 
  void main() {
@@ -244,7 +244,7 @@ float ShadowCalculation(vec4 shadowCoords, int pcf) {
 	
 	vec3 reflectivity = mix(vec3(0.04f), material.albedo, material.metallicness);
 	vec3 reflectance  = vec3(0.0f);
-	float shadow      = ShadowCalculation(inLightPosition, 6);
+	float shadow      = ShadowCalculation(inLightPosition, 3);
 
 	reflectance += (1.0f - shadow) * CalculateDirectionalLights(N, V, reflectivity, directionalLight);
 
