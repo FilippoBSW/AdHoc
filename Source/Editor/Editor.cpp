@@ -97,9 +97,8 @@ namespace adh {
                 VK_IMAGE_ASPECT_COLOR_BIT);
 
             VkImageView viewAttachments[]{
-                swapchain.GetColorBuffer().GetImageView(),
-                swapchain.GetDepthBuffer().GetImageView(),
                 m_Images[i].GetImageView(),
+                swapchain.GetDepthBuffer().GetImageView(),             
             };
 
             auto info{ vk::initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };

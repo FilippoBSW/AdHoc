@@ -184,24 +184,9 @@ namespace adh {
                 VkImageCreateFlagBits(0u),
                 1u,
                 1u,
-                tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+                VK_SAMPLE_COUNT_1_BIT,
                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                 VK_IMAGE_ASPECT_DEPTH_BIT,
-                VK_IMAGE_VIEW_TYPE_2D,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                VK_SHARING_MODE_EXCLUSIVE);
-
-            m_ColorBuffer.Create(
-                { m_Extent.width, m_Extent.height, 1u },
-                VK_FORMAT_B8G8R8A8_UNORM,
-                VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_TYPE_2D,
-                (VkImageCreateFlagBits)0,
-                1,
-                1u,
-                tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
-                VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-                VK_IMAGE_ASPECT_COLOR_BIT,
                 VK_IMAGE_VIEW_TYPE_2D,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 VK_SHARING_MODE_EXCLUSIVE);
@@ -212,7 +197,6 @@ namespace adh {
             m_Format            = rhs.m_Format;
             m_PresentMode       = rhs.m_PresentMode;
             m_Extent            = rhs.m_Extent;
-            m_ColorBuffer       = Move(rhs.m_ColorBuffer);
             m_DepthBuffer       = Move(rhs.m_DepthBuffer);
             m_Images            = Move(rhs.m_Images);
             m_ImageViews        = Move(rhs.m_ImageViews);
@@ -233,9 +217,6 @@ namespace adh {
 
             if (m_DepthBuffer != VK_NULL_HANDLE) {
                 m_DepthBuffer.Destroy();
-            }
-            if (m_ColorBuffer != VK_NULL_HANDLE) {
-                m_ColorBuffer.Destroy();
             }
             if (m_Swapchain != VK_NULL_HANDLE) {
                 vkDestroySwapchainKHR(device, m_Swapchain, nullptr);

@@ -103,8 +103,7 @@ namespace adh {
                 VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
                 VK_CULL_MODE_NONE,
                 VK_FRONT_FACE_COUNTER_CLOCKWISE,
-                // VK_SAMPLE_COUNT_1_BIT,
-                vk::tools::GetMaxSampleCount(vk::Context::Get()->GetPhysicalDevice()),
+                VK_SAMPLE_COUNT_1_BIT,
                 VK_FALSE,
                 0.0f,
                 VK_TRUE);

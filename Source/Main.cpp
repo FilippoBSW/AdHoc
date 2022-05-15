@@ -53,6 +53,8 @@
 #include <Vulkan/Viewport.hpp>
 #include <Window.hpp>
 
+#include <Vulkan/Memory.hpp>
+
 #include <Audio/Audio.hpp>
 
 #if defined(ADH_IOS)
@@ -147,7 +149,7 @@ struct ShadowMap2D {
 
             graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
                                     VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE,
-                                    tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()), VK_TRUE, 0.25f, VK_TRUE);
+                                    VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
 
             descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3);
             descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
@@ -303,6 +305,228 @@ struct ShadowMap2D {
     Debug debug;
 };
 
+struct HDRBuffer {
+    ~HDRBuffer() {
+        auto device{ Context::Get()->GetDevice() };
+        vkDeviceWaitIdle(device);
+        vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
+    }
+
+    void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler) {
+        Attachment attachment;
+        attachment.AddDescription(
+            VK_FORMAT_R32G32B32A32_SFLOAT,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eColor);
+
+        attachment.AddDescription(
+            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eDepth);
+
+        Subpass subpass;
+        subpass.AddDescription(VK_PIPELINE_BIND_POINT_GRAPHICS, attachment);
+        subpass.AddDependencies(
+            VK_SUBPASS_EXTERNAL,
+            0u,
+            VkPipelineStageFlagBits(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT),
+            VkPipelineStageFlagBits(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT),
+            VK_ACCESS_NONE_KHR,
+            VkAccessFlagBits(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT));
+
+        subpass.AddDependencies(
+            0u,
+            VK_SUBPASS_EXTERNAL,
+            VkPipelineStageFlagBits(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT),
+            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            VkAccessFlagBits(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT),
+            VK_ACCESS_NONE_KHR);
+
+        VkRect2D renderArea{
+            { 0u, 0u },
+            { (uint32_t)window.GetWindowWidth(), (uint32_t)window.GetWindowHeight() }
+        };
+
+        Array<VkClearValue> clearValues;
+        clearValues.Resize(2);
+        clearValues[0].color        = { 0.0f, 0.0f, 0.0f, 1.0f };
+        clearValues[1].depthStencil = {
+            1.0f, // float    depth
+            0u    // uint32_t stencil
+        };
+
+        m_RenderPass.Create(attachment, subpass, renderArea, Move(clearValues));
+        m_RenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
+
+        Shader shader("pbr.vert", "pbr.frag");
+
+        VertexLayout vertexLayout;
+        vertexLayout.AddBinding(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+        vertexLayout.AddAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, position));
+        vertexLayout.AddAttribute(1, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, normals));
+        vertexLayout.Create();
+
+        pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
+        pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
+        pipelineLayout.CreateSet();
+
+        pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.CreateSet();
+
+        pipelineLayout.AddPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(xmm::Matrix), 0);
+        pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(Material), 64);
+
+        pipelineLayout.Create();
+
+        graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, m_RenderPass,
+                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE,
+                                VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
+
+        m_Image.Create(
+            { swapchain.GetExtent().width, swapchain.GetExtent().height, 1u },
+            VK_FORMAT_R32G32B32A32_SFLOAT,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_TYPE_2D,
+            VkImageCreateFlagBits(0),
+            1,
+            1u,
+            VK_SAMPLE_COUNT_1_BIT,
+            VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            VK_IMAGE_VIEW_TYPE_2D,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_SHARING_MODE_EXCLUSIVE);
+
+        vk::TransferImageLayout(
+            m_Image,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_IMAGE_ASPECT_COLOR_BIT);
+
+        VkImageView viewAttachments[]{
+            m_Image.GetImageView(),
+            swapchain.GetDepthBuffer().GetImageView()
+        };
+
+        auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+        ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
+                  "Failed to create frame buffers!");
+
+        descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        descriptor.sampler     = sampler;
+        descriptor.imageView   = m_Image.GetImageView();
+    }
+
+    void Recreate(Swapchain& swapchain) {
+        m_Image.Destroy();
+        auto device{ Context::Get()->GetDevice() };
+        vkDeviceWaitIdle(device);
+        vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
+
+        m_Image.Create(
+            { swapchain.GetExtent().width, swapchain.GetExtent().height, 1u },
+            VK_FORMAT_R32G32B32A32_SFLOAT,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_TYPE_2D,
+            VkImageCreateFlagBits(0),
+            1,
+            1u,
+            VK_SAMPLE_COUNT_1_BIT,
+            VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            VK_IMAGE_VIEW_TYPE_2D,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_SHARING_MODE_EXCLUSIVE);
+
+        vk::TransferImageLayout(
+            m_Image,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_IMAGE_ASPECT_COLOR_BIT);
+
+        VkImageView viewAttachments[]{
+            m_Image.GetImageView(),
+            swapchain.GetDepthBuffer().GetImageView()
+        };
+
+        auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+        ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
+                  "Failed to create frame buffers!");
+
+        descriptor.imageView = m_Image.GetImageView();
+        m_RenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
+    }
+
+    vk::Image m_Image;
+    VkFramebuffer m_Framebuffer;
+    RenderPass m_RenderPass;
+
+    PipelineLayout pipelineLayout;
+    GraphicsPipeline graphicsPipeline;
+
+    VkDescriptorImageInfo descriptor;
+};
+
+struct HDRDraw {
+    void Create(RenderPass& renderPass, VkDescriptorImageInfo& info) {
+        Shader shader("hdr.vert", "hdr.frag");
+
+        VertexLayout vertexLayout;
+        vertexLayout.Create();
+
+        pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.CreateSet();
+
+        pipelineLayout.Create();
+
+        graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
+                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE,
+                                VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
+
+        descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3);
+        descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+        descriptorSet.Create(pipelineLayout.GetSetLayout());
+
+        descriptorSet.Update(
+            info,
+            0u,                                       // descriptor index
+            1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+    }
+
+    void Update(VkDescriptorImageInfo& info) {
+        descriptorSet.Update(
+            info,
+            0u,                                       // descriptor index
+            1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+    }
+
+    DescriptorSet descriptorSet;
+    PipelineLayout pipelineLayout;
+    GraphicsPipeline graphicsPipeline;
+};
+
 class AdHoc {
   public:
     const char* name{ "AdHoc" };
@@ -361,6 +585,9 @@ class AdHoc {
 
     bool clearFramebuffers;
     int clearFramebuffersCount;
+
+    HDRBuffer hdrBuffer;
+    HDRDraw hdrDraw;
 
   public:
     ~AdHoc() {
@@ -498,6 +725,9 @@ class AdHoc {
 
         InitializeScripting();
         CreateEditor();
+
+        hdrBuffer.Create(window, swapchain, sampler);
+        hdrDraw.Create(renderPass, hdrBuffer.descriptor);
 
         auto runtimeCamera = scene.GetWorld().CreateEntity();
         scene.GetWorld().Add<Tag>(runtimeCamera, "Runtime Camera");
@@ -673,7 +903,7 @@ class AdHoc {
         {
             shadowMap.m_RenderPass.Begin(cmd, shadowMap.m_Framebuffer);
             shadowMap.graphicsPipeline.Bind(cmd);
-            shadowMap.descriptorSet.Bind(cmd, 0);
+            shadowMap.descriptorSet.Bind(cmd, imageIndex);
             shadowMap.viewport.Update(shadowMap.m_Extent, false);
             shadowMap.viewport.Set(cmd);
             shadowMap.scissor.Update(shadowMap.m_Extent);
@@ -712,6 +942,74 @@ class AdHoc {
         }
         // End shadowmap
 
+        // g_AspectRatio.CalculateViewport(swapchain.GetExtent(), editor.GetSelectedAspectRatioWidth(), editor.GetSelectedAspectRatioHeight());
+
+        // if (g_DrawEditor == true) {
+        //     clearFramebuffers = true;
+        //     renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
+        // } else if (!g_DrawEditor && !clearFramebuffers) {
+        //     renderPass.SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        //     renderPass.UpdateRenderArea(g_AspectRatio.GetRect());
+        // } else if (!g_DrawEditor && clearFramebuffers) {
+        //     renderPass.SetClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        //     if (clearFramebuffersCount++ == swapchain.GetImageViewCount()) {
+        //         clearFramebuffers      = false;
+        //         clearFramebuffersCount = 0;
+        //     }
+        // }
+
+        // Draw hdr texture
+        {
+            hdrBuffer.m_RenderPass.Begin(cmd, hdrBuffer.m_Framebuffer);
+            hdrBuffer.graphicsPipeline.Bind(cmd);
+            descriptorSet.Bind(cmd, imageIndex);
+
+            viewport.Update(swapchain.GetExtent(), false);
+            viewport.Set(cmd);
+
+            scissor.Update(swapchain.GetExtent());
+            scissor.Set(cmd);
+
+            float depthBiasConstant = 1.25f;
+            float depthBiasSlope    = 1.75f;
+            vkCmdSetDepthBias(cmd, 0, 0.0f, 0);
+            // vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
+
+            scene.GetWorld().GetSystem<Transform, Mesh, Material>().ForEach([&](ecs::Entity e, Transform& transform, Mesh& mesh, Material& material) {
+                if (mesh.toDraw) {
+                    xmm::Matrix transformMatrix;
+                    if (!g_IsPlaying) {
+                        transformMatrix = transform.GetXmm();
+                    } else if (g_IsPlaying && scene.GetWorld().Contains<RigidBody>(e)) {
+                        transformMatrix = transform.GetXmmPhysics();
+                    } else {
+                        transformMatrix = transform.GetXmm();
+                    }
+                    vkCmdPushConstants(
+                        cmd,
+                        shadowMap.pipelineLayout,
+                        VK_SHADER_STAGE_VERTEX_BIT,
+                        0u,
+                        sizeof(transformMatrix), &transformMatrix);
+
+                    vkCmdPushConstants(
+                        cmd,
+                        pipelineLayout,
+                        VK_SHADER_STAGE_FRAGMENT_BIT,
+                        64u,
+                        sizeof(material), &material);
+
+                    if (mesh.GetIndexCount() > 0) {
+                        mesh.Bind(cmd);
+                        vkCmdDrawIndexed(cmd, mesh.GetIndexCount(), 1u, 0u, 0, 0u);
+                    }
+                }
+            });
+
+            hdrBuffer.m_RenderPass.End(cmd);
+        }
+        // End  hdr texture
+
         if (g_DrawEditor) {
             for (std::uint32_t i{}; i != 2u; ++i) {
                 editor.BeginRenderPass(cmd, imageIndex, i);
@@ -729,7 +1027,8 @@ class AdHoc {
 
                 float depthBiasConstant = 1.25f;
                 float depthBiasSlope    = 1.75f;
-                vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
+                vkCmdSetDepthBias(cmd, 0, 0.0f, 0);
+                // vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
 
                 scene.GetWorld().GetSystem<Transform, Mesh, Material>().ForEach([&](ecs::Entity e, Transform& transform, Mesh& mesh, Material& material) {
                     if (mesh.toDraw) {
@@ -791,10 +1090,10 @@ class AdHoc {
             // shadowMap.debug.graphicsPipeline.Bind(cmd);
             // shadowMap.debug.descriptorSet.Bind(cmd, imageIndex);
 
-            // viewport.Update(shadowMap.m_Extent, true);
+            // viewport.Update(g_AspectRatio.GetViewport());
             // viewport.Set(cmd);
 
-            // scissor.Update(shadowMap.m_Extent);
+            // scissor.Update(g_AspectRatio.GetRect());
             // scissor.Set(cmd);
 
             // float depthBiasConstant = 1.25f;
@@ -803,48 +1102,64 @@ class AdHoc {
 
             // vkCmdDraw(cmd, 3, 1, 0, 0);
 
+            // viewport.Update(g_AspectRatio.GetViewport());
+            // viewport.Set(cmd);
+
+            // scissor.Update(g_AspectRatio.GetRect());
+            // scissor.Set(cmd);
+
+            // vkCmdSetDepthBias(cmd, 0.0f, 0.0f, 0.0f);
+
+            // graphicsPipeline.Bind(cmd);
+            // descriptorSet.Bind(cmd, imageIndex);
+
+            // scene.GetWorld().GetSystem<Transform, Mesh, Material>().ForEach([&](ecs::Entity e, Transform& transform, Mesh& mesh, Material& material) {
+            //     if (mesh.toDraw) {
+            //         // TODO: temp
+            //         xmm::Matrix transformMatrix;
+            //         if (!g_IsPlaying) {
+            //             transformMatrix = transform.GetXmm();
+            //         } else if (g_IsPlaying && scene.GetWorld().Contains<RigidBody>(e)) {
+            //             transformMatrix = transform.GetXmmPhysics();
+            //         } else {
+            //             transformMatrix = transform.GetXmm();
+            //         }
+            //         vkCmdPushConstants(
+            //             cmd,
+            //             pipelineLayout,
+            //             VK_SHADER_STAGE_VERTEX_BIT,
+            //             0u,
+            //             sizeof(transformMatrix), &transformMatrix);
+
+            //         vkCmdPushConstants(
+            //             cmd,
+            //             pipelineLayout,
+            //             VK_SHADER_STAGE_FRAGMENT_BIT,
+            //             64u,
+            //             sizeof(material), &material);
+
+            //         if (mesh.GetIndexCount() > 0) {
+            //             mesh.Bind(cmd);
+            //             vkCmdDrawIndexed(cmd, mesh.GetIndexCount(), 1u, 0u, 0, 0u);
+            //         }
+            //     }
+            // });
+
             viewport.Update(g_AspectRatio.GetViewport());
             viewport.Set(cmd);
 
             scissor.Update(g_AspectRatio.GetRect());
             scissor.Set(cmd);
 
-            vkCmdSetDepthBias(cmd, 0.0f, 0.0f, 0.0f);
+            float depthBiasConstant = 0;
+            float depthBiasSlope    = 0;
+            // vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
+            vkCmdSetDepthBias(cmd, 0, 0.0f, 0);
 
-            graphicsPipeline.Bind(cmd);
-            descriptorSet.Bind(cmd, imageIndex);
+            hdrDraw.graphicsPipeline.Bind(cmd);
+            hdrDraw.descriptorSet.Bind(cmd, imageIndex);
 
-            scene.GetWorld().GetSystem<Transform, Mesh, Material>().ForEach([&](ecs::Entity e, Transform& transform, Mesh& mesh, Material& material) {
-                if (mesh.toDraw) {
-                    // TODO: temp
-                    xmm::Matrix transformMatrix;
-                    if (!g_IsPlaying) {
-                        transformMatrix = transform.GetXmm();
-                    } else if (g_IsPlaying && scene.GetWorld().Contains<RigidBody>(e)) {
-                        transformMatrix = transform.GetXmmPhysics();
-                    } else {
-                        transformMatrix = transform.GetXmm();
-                    }
-                    vkCmdPushConstants(
-                        cmd,
-                        pipelineLayout,
-                        VK_SHADER_STAGE_VERTEX_BIT,
-                        0u,
-                        sizeof(transformMatrix), &transformMatrix);
-
-                    vkCmdPushConstants(
-                        cmd,
-                        pipelineLayout,
-                        VK_SHADER_STAGE_FRAGMENT_BIT,
-                        64u,
-                        sizeof(material), &material);
-
-                    if (mesh.GetIndexCount() > 0) {
-                        mesh.Bind(cmd);
-                        vkCmdDrawIndexed(cmd, mesh.GetIndexCount(), 1u, 0u, 0, 0u);
-                    }
-                }
-            });
+            vkCmdDraw(cmd, 3, 1, 0, 0);
 
         } else {
             editor.Draw(cmd, currentFrame, &g_MaximizeOnPlay, &g_IsPlaying, &g_IsPaused);
@@ -906,18 +1221,18 @@ class AdHoc {
         Attachment attachment;
         attachment.AddDescription(
             VK_FORMAT_B8G8R8A8_UNORM,
-            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+            VK_SAMPLE_COUNT_1_BIT,
             VK_ATTACHMENT_LOAD_OP_CLEAR,
             VK_ATTACHMENT_STORE_OP_STORE,
             VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             Attachment::Type::eColor);
 
         attachment.AddDescription(
             tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
-            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+            VK_SAMPLE_COUNT_1_BIT,
             VK_ATTACHMENT_LOAD_OP_CLEAR,
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -926,16 +1241,16 @@ class AdHoc {
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
             Attachment::Type::eDepth);
 
-        attachment.AddDescription(
-            VK_FORMAT_B8G8R8A8_UNORM,
-            VK_SAMPLE_COUNT_1_BIT,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_STORE,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            Attachment::Type::eResolve);
+        // attachment.AddDescription(
+        //     VK_FORMAT_B8G8R8A8_UNORM,
+        //     VK_SAMPLE_COUNT_1_BIT,
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_STORE,
+        //     VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        //     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        //     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        //     Attachment::Type::eResolve);
 
         Subpass subpass;
         subpass.AddDescription(VK_PIPELINE_BIND_POINT_GRAPHICS, attachment);
@@ -961,13 +1276,13 @@ class AdHoc {
         };
 
         Array<VkClearValue> clearValues;
-        clearValues.Resize(3);
-        clearValues[0].color        = { 0.1f, 0.1f, 0.1f, 1.0f };
+        clearValues.Resize(2);
+        clearValues[0].color        = { 0.0f, 0.0f, 0.0f, 1.0f };
         clearValues[1].depthStencil = {
             1.0f, // float    depth
             0u    // uint32_t stencil
         };
-        clearValues[2].color = { 0.1f, 0.1f, 0.1f, 1.0f };
+        // clearValues[2].color = { 0.1f, 0.1f, 0.1f, 1.0f };
 
         renderPass.Create(attachment, subpass, renderArea, Move(clearValues));
         renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
@@ -998,7 +1313,7 @@ class AdHoc {
 
         graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
                                 VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE,
-                                tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()), VK_TRUE, 0.25f, VK_TRUE);
+                                VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
     }
 
     void InitializeDescriptorSets() {
@@ -1181,9 +1496,9 @@ class AdHoc {
     void InitializeFramebuffers() {
         for (std::size_t i{}; i != swapchain.GetImageViewCount(); ++i) {
             VkImageView viewAttachments[]{
-                swapchain.GetColorBuffer().GetImageView(),
-                swapchain.GetDepthBuffer().GetImageView(),
                 swapchain.GetImageView()[i],
+                swapchain.GetDepthBuffer().GetImageView(),
+
             };
             auto info{ initializers::FramebufferCreateInfo(renderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
             ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &swapchainFramebuffers.EmplaceBack()) == VK_SUCCESS,
@@ -1215,51 +1530,7 @@ class AdHoc {
     }
 
     void CreateEditor() {
-        // Attachment attachment;
-        // attachment.AddDescription(
-        //     VK_FORMAT_B8G8R8A8_UNORM,
-        //     VK_SAMPLE_COUNT_1_BIT,
-        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
-        //     VK_ATTACHMENT_STORE_OP_STORE,
-        //     VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        //     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        //     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        //     Attachment::Type::eColor);
-        // attachment.AddDescription(
-        //     tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
-        //     VK_SAMPLE_COUNT_1_BIT,
-        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
-        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
-        //     VK_ATTACHMENT_STORE_OP_STORE,
-        //     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        //     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        //     Attachment::Type::eDepth);
-
         Attachment attachment;
-        attachment.AddDescription(
-            VK_FORMAT_B8G8R8A8_UNORM,
-            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_STORE,
-            VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            Attachment::Type::eColor);
-
-        attachment.AddDescription(
-            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
-            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_STORE,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            Attachment::Type::eDepth);
-
         attachment.AddDescription(
             VK_FORMAT_B8G8R8A8_UNORM,
             VK_SAMPLE_COUNT_1_BIT,
@@ -1269,7 +1540,51 @@ class AdHoc {
             VK_ATTACHMENT_STORE_OP_DONT_CARE,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            Attachment::Type::eResolve);
+            Attachment::Type::eColor);
+        attachment.AddDescription(
+            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            VK_ATTACHMENT_LOAD_OP_CLEAR,
+            VK_ATTACHMENT_STORE_OP_STORE,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            Attachment::Type::eDepth);
+
+        // Attachment attachment;
+        // attachment.AddDescription(
+        //     VK_FORMAT_B8G8R8A8_UNORM,
+        //     tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_STORE,
+        //     VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        //     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        //     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        //     Attachment::Type::eColor);
+
+        // attachment.AddDescription(
+        //     tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+        //     tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_STORE,
+        //     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        //     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        //     Attachment::Type::eDepth);
+
+        // attachment.AddDescription(
+        //     VK_FORMAT_B8G8R8A8_UNORM,
+        //     VK_SAMPLE_COUNT_1_BIT,
+        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
+        //     VK_ATTACHMENT_STORE_OP_STORE,
+        //     VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        //     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        //     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        //     Attachment::Type::eResolve);
 
         Subpass subpass;
         subpass.AddDescription(VK_PIPELINE_BIND_POINT_GRAPHICS, attachment);
@@ -1294,13 +1609,13 @@ class AdHoc {
         };
 
         Array<VkClearValue> clearValues;
-        clearValues.Resize(3);
+        clearValues.Resize(2);
         clearValues[0].color        = { 0.1f, 0.1f, 0.1, 1.0f };
         clearValues[1].depthStencil = {
             1.0f, // float    depth
             0u    // uint32_t stencil
         };
-        clearValues[2].color = { 0.1f, 0.1f, 0.1, 1.0f };
+        // clearValues[2].color = { 0.1f, 0.1f, 0.1, 1.0f };
         editor.CreateRenderPass(attachment, subpass, renderArea, Move(clearValues));
 
         VertexLayout vertexLayout;
@@ -1318,9 +1633,9 @@ class AdHoc {
             VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
             VK_CULL_MODE_BACK_BIT,
             VK_FRONT_FACE_COUNTER_CLOCKWISE,
-            tools::GetMaxSampleCount(Context::Get()->GetPhysicalDevice()),
-            VK_TRUE,
-            0.25f,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_FALSE,
+            0.0f,
             VK_TRUE);
 
         editor.CreateFramebuffers(swapchain);
@@ -1346,6 +1661,12 @@ class AdHoc {
 
         clearFramebuffers      = true;
         clearFramebuffersCount = 0;
+
+        hdrBuffer.Recreate(swapchain);
+        hdrDraw.Update(hdrBuffer.descriptor);
+
+        currentFrame = 0;
+        imageIndex   = 0;
     }
 
     void RecreateEditor() {

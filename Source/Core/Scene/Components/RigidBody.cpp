@@ -343,9 +343,11 @@ namespace adh {
             if (!isKinematic) {
                 static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eFORCE);
                 static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eIMPULSE);
+                static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eACCELERATION);
+                static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eVELOCITY_CHANGE);
                 static_cast<physx::PxRigidDynamic*>(actor)->clearTorque();
-                static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{});
-                static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{});
+                static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{0.0f,0.0f,0.0f}, false);
+                static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{0.0f,0.0f,0.0f}, false);
                 velocity        = {};
                 angularVelocity = {};
             }

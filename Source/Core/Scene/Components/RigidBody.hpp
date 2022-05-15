@@ -157,33 +157,33 @@ namespace adh {
 
       public:
         // Material
-        float staticFriction;
-        float dynamicFriction;
-        float restitution;
+        float staticFriction{};
+        float dynamicFriction{};
+        float restitution{};
         physx::PxMaterial* material;
 
         // Actor
         bool isKinematic{ false };
         float mass{ 1.0f };
-        PhysicsBodyType bodyType;
-        physx::PxRigidActor* actor;
+        PhysicsBodyType bodyType{};
+        physx::PxRigidActor* actor{};
 
         // Shape
-        PhysicsColliderShape colliderShape;
-        PhysicsColliderType colliderType;
-        physx::PxShape* shape;
+        PhysicsColliderShape colliderShape{};
+        PhysicsColliderType colliderType{};
+        physx::PxShape* shape{};
         bool scaleSameAsModel{ true };
-        Vector3D scale;
-        float radius;
-        float halfHeight;
+        Vector3D scale{};
+        float radius{};
+        float halfHeight{};
 
-        std::uint64_t entity;
+        std::uint64_t entity{};
 
         bool isTrigger{ false };
 
-        Vector3D velocity;
-        Vector3D angularVelocity;
-        Vector3D translate;
-        Vector3D rotation;
+        Vector3D velocity{};
+        Vector3D angularVelocity{};
+        Vector3D translate{};
+        Vector3D rotation{};
     };
 } // namespace adh

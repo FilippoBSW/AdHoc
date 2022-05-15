@@ -212,12 +212,12 @@ vec3 CalculateSpotLights(vec3 N, vec3 V, vec3 reflectivity, SpotLight light) {
 	return ((diffuse * material.albedo / PI + specular) * radiance * NdotL) * intensity;
 }
 
-float ShadowCalculation(vec4 shadowCoords, int pcf) {
+float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
     vec3 projCoords    = shadowCoords.xyz / shadowCoords.w;
-    /* float closestDepth = texture(shadowMap, projCoords.xy).r;  */
+    // float closestDepth = texture(shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
 
-	/* return  currentDepth > closestDepth ? 1.0f : 0.0f; */
+	// return  currentDepth > closestDepth ? 1.0f : 0.0f;
 
 	// TODO: pcf
 	float shadow = 0.0;
@@ -229,7 +229,10 @@ float ShadowCalculation(vec4 shadowCoords, int pcf) {
     	for(int y = -pcf; y <= pcf; ++y)
    		{
         	float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-        	shadow += currentDepth > pcfDepth ? 1.0 : 0.0; 
+
+			// float bias = 0.005;
+        	shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0; 
+			
 			retDiv += 1.0;
     	}    	
 	}
@@ -244,15 +247,17 @@ float ShadowCalculation(vec4 shadowCoords, int pcf) {
 	
 	vec3 reflectivity = mix(vec3(0.04f), material.albedo, material.metallicness);
 	vec3 reflectance  = vec3(0.0f);
-	float shadow      = ShadowCalculation(inLightPosition, 3);
+
+	// float bias = max(0.05 * (1.0 - dot(inNormals, inLightPosition.xyz)), 0.001);  
+	float shadow      = ShadowCalculation(inLightPosition, 6, 0.001);
 
 	reflectance += (1.0f - shadow) * CalculateDirectionalLights(N, V, reflectivity, directionalLight);
 
 	vec3 ambient = ubo.ambient * material.albedo;
 
 	vec3 color = ambient + reflectance;
-	color      = color / (color + vec3(1.0f));
-	color      = pow(color, vec3(1.0f / 2.2f));
+	// color      = color / (color + vec3(1.0f));
+	// color      = pow(color, vec3(1.0f / 2.2f));
 
 	outFragColor = vec4(color, material.transparency);
 }
