@@ -592,7 +592,7 @@ struct GaussianBlur {
         };
 
         mRenderPass.Create(attachment, subpass, renderArea, Move(clearValues));
-        mRenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
+        // mRenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
 
         Shader shader("gaussianBlur.vert", "gaussianBlur.frag");
 
@@ -617,22 +617,26 @@ struct GaussianBlur {
         mFramebuffers.Resize(2);
         descriptorSets.Resize(2);
 
+        extent = swapchain.GetExtent();
+        extent.width /= extentDivider;
+        extent.height /= extentDivider;
+        mRenderPass.UpdateRenderArea({ {}, extent });
+
         for (int i{}; i != 2; ++i) {
-            mImages[i]
-                .Create(
-                    { swapchain.GetExtent().width, swapchain.GetExtent().height, 1u },
-                    VK_FORMAT_R32G32B32A32_SFLOAT,
-                    VK_IMAGE_TILING_OPTIMAL,
-                    VK_IMAGE_TYPE_2D,
-                    VkImageCreateFlagBits(0),
-                    1,
-                    1u,
-                    VK_SAMPLE_COUNT_1_BIT,
-                    VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-                    VK_IMAGE_ASPECT_COLOR_BIT,
-                    VK_IMAGE_VIEW_TYPE_2D,
-                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                    VK_SHARING_MODE_EXCLUSIVE);
+            mImages[i].Create(
+                { extent.width, extent.height, 1u },
+                VK_FORMAT_R32G32B32A32_SFLOAT,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_TYPE_2D,
+                VkImageCreateFlagBits(0),
+                1,
+                1u,
+                VK_SAMPLE_COUNT_1_BIT,
+                VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                VK_IMAGE_VIEW_TYPE_2D,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                VK_SHARING_MODE_EXCLUSIVE);
 
             vk::TransferImageLayout(
                 mImages[i],
@@ -645,7 +649,7 @@ struct GaussianBlur {
                 swapchain.GetDepthBuffer().GetImageView()
             };
 
-            auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+            auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extent, 1u) };
             ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
                       "Failed to create frame buffers!");
 
@@ -656,6 +660,10 @@ struct GaussianBlur {
         }
 
         uboUniformBuffer.Create(&ubo, sizeof(ubo), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        uboUniformBuffer.Update();
+        uboUniformBuffer.Update(1);
+        uboUniformBuffer.Update(2);
+
         descriptorSets[0].Update(
             uboUniformBuffer.GetDescriptor(),
             0u,                               // descriptor index
@@ -697,73 +705,6 @@ struct GaussianBlur {
         finalPassdescriptor.sampler     = sampler;
         finalPassdescriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         finalPassdescriptor.imageView   = mImages[1].GetImageView();
-
-        // mImages.Resize(blurPasses);
-        // mFramebuffers.Resize(blurPasses);
-
-        // for (int i{}; i != blurPasses; ++i) {
-        //     auto extent   = swapchain.GetExtent();
-        //     extent.width  = extent.width / (2 * (i + 1));
-        //     extent.height = extent.height / (2 * (i + 1));
-
-        //     mImages[i]
-        //         .Create(
-        //             { extent.width, extent.height, 1u },
-        //             VK_FORMAT_R32G32B32A32_SFLOAT,
-        //             VK_IMAGE_TILING_OPTIMAL,
-        //             VK_IMAGE_TYPE_2D,
-        //             VkImageCreateFlagBits(0),
-        //             1,
-        //             1u,
-        //             VK_SAMPLE_COUNT_1_BIT,
-        //             VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-        //             VK_IMAGE_ASPECT_COLOR_BIT,
-        //             VK_IMAGE_VIEW_TYPE_2D,
-        //             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        //             VK_SHARING_MODE_EXCLUSIVE);
-
-        //     vk::TransferImageLayout(
-        //         mImages[i],
-        //         VK_IMAGE_LAYOUT_UNDEFINED,
-        //         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        //         VK_IMAGE_ASPECT_COLOR_BIT);
-
-        //     VkImageView viewAttachments[]{
-        //         mImages[i].GetImageView(),
-        //         swapchain.GetDepthBuffer().GetImageView()
-        //     };
-
-        //     auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extent, 1u) };
-        //     ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
-        //               "Failed to create frame buffers!");
-        // }
-
-        // descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
-        // descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-        // descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-        // descriptorSet.Create(pipelineLayout.GetSetLayout());
-
-        // uboUniformBuffer.Create(&ubo, sizeof(ubo), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-        // descriptorSet.Update(
-        //     uboUniformBuffer.GetDescriptor(),
-        //     0u,                               // descriptor index
-        //     0u,                               // binding
-        //     0u,                               // array element
-        //     1u,                               // array count
-        //     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-        // );
-        // descriptorSet.Update(
-        //     info,
-        //     0u,                                       // descriptor index
-        //     1u,                                       // binding
-        //     0u,                                       // array element
-        //     1u,                                       // array count
-        //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        // );
-
-        // descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        // descriptor.sampler     = sampler;
-        // descriptor.imageView   = mImages[blurPasses - 1].GetImageView();
     }
 
     void Recreate(Swapchain& swapchain, VkDescriptorImageInfo info) {
@@ -774,22 +715,26 @@ struct GaussianBlur {
             vkDestroyFramebuffer(Context::Get()->GetDevice(), mFramebuffers[i], nullptr);
         }
 
+        extent = swapchain.GetExtent();
+        extent.width /= extentDivider;
+        extent.height /= extentDivider;
+        mRenderPass.UpdateRenderArea({ {}, extent });
+
         for (int i{}; i != 2; ++i) {
-            mImages[i]
-                .Create(
-                    { swapchain.GetExtent().width, swapchain.GetExtent().height, 1u },
-                    VK_FORMAT_R32G32B32A32_SFLOAT,
-                    VK_IMAGE_TILING_OPTIMAL,
-                    VK_IMAGE_TYPE_2D,
-                    VkImageCreateFlagBits(0),
-                    1,
-                    1u,
-                    VK_SAMPLE_COUNT_1_BIT,
-                    VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-                    VK_IMAGE_ASPECT_COLOR_BIT,
-                    VK_IMAGE_VIEW_TYPE_2D,
-                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                    VK_SHARING_MODE_EXCLUSIVE);
+            mImages[i].Create(
+                { extent.width, extent.height, 1u },
+                VK_FORMAT_R32G32B32A32_SFLOAT,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_TYPE_2D,
+                VkImageCreateFlagBits(0),
+                1,
+                1u,
+                VK_SAMPLE_COUNT_1_BIT,
+                VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                VK_IMAGE_VIEW_TYPE_2D,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                VK_SHARING_MODE_EXCLUSIVE);
 
             vk::TransferImageLayout(
                 mImages[i],
@@ -802,14 +747,9 @@ struct GaussianBlur {
                 swapchain.GetDepthBuffer().GetImageView()
             };
 
-            auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+            auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extent, 1u) };
             ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
                       "Failed to create frame buffers!");
-
-            // descriptorSets[i].Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
-            // descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-            // descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-            // descriptorSets[i].Create(pipelineLayout.GetSetLayout());
         }
 
         descriptorSets[0].Update(
@@ -833,56 +773,6 @@ struct GaussianBlur {
         );
 
         finalPassdescriptor.imageView = mImages[1].GetImageView();
-
-        mRenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
-
-        // for (int i{}; i != blurPasses; ++i) {
-        //     auto extent   = swapchain.GetExtent();
-        //     extent.width  = extent.width / (2 * (i + 1));
-        //     extent.height = extent.height / (2 * (i + 1));
-
-        //     mImages[i]
-        //         .Create(
-        //             { extent.width, extent.height, 1u },
-        //             VK_FORMAT_R32G32B32A32_SFLOAT,
-        //             VK_IMAGE_TILING_OPTIMAL,
-        //             VK_IMAGE_TYPE_2D,
-        //             VkImageCreateFlagBits(0),
-        //             1,
-        //             1u,
-        //             VK_SAMPLE_COUNT_1_BIT,
-        //             VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-        //             VK_IMAGE_ASPECT_COLOR_BIT,
-        //             VK_IMAGE_VIEW_TYPE_2D,
-        //             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        //             VK_SHARING_MODE_EXCLUSIVE);
-
-        //     vk::TransferImageLayout(
-        //         mImages[i],
-        //         VK_IMAGE_LAYOUT_UNDEFINED,
-        //         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        //         VK_IMAGE_ASPECT_COLOR_BIT);
-
-        //     VkImageView viewAttachments[]{
-        //         mImages[i].GetImageView(),
-        //         swapchain.GetDepthBuffer().GetImageView()
-        //     };
-
-        //     auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extent, 1u) };
-        //     ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
-        //               "Failed to create frame buffers!");
-        // }
-
-        // descriptorSet.Update(
-        //     info,
-        //     0u,                                       // descriptor index
-        //     1u,                                       // binding
-        //     0u,                                       // array element
-        //     1u,                                       // array count
-        //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        // );
-
-        // descriptor.imageView = mImages[blurPasses - 1].GetImageView();
     }
 
     Array<Image> mImages;
@@ -903,11 +793,14 @@ struct GaussianBlur {
         float blurStrength{ 1.0f };
     };
 
-    int blurDirection = 0;
+    int horizontalBlur = 1;
     UBO ubo;
     UniformBuffer uboUniformBuffer;
 
     inline static constexpr int blurPasses = 6;
+
+    VkExtent2D extent;
+    int extentDivider = 8;
 };
 
 class AdHoc {
@@ -1400,60 +1293,33 @@ class AdHoc {
 
         // Gaussian blur
         {
-            viewport.Update(swapchain.GetExtent(), false);
+            viewport.Update(gaussianBlur.extent, false);
             viewport.Set(cmd);
 
-            scissor.Update(swapchain.GetExtent());
+            scissor.Update(gaussianBlur.extent);
             scissor.Set(cmd);
 
             vkCmdSetDepthBias(cmd, 0, 0, 0);
 
+            gaussianBlur.horizontalBlur = 0;
             for (int i{}; i != 2; ++i) {
                 gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[i]);
                 gaussianBlur.graphicsPipeline.Bind(cmd);
                 gaussianBlur.descriptorSets[i].Bind(cmd, imageIndex);
 
-                gaussianBlur.blurDirection = i;
                 vkCmdPushConstants(
                     cmd,
                     gaussianBlur.pipelineLayout,
                     VK_SHADER_STAGE_FRAGMENT_BIT,
                     0u,
-                    sizeof(int), &gaussianBlur.blurDirection);
+                    sizeof(int), &gaussianBlur.horizontalBlur);
 
                 vkCmdDraw(cmd, 3, 1, 0, 0);
                 gaussianBlur.mRenderPass.End(cmd);
+
+                gaussianBlur.horizontalBlur = 1;
             }
         }
-        // {
-        //     for (int i{}; i != gaussianBlur.blurPasses; ++i) {
-        //         viewport.Update(swapchain.GetExtent(), false);
-        //         viewport.Set(cmd);
-
-        //         scissor.Update(swapchain.GetExtent());
-        //         scissor.Set(cmd);
-
-        //         vkCmdSetDepthBias(cmd, 0, 0, 0);
-
-        //         gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[i]);
-        //         for (int j{}; j != 2; ++j) {
-        //             gaussianBlur.graphicsPipeline.Bind(cmd);
-        //             gaussianBlur.descriptorSet.Bind(cmd, imageIndex);
-
-        //             gaussianBlur.blurDirection = j;
-        //             vkCmdPushConstants(
-        //                 cmd,
-        //                 gaussianBlur.pipelineLayout,
-        //                 VK_SHADER_STAGE_FRAGMENT_BIT,
-        //                 0u,
-        //                 sizeof(int), &gaussianBlur.blurDirection);
-
-        //             vkCmdDraw(cmd, 3, 1, 0, 0);
-        //         }
-
-        //         gaussianBlur.mRenderPass.End(cmd);
-        //     }
-        // }
         // Gaussian blur
 
         if (g_DrawEditor) {

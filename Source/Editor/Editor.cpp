@@ -98,7 +98,7 @@ namespace adh {
 
             VkImageView viewAttachments[]{
                 m_Images[i].GetImageView(),
-                swapchain.GetDepthBuffer().GetImageView(),             
+                swapchain.GetDepthBuffer().GetImageView()
             };
 
             auto info{ vk::initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
