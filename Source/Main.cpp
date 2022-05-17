@@ -1414,7 +1414,7 @@ class AdHoc {
                     }
                     vkCmdPushConstants(
                         cmd,
-                        shadowMap.pipelineLayout,
+                        pipelineLayout,
                         VK_SHADER_STAGE_VERTEX_BIT,
                         0u,
                         sizeof(transformMatrix), &transformMatrix);
