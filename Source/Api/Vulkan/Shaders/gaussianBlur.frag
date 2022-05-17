@@ -70,10 +70,10 @@ void main()
     {
         for(int i = 1; i < weight.length(); ++i)
         {
-            if(texture(depth, inUV + vec2(tex_offset.x * i, 0.0)).r >= depth1){
+            if(texture(depth, inUV + vec2(tex_offset.x * i, 0.0)).r <= depth1){
                 result += texture(image, inUV + vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
             }
-            if(texture(depth, inUV - vec2(tex_offset.x * i, 0.0)).r >= depth1){
+            if(texture(depth, inUV - vec2(tex_offset.x * i, 0.0)).r <= depth1){
                 result += texture(image, inUV - vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
             }
         }
@@ -83,10 +83,10 @@ void main()
     {
         for(int i = 1; i < weight.length(); ++i)
         {
-            if(texture(depth, inUV + vec2(0.0, tex_offset.y * i)).r >= depth1){
+            if(texture(depth, inUV + vec2(0.0, tex_offset.y * i)).r <= depth1){
                 result += texture(image, inUV + vec2(0.0, tex_offset.y * i)).rgb * weight[i];
             }
-            if(texture(depth, inUV + vec2(0.0, tex_offset.y * i)).r >= depth1){
+            if(texture(depth, inUV + vec2(0.0, tex_offset.y * i)).r <= depth1){
                 result += texture(image, inUV - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
             }
         }

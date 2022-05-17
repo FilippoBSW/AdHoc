@@ -170,9 +170,15 @@ struct ShadowMap2D {
         GraphicsPipeline graphicsPipeline;
     };
 
+    ~ShadowMap2D() {
+        auto device{ Context::Get()->GetDevice() };
+        vkDeviceWaitIdle(device);
+        vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+    }
+
     void Create(RenderPass& renderPass, Sampler& sampler) {
-        m_Extent.width  = 2048 * 2;
-        m_Extent.height = 2048 * 2;
+        // m_Extent.width  = 2048 * 2;
+        // m_Extent.height = 2048 * 2;
 
         m_Image.Create(
             { m_Extent.width, m_Extent.height, 1u },
@@ -264,7 +270,7 @@ struct ShadowMap2D {
         descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
         descriptorSet.Create(pipelineLayout.GetSetLayout());
 
-        lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
+        // lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
 
         lightSpaceBuffer.Create(&lightSpace, sizeof(lightSpace), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         descriptorSet.Update(
@@ -283,6 +289,40 @@ struct ShadowMap2D {
         descriptor.imageView   = m_Image.GetImageView();
 
         debug.Create(renderPass, descriptor);
+    }
+
+    void Recreate(VkExtent2D extent) {
+        m_Extent = extent;
+        auto device{ Context::Get()->GetDevice() };
+        vkDeviceWaitIdle(device);
+        vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+
+        m_Image.Destroy();
+
+        m_Image.Create(
+            { m_Extent.width, m_Extent.height, 1u },
+            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_TYPE_2D,
+            (VkImageCreateFlagBits)0,
+            1,
+            1,
+            VK_SAMPLE_COUNT_1_BIT,
+            VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            VK_IMAGE_VIEW_TYPE_2D,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_SHARING_MODE_EXCLUSIVE);
+
+        m_RenderPass.UpdateRenderArea({ {}, m_Extent });
+
+        VkImageView viewAttachments[]{
+            m_Image.GetImageView()
+        };
+
+        auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u) };
+        ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
+                  "Failed to create frame buffers!");
     }
 
     RenderPass m_RenderPass;
@@ -536,7 +576,7 @@ struct GaussianBlur {
         }
     }
 
-    void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler, VkDescriptorImageInfo info) {
+    void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler, VkDescriptorImageInfo info, VkDescriptorImageInfo shadow) {
         Attachment attachment;
         attachment.AddDescription(
             VK_FORMAT_R32G32B32A32_SFLOAT,
@@ -665,9 +705,9 @@ struct GaussianBlur {
         uboUniformBuffer.Update(1);
         uboUniformBuffer.Update(2);
 
-        depthDescriptor.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        depthDescriptor.sampler     = sampler;
-        depthDescriptor.imageView   = swapchain.GetDepthBuffer().GetImageView();
+        // depthDescriptor.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        // depthDescriptor.sampler     = sampler;
+        // depthDescriptor.imageView   = swapchain.GetDepthBuffer().GetImageView();
 
         descriptorSets[0].Update(
             uboUniformBuffer.GetDescriptor(),
@@ -686,7 +726,7 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
         descriptorSets[0].Update(
-            depthDescriptor,
+            shadow,
             0u,                                       // descriptor index
             2u,                                       // binding
             0u,                                       // array element
@@ -715,7 +755,7 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
         descriptorSets[1].Update(
-            depthDescriptor,
+            shadow,
             0u,                                       // descriptor index
             2u,                                       // binding
             0u,                                       // array element
@@ -744,7 +784,7 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
         descriptorSets[2].Update(
-            depthDescriptor,
+            shadow,
             0u,                                       // descriptor index
             2u,                                       // binding
             0u,                                       // array element
@@ -757,7 +797,7 @@ struct GaussianBlur {
         finalPassdescriptor.imageView   = mImages[2].GetImageView();
     }
 
-    void Recreate(Swapchain& swapchain, VkDescriptorImageInfo info) {
+    void Recreate(Swapchain& swapchain, VkDescriptorImageInfo info, VkDescriptorImageInfo shadow) {
         auto device{ Context::Get()->GetDevice() };
         vkDeviceWaitIdle(device);
         for (int i{}; i != mFramebuffers.GetSize(); ++i) {
@@ -802,7 +842,7 @@ struct GaussianBlur {
                       "Failed to create frame buffers!");
         }
 
-        depthDescriptor.imageView = swapchain.GetDepthBuffer().GetImageView();
+        // depthDescriptor.imageView = swapchain.GetDepthBuffer().GetImageView();
 
         descriptorSets[0].Update(
             info,
@@ -813,7 +853,7 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
         descriptorSets[0].Update(
-            depthDescriptor,
+            shadow,
             0u,                                       // descriptor index
             2u,                                       // binding
             0u,                                       // array element
@@ -832,7 +872,7 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
         descriptorSets[1].Update(
-            depthDescriptor,
+            shadow,
             0u,                                       // descriptor index
             2u,                                       // binding
             0u,                                       // array element
@@ -860,7 +900,7 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
         descriptorSets[2].Update(
-            depthDescriptor,
+            shadow,
             0u,                                       // descriptor index
             2u,                                       // binding
             0u,                                       // array element
@@ -932,7 +972,7 @@ struct GaussianBlur {
     VkDescriptorImageInfo midPassdescriptor;
     VkDescriptorImageInfo finalPassdescriptor;
 
-    VkDescriptorImageInfo depthDescriptor;
+    // VkDescriptorImageInfo depthDescriptor;
 
     struct UBO {
         float blurScale{ 1.0f };
@@ -946,7 +986,7 @@ struct GaussianBlur {
     inline static constexpr int blurPasses = 6;
 
     VkExtent2D extent;
-    int extentDivider = 2;
+    int extentDivider = 1;
 };
 
 class AdHoc {
@@ -1002,6 +1042,7 @@ class AdHoc {
     bool g_AreScriptsReady{ false };
 
     ShadowMap2D shadowMap;
+    ShadowMap2D blurShadowMap;
 
     std::vector<std::function<void()>> collisionCallbacks;
 
@@ -1017,7 +1058,7 @@ class AdHoc {
     ~AdHoc() {
         auto device{ Context::Get()->GetDevice() };
         vkDeviceWaitIdle(device);
-        vkDestroyFramebuffer(device, shadowMap.m_Framebuffer, nullptr);
+        // vkDestroyFramebuffer(device, shadowMap.m_Framebuffer, nullptr);
         for (int i{}; i != swapchain.GetImageViewCount(); ++i) {
             vkDestroyFramebuffer(device, swapchainFramebuffers[i], nullptr);
             vkDestroySemaphore(device, presentSempahore[i], nullptr);
@@ -1136,8 +1177,10 @@ class AdHoc {
         InitializeRenderPass();
 
         sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
-        shadowMap.Create(renderPass, sampler);
 
+        shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
+        shadowMap.m_Extent   = { 2048 * 2, 2048 * 2 };
+        shadowMap.Create(renderPass, sampler);
         lightSpace = lightSpaceBias * shadowMap.lightSpace;
 
         InitializePipeline();
@@ -1149,12 +1192,6 @@ class AdHoc {
 
         InitializeScripting();
         CreateEditor();
-
-        hdrBuffer.Create(window, swapchain, sampler);
-        // hdrDraw.Create(renderPass, hdrBuffer.descriptor);
-
-        gaussianBlur.Create(window, swapchain, sampler, hdrBuffer.descriptor);
-        hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
 
         auto runtimeCamera = scene.GetWorld().CreateEntity();
         scene.GetWorld().Add<Tag>(runtimeCamera, "Runtime Camera");
@@ -1173,6 +1210,17 @@ class AdHoc {
         Event::AddListener<StatusEvent>(eventListener, &AdHoc::OnStatusEvent, this);
         Event::AddListener<CollisionEvent>(eventListener, &AdHoc::OnCollisionEvent, this);
         input.Initialize();
+
+        hdrBuffer.Create(window, swapchain, sampler);
+        // hdrDraw.Create(renderPass, hdrBuffer.descriptor);
+
+        blurShadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(45.0f), editor.GetSelectedAspectRatio(), 1.0f, 1000.0f) *
+                                   xmm::LookAtLH(c2.eyePosition, { 0, 0, 0 }, { 0, 1, 0 });
+        blurShadowMap.m_Extent = swapchain.GetExtent();
+        blurShadowMap.Create(renderPass, sampler);
+
+        gaussianBlur.Create(window, swapchain, sampler, hdrBuffer.descriptor, blurShadowMap.descriptor);
+        hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
 
         renderingReady = true;
     }
@@ -1270,6 +1318,10 @@ class AdHoc {
 
                 editorViewProjection2.viewProj = camera.GetXmmProjection() * camera.GetXmmView();
                 editorViewProjectionBuffer2.Update(imageIndex);
+
+                blurShadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(45.0f), editor.GetSelectedAspectRatio(), 1.0f, 1000.0f) *
+                                           xmm::LookAtLH(camera.eyePosition, { 0, 0, 0 }, { 0, 1, 0 });
+                blurShadowMap.lightSpaceBuffer.Update(imageIndex);
             }
             if (camera.isSceneCamera) {
                 // TODO: camera control
@@ -1367,6 +1419,49 @@ class AdHoc {
 
             shadowMap.m_RenderPass.End(cmd);
         }
+
+        // Draw shadowmap
+        {
+            blurShadowMap.m_RenderPass.Begin(cmd, blurShadowMap.m_Framebuffer);
+            blurShadowMap.graphicsPipeline.Bind(cmd);
+            blurShadowMap.descriptorSet.Bind(cmd, imageIndex);
+            blurShadowMap.viewport.Update(blurShadowMap.m_Extent, false);
+            blurShadowMap.viewport.Set(cmd);
+            blurShadowMap.scissor.Update(blurShadowMap.m_Extent);
+            blurShadowMap.scissor.Set(cmd);
+
+            float depthBiasConstant = 1.25f;
+            float depthBiasSlope    = 1.75f;
+            vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
+
+            scene.GetWorld().GetSystem<Transform, Mesh, Material>().ForEach([&](ecs::Entity e, Transform& transform, Mesh& mesh, Material& material) {
+                if (mesh.toDraw) {
+                    // TODO: temp
+                    xmm::Matrix transformMatrix;
+                    if (!g_IsPlaying) {
+                        transformMatrix = transform.GetXmm();
+                    } else if (g_IsPlaying && scene.GetWorld().Contains<RigidBody>(e)) {
+                        transformMatrix = transform.GetXmmPhysics();
+                    } else {
+                        transformMatrix = transform.GetXmm();
+                    }
+                    vkCmdPushConstants(
+                        cmd,
+                        blurShadowMap.pipelineLayout,
+                        VK_SHADER_STAGE_VERTEX_BIT,
+                        0u,
+                        sizeof(transformMatrix), &transformMatrix);
+
+                    if (mesh.GetIndexCount() > 0) {
+                        mesh.Bind(cmd);
+                        vkCmdDrawIndexed(cmd, mesh.GetIndexCount(), 1u, 0u, 0, 0u);
+                    }
+                }
+            });
+
+            blurShadowMap.m_RenderPass.End(cmd);
+        }
+
         // End shadowmap
 
         // g_AspectRatio.CalculateViewport(swapchain.GetExtent(), editor.GetSelectedAspectRatioWidth(), editor.GetSelectedAspectRatioHeight());
@@ -1590,6 +1685,20 @@ class AdHoc {
         renderPass.Begin(cmd, swapchainFramebuffers[imageIndex]);
 
         if (!g_DrawEditor) {
+            // blurShadowMap.debug.graphicsPipeline.Bind(cmd);
+            // blurShadowMap.debug.descriptorSet.Bind(cmd, imageIndex);
+
+            // viewport.Update(g_AspectRatio.GetViewport());
+            // viewport.Set(cmd);
+
+            // scissor.Update(g_AspectRatio.GetRect());
+            // scissor.Set(cmd);
+
+            // float depthBiasConstant = 1.25f;
+            // float depthBiasSlope    = 1.75f;
+            // vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
+
+            // vkCmdDraw(cmd, 3, 1, 0, 0);
             // TODO: editor viewport to see shadowmap
             // Draw shadowmap
             // shadowMap.debug.graphicsPipeline.Bind(cmd);
@@ -1658,7 +1767,6 @@ class AdHoc {
 
             float depthBiasConstant = 0;
             float depthBiasSlope    = 0;
-            // vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
             vkCmdSetDepthBias(cmd, 0, 0.0f, 0);
 
             hdrDraw.graphicsPipeline.Bind(cmd);
@@ -2168,14 +2276,15 @@ class AdHoc {
         clearFramebuffers      = true;
         clearFramebuffersCount = 0;
 
-        hdrBuffer.Recreate(swapchain);
         // hdrDraw.Update(hdrBuffer.descriptor);
-
-        gaussianBlur.Recreate(swapchain, hdrBuffer.descriptor);
-        hdrDraw.Update(gaussianBlur.finalPassdescriptor);
 
         currentFrame = 0;
         imageIndex   = 0;
+
+        // blurShadowMap.Recreate(swapchain.GetExtent());
+        hdrBuffer.Recreate(swapchain);
+        gaussianBlur.Recreate(swapchain, hdrBuffer.descriptor, blurShadowMap.descriptor);
+        hdrDraw.Update(gaussianBlur.finalPassdescriptor);
     }
 
     void RecreateEditor() {
