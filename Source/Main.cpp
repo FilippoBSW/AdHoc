@@ -613,16 +613,16 @@ struct GaussianBlur {
 
         // TODO: temp only one pass
 
-        mImages.Resize(2);
-        mFramebuffers.Resize(2);
-        descriptorSets.Resize(2);
+        mImages.Resize(3);
+        mFramebuffers.Resize(3);
+        descriptorSets.Resize(3);
 
         extent = swapchain.GetExtent();
         extent.width /= extentDivider;
         extent.height /= extentDivider;
         mRenderPass.UpdateRenderArea({ {}, extent });
 
-        for (int i{}; i != 2; ++i) {
+        for (int i{}; i != 3; ++i) {
             mImages[i].Create(
                 { extent.width, extent.height, 1u },
                 VK_FORMAT_R32G32B32A32_SFLOAT,
@@ -702,9 +702,30 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
 
+        midPassdescriptor.sampler     = sampler;
+        midPassdescriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        midPassdescriptor.imageView   = mImages[1].GetImageView();
+
+        descriptorSets[2].Update(
+            uboUniformBuffer.GetDescriptor(),
+            0u,                               // descriptor index
+            0u,                               // binding
+            0u,                               // array element
+            1u,                               // array count
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
+        );
+        descriptorSets[2].Update(
+            midPassdescriptor,
+            0u,                                       // descriptor index
+            1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+
         finalPassdescriptor.sampler     = sampler;
         finalPassdescriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        finalPassdescriptor.imageView   = mImages[1].GetImageView();
+        finalPassdescriptor.imageView   = mImages[2].GetImageView();
     }
 
     void Recreate(Swapchain& swapchain, VkDescriptorImageInfo info) {
@@ -720,7 +741,7 @@ struct GaussianBlur {
         extent.height /= extentDivider;
         mRenderPass.UpdateRenderArea({ {}, extent });
 
-        for (int i{}; i != 2; ++i) {
+        for (int i{}; i != 3; ++i) {
             mImages[i].Create(
                 { extent.width, extent.height, 1u },
                 VK_FORMAT_R32G32B32A32_SFLOAT,
@@ -772,7 +793,27 @@ struct GaussianBlur {
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
 
-        finalPassdescriptor.imageView = mImages[1].GetImageView();
+        midPassdescriptor.imageView = mImages[1].GetImageView();
+
+        descriptorSets[2].Update(
+            uboUniformBuffer.GetDescriptor(),
+            0u,                               // descriptor index
+            0u,                               // binding
+            0u,                               // array element
+            1u,                               // array count
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
+        );
+
+        descriptorSets[2].Update(
+            midPassdescriptor,
+            0u,                                       // descriptor index
+            1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+
+        finalPassdescriptor.imageView = mImages[2].GetImageView();
     }
 
     Array<Image> mImages;
@@ -786,6 +827,7 @@ struct GaussianBlur {
     RenderPass mRenderPass;
 
     VkDescriptorImageInfo firstPassdescriptor;
+    VkDescriptorImageInfo midPassdescriptor;
     VkDescriptorImageInfo finalPassdescriptor;
 
     struct UBO {
@@ -800,7 +842,7 @@ struct GaussianBlur {
     inline static constexpr int blurPasses = 6;
 
     VkExtent2D extent;
-    int extentDivider = 8;
+    int extentDivider = 16;
 };
 
 class AdHoc {
@@ -1301,24 +1343,69 @@ class AdHoc {
 
             vkCmdSetDepthBias(cmd, 0, 0, 0);
 
+            gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[0]);
+            gaussianBlur.graphicsPipeline.Bind(cmd);
+            gaussianBlur.descriptorSets[0].Bind(cmd, imageIndex);
+
+            gaussianBlur.horizontalBlur = -1;
+            vkCmdPushConstants(
+                cmd,
+                gaussianBlur.pipelineLayout,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                0u,
+                sizeof(int), &gaussianBlur.horizontalBlur);
+
+            vkCmdDraw(cmd, 3, 1, 0, 0);
+            gaussianBlur.mRenderPass.End(cmd);
+
+            gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[1]);
+            gaussianBlur.graphicsPipeline.Bind(cmd);
+            gaussianBlur.descriptorSets[1].Bind(cmd, imageIndex);
+
             gaussianBlur.horizontalBlur = 0;
-            for (int i{}; i != 2; ++i) {
-                gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[i]);
-                gaussianBlur.graphicsPipeline.Bind(cmd);
-                gaussianBlur.descriptorSets[i].Bind(cmd, imageIndex);
+            vkCmdPushConstants(
+                cmd,
+                gaussianBlur.pipelineLayout,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                0u,
+                sizeof(int), &gaussianBlur.horizontalBlur);
 
-                vkCmdPushConstants(
-                    cmd,
-                    gaussianBlur.pipelineLayout,
-                    VK_SHADER_STAGE_FRAGMENT_BIT,
-                    0u,
-                    sizeof(int), &gaussianBlur.horizontalBlur);
+            vkCmdDraw(cmd, 3, 1, 0, 0);
+            gaussianBlur.mRenderPass.End(cmd);
 
-                vkCmdDraw(cmd, 3, 1, 0, 0);
-                gaussianBlur.mRenderPass.End(cmd);
+            gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[2]);
+            gaussianBlur.graphicsPipeline.Bind(cmd);
+            gaussianBlur.descriptorSets[2].Bind(cmd, imageIndex);
 
-                gaussianBlur.horizontalBlur = 1;
-            }
+            gaussianBlur.horizontalBlur = 1;
+            vkCmdPushConstants(
+                cmd,
+                gaussianBlur.pipelineLayout,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                0u,
+                sizeof(int), &gaussianBlur.horizontalBlur);
+
+            vkCmdDraw(cmd, 3, 1, 0, 0);
+            gaussianBlur.mRenderPass.End(cmd);
+
+            // gaussianBlur.horizontalBlur = 0;
+            // for (int i{}; i != 2; ++i) {
+            //     gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[i]);
+            //     gaussianBlur.graphicsPipeline.Bind(cmd);
+            //     gaussianBlur.descriptorSets[i].Bind(cmd, imageIndex);
+
+            //     vkCmdPushConstants(
+            //         cmd,
+            //         gaussianBlur.pipelineLayout,
+            //         VK_SHADER_STAGE_FRAGMENT_BIT,
+            //         0u,
+            //         sizeof(int), &gaussianBlur.horizontalBlur);
+
+            //     vkCmdDraw(cmd, 3, 1, 0, 0);
+            //     gaussianBlur.mRenderPass.End(cmd);
+
+            //     gaussianBlur.horizontalBlur = 0;
+            // }
         }
         // Gaussian blur
 
@@ -1529,7 +1616,8 @@ class AdHoc {
         }
     }
 
-    void InitializeRenderPass() {
+    void
+    InitializeRenderPass() {
         Attachment attachment;
         attachment.AddDescription(
             VK_FORMAT_B8G8R8A8_UNORM,
