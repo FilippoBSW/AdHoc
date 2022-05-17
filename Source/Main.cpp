@@ -601,6 +601,7 @@ struct GaussianBlur {
 
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
         pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(int), 0);
@@ -655,7 +656,7 @@ struct GaussianBlur {
 
             descriptorSets[i].Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
             descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-            descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+            descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2);
             descriptorSets[i].Create(pipelineLayout.GetSetLayout());
         }
 
@@ -663,6 +664,10 @@ struct GaussianBlur {
         uboUniformBuffer.Update();
         uboUniformBuffer.Update(1);
         uboUniformBuffer.Update(2);
+
+        depthDescriptor.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthDescriptor.sampler     = sampler;
+        depthDescriptor.imageView   = swapchain.GetDepthBuffer().GetImageView();
 
         descriptorSets[0].Update(
             uboUniformBuffer.GetDescriptor(),
@@ -676,6 +681,14 @@ struct GaussianBlur {
             info,
             0u,                                       // descriptor index
             1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        descriptorSets[0].Update(
+            depthDescriptor,
+            0u,                                       // descriptor index
+            2u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -701,6 +714,14 @@ struct GaussianBlur {
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
+        descriptorSets[1].Update(
+            depthDescriptor,
+            0u,                                       // descriptor index
+            2u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
 
         midPassdescriptor.sampler     = sampler;
         midPassdescriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -718,6 +739,14 @@ struct GaussianBlur {
             midPassdescriptor,
             0u,                                       // descriptor index
             1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        descriptorSets[2].Update(
+            depthDescriptor,
+            0u,                                       // descriptor index
+            2u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -773,10 +802,20 @@ struct GaussianBlur {
                       "Failed to create frame buffers!");
         }
 
+        depthDescriptor.imageView = swapchain.GetDepthBuffer().GetImageView();
+
         descriptorSets[0].Update(
             info,
             0u,                                       // descriptor index
             1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        descriptorSets[0].Update(
+            depthDescriptor,
+            0u,                                       // descriptor index
+            2u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -788,6 +827,14 @@ struct GaussianBlur {
             firstPassdescriptor,
             0u,                                       // descriptor index
             1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        descriptorSets[1].Update(
+            depthDescriptor,
+            0u,                                       // descriptor index
+            2u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -812,8 +859,63 @@ struct GaussianBlur {
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
+        descriptorSets[2].Update(
+            depthDescriptor,
+            0u,                                       // descriptor index
+            2u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
 
         finalPassdescriptor.imageView = mImages[2].GetImageView();
+    }
+
+    void Draw(VkCommandBuffer cmd, std::uint32_t imageIndex) {
+        mRenderPass.Begin(cmd, mFramebuffers[0]);
+        graphicsPipeline.Bind(cmd);
+        descriptorSets[0].Bind(cmd, imageIndex);
+
+        horizontalBlur = -1;
+        vkCmdPushConstants(
+            cmd,
+            pipelineLayout,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            0u,
+            sizeof(int), &horizontalBlur);
+
+        vkCmdDraw(cmd, 3, 1, 0, 0);
+        mRenderPass.End(cmd);
+
+        mRenderPass.Begin(cmd, mFramebuffers[1]);
+        graphicsPipeline.Bind(cmd);
+        descriptorSets[1].Bind(cmd, imageIndex);
+
+        horizontalBlur = 0;
+        vkCmdPushConstants(
+            cmd,
+            pipelineLayout,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            0u,
+            sizeof(int), &horizontalBlur);
+
+        vkCmdDraw(cmd, 3, 1, 0, 0);
+        mRenderPass.End(cmd);
+
+        mRenderPass.Begin(cmd, mFramebuffers[2]);
+        graphicsPipeline.Bind(cmd);
+        descriptorSets[2].Bind(cmd, imageIndex);
+
+        horizontalBlur = 1;
+        vkCmdPushConstants(
+            cmd,
+            pipelineLayout,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            0u,
+            sizeof(int), &horizontalBlur);
+
+        vkCmdDraw(cmd, 3, 1, 0, 0);
+        mRenderPass.End(cmd);
     }
 
     Array<Image> mImages;
@@ -830,6 +932,8 @@ struct GaussianBlur {
     VkDescriptorImageInfo midPassdescriptor;
     VkDescriptorImageInfo finalPassdescriptor;
 
+    VkDescriptorImageInfo depthDescriptor;
+
     struct UBO {
         float blurScale{ 1.0f };
         float blurStrength{ 1.0f };
@@ -842,7 +946,7 @@ struct GaussianBlur {
     inline static constexpr int blurPasses = 6;
 
     VkExtent2D extent;
-    int extentDivider = 16;
+    int extentDivider = 2;
 };
 
 class AdHoc {
@@ -1343,50 +1447,52 @@ class AdHoc {
 
             vkCmdSetDepthBias(cmd, 0, 0, 0);
 
-            gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[0]);
-            gaussianBlur.graphicsPipeline.Bind(cmd);
-            gaussianBlur.descriptorSets[0].Bind(cmd, imageIndex);
+            gaussianBlur.Draw(cmd, imageIndex);
 
-            gaussianBlur.horizontalBlur = -1;
-            vkCmdPushConstants(
-                cmd,
-                gaussianBlur.pipelineLayout,
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-                0u,
-                sizeof(int), &gaussianBlur.horizontalBlur);
+            // gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[0]);
+            // gaussianBlur.graphicsPipeline.Bind(cmd);
+            // gaussianBlur.descriptorSets[0].Bind(cmd, imageIndex);
 
-            vkCmdDraw(cmd, 3, 1, 0, 0);
-            gaussianBlur.mRenderPass.End(cmd);
+            // gaussianBlur.horizontalBlur = -1;
+            // vkCmdPushConstants(
+            //     cmd,
+            //     gaussianBlur.pipelineLayout,
+            //     VK_SHADER_STAGE_FRAGMENT_BIT,
+            //     0u,
+            //     sizeof(int), &gaussianBlur.horizontalBlur);
 
-            gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[1]);
-            gaussianBlur.graphicsPipeline.Bind(cmd);
-            gaussianBlur.descriptorSets[1].Bind(cmd, imageIndex);
+            // vkCmdDraw(cmd, 3, 1, 0, 0);
+            // gaussianBlur.mRenderPass.End(cmd);
 
-            gaussianBlur.horizontalBlur = 0;
-            vkCmdPushConstants(
-                cmd,
-                gaussianBlur.pipelineLayout,
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-                0u,
-                sizeof(int), &gaussianBlur.horizontalBlur);
+            // gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[1]);
+            // gaussianBlur.graphicsPipeline.Bind(cmd);
+            // gaussianBlur.descriptorSets[1].Bind(cmd, imageIndex);
 
-            vkCmdDraw(cmd, 3, 1, 0, 0);
-            gaussianBlur.mRenderPass.End(cmd);
+            // gaussianBlur.horizontalBlur = 0;
+            // vkCmdPushConstants(
+            //     cmd,
+            //     gaussianBlur.pipelineLayout,
+            //     VK_SHADER_STAGE_FRAGMENT_BIT,
+            //     0u,
+            //     sizeof(int), &gaussianBlur.horizontalBlur);
 
-            gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[2]);
-            gaussianBlur.graphicsPipeline.Bind(cmd);
-            gaussianBlur.descriptorSets[2].Bind(cmd, imageIndex);
+            // vkCmdDraw(cmd, 3, 1, 0, 0);
+            // gaussianBlur.mRenderPass.End(cmd);
 
-            gaussianBlur.horizontalBlur = 1;
-            vkCmdPushConstants(
-                cmd,
-                gaussianBlur.pipelineLayout,
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-                0u,
-                sizeof(int), &gaussianBlur.horizontalBlur);
+            // gaussianBlur.mRenderPass.Begin(cmd, gaussianBlur.mFramebuffers[2]);
+            // gaussianBlur.graphicsPipeline.Bind(cmd);
+            // gaussianBlur.descriptorSets[2].Bind(cmd, imageIndex);
 
-            vkCmdDraw(cmd, 3, 1, 0, 0);
-            gaussianBlur.mRenderPass.End(cmd);
+            // gaussianBlur.horizontalBlur = 1;
+            // vkCmdPushConstants(
+            //     cmd,
+            //     gaussianBlur.pipelineLayout,
+            //     VK_SHADER_STAGE_FRAGMENT_BIT,
+            //     0u,
+            //     sizeof(int), &gaussianBlur.horizontalBlur);
+
+            // vkCmdDraw(cmd, 3, 1, 0, 0);
+            // gaussianBlur.mRenderPass.End(cmd);
 
             // gaussianBlur.horizontalBlur = 0;
             // for (int i{}; i != 2; ++i) {
