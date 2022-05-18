@@ -35,7 +35,7 @@ layout (location = 0) out vec4 outFragColor;
 layout (binding = 0) uniform UBO {
 	float blurScale;
 	float blurStrength;
-} ubo;
+};
 
 layout(push_constant) uniform BlurDirection {
      int horizontalBlur;
@@ -60,17 +60,15 @@ const float weight[] = float[] (0.227027,
 
 void main()
 {             
-    vec2 tex_offset = 1.0 / textureSize(image, 0);
+    vec2 tex_offset = 1.0 / textureSize(image, 0) * blurStrength;
     vec3 result = texture(image, inUV).rgb * weight[0];
-
-    float epsilon = 0.001;
 
     if(horizontalBlur == 0)
     {
         for(int i = 1; i < weight.length(); ++i)
         {
-            result += texture(image, inUV + vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
-            result += texture(image, inUV - vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
+            result += texture(image, inUV + vec2(tex_offset.x * i, 0.0)).rgb * weight[i] * blurScale;
+            result += texture(image, inUV - vec2(tex_offset.x * i, 0.0)).rgb * weight[i] * blurScale;
         }
 
 		outFragColor = vec4(result, 1.0);
@@ -80,8 +78,8 @@ void main()
         for(int i = 1; i < weight.length(); ++i)
         {
 
-            result += texture(image, inUV + vec2(0.0, tex_offset.y * i)).rgb * weight[i];
-            result += texture(image, inUV - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
+            result += texture(image, inUV + vec2(0.0, tex_offset.y * i)).rgb * weight[i] * blurScale;
+            result += texture(image, inUV - vec2(0.0, tex_offset.y * i)).rgb * weight[i] * blurScale;
         }
 		outFragColor = vec4(result, 1.0);
     }
