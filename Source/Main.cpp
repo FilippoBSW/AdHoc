@@ -583,7 +583,6 @@ struct GaussianBlur {
     struct Recompose {
         PipelineLayout pipelineLayout;
         Array<DescriptorSet> descriptorSets;
-        Array<VkDescriptorImageInfo> descriptorImageInfos;
         GraphicsPipeline graphicsPipeline;
     } recompose;
 
@@ -873,13 +872,6 @@ struct GaussianBlur {
                 1u,                                       // array count
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
-
-            recompose.descriptorImageInfos.Resize(numOfBlurPasses - 1);
-            for (int i{ 0 }; i != recompose.descriptorImageInfos.GetSize(); ++i) {
-                recompose.descriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                recompose.descriptorImageInfos[i].sampler     = sampler;
-                recompose.descriptorImageInfos[i].imageView;
-            }
         }
 
         // TODO: temp only one pass
