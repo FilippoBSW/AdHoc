@@ -27,7 +27,6 @@
 #extension GL_GOOGLE_include_directive    : enable
 
 layout (binding = 1) uniform sampler2D image;
-layout (binding = 2) uniform sampler2D depth;
 
 layout (location = 0) in vec2 inUV;
 
@@ -63,32 +62,26 @@ void main()
 {             
     vec2 tex_offset = 1.0 / textureSize(image, 0);
     vec3 result = texture(image, inUV).rgb * weight[0];
-    
-    float depth1 = texture(depth, inUV).r;
+
+    float epsilon = 0.001;
 
     if(horizontalBlur == 0)
     {
         for(int i = 1; i < weight.length(); ++i)
         {
-            if(texture(depth, inUV + vec2(tex_offset.x * i, 0.0)).r <= depth1){
-                result += texture(image, inUV + vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
-            }
-            if(texture(depth, inUV - vec2(tex_offset.x * i, 0.0)).r <= depth1){
-                result += texture(image, inUV - vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
-            }
+            result += texture(image, inUV + vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
+            result += texture(image, inUV - vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
         }
+
 		outFragColor = vec4(result, 1.0);
     }
     else if(horizontalBlur == 1)
     {
         for(int i = 1; i < weight.length(); ++i)
         {
-            if(texture(depth, inUV + vec2(0.0, tex_offset.y * i)).r <= depth1){
-                result += texture(image, inUV + vec2(0.0, tex_offset.y * i)).rgb * weight[i];
-            }
-            if(texture(depth, inUV + vec2(0.0, tex_offset.y * i)).r <= depth1){
-                result += texture(image, inUV - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
-            }
+
+            result += texture(image, inUV + vec2(0.0, tex_offset.y * i)).rgb * weight[i];
+            result += texture(image, inUV - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
         }
 		outFragColor = vec4(result, 1.0);
     }
