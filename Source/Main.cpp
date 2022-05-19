@@ -872,6 +872,28 @@ struct GaussianBlur {
                 1u,                                       // array count
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
+
+            finalPassdescriptor.imageView = mImages[numOfBlurPasses2 - 5].GetImageView();
+
+            // for (int i{ 1 }; i != recompose.descriptorSets.GetSize(); ++i) {
+            //     auto tempSize = descriptorImageInfos.GetSize() - 2 - (i + 1);
+            //     recompose.descriptorSets[i].Update(
+            //         descriptorImageInfos[tempSize],
+            //         0u,                                       // descriptor index
+            //         1u,                                       // binding
+            //         0u,                                       // array element
+            //         1u,                                       // array count
+            //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            //     );
+            //     recompose.descriptorSets[i].Update(
+            //         descriptorImageInfos[tempSize - 1],
+            //         0u,                                       // descriptor index
+            //         2u,                                       // binding
+            //         0u,                                       // array element
+            //         1u,                                       // array count
+            //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            //     );
+            // }
         }
 
         // TODO: temp only one pass
@@ -995,6 +1017,14 @@ struct GaussianBlur {
     }
 
     void Recreate(Swapchain& swapchain, VkDescriptorImageInfo info) {
+        brightColor.descriptorSets.Update(
+            info,
+            0u,                                       // descriptor index
+            1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
         // auto device{ Context::Get()->GetDevice() };
         // vkDeviceWaitIdle(device);
         // for (int i{}; i != mFramebuffers.GetSize(); ++i) {
@@ -1134,6 +1164,18 @@ struct GaussianBlur {
 
         // Reconpose
         {
+            viewport.Update(extents[extents.GetSize() - 1], false);
+            viewport.Set(cmd);
+            scissor.Update(extents[extents.GetSize() - 1]);
+            scissor.Set(cmd);
+
+            mRenderPass.UpdateRenderArea({ {}, extents[extents.GetSize() - 1] });
+            mRenderPass.Begin(cmd, mFramebuffers[mFramebuffers.GetSize() - 5]);
+            recompose.graphicsPipeline.Bind(cmd);
+            recompose.descriptorSets[0].Bind(cmd, imageIndex);
+
+            vkCmdDraw(cmd, 3, 1, 0, 0);
+            mRenderPass.End(cmd);
         }
 
         // mRenderPass.Begin(cmd, mFramebuffers[0]);
