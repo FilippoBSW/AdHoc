@@ -38,9 +38,9 @@ void main() {
 
     float threshold = 0.5;
 
-    if(brightness > threshold){
+    //if(brightness > threshold){
         outFragColor = vec4(result, 1.0);
-    } else {
-         outFragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    }
+   //} else {
+    //     outFragColor = vec4(0.0, 0.0, 0.0, 1.0);
+   // }
 }
