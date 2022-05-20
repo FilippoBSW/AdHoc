@@ -873,10 +873,9 @@ struct GaussianBlur {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
 
-            finalPassdescriptor.imageView = mImages[numOfBlurPasses2 - 5].GetImageView();
-
+            // int startPoint = descriptorImageInfos.GetSize() - 3;
             // for (int i{ 1 }; i != recompose.descriptorSets.GetSize(); ++i) {
-            //     auto tempSize = descriptorImageInfos.GetSize() - 2 - (i + 1);
+            //     auto tempSize = startPoint - 1;
             //     recompose.descriptorSets[i].Update(
             //         descriptorImageInfos[tempSize],
             //         0u,                                       // descriptor index
@@ -1164,18 +1163,28 @@ struct GaussianBlur {
 
         // Reconpose
         {
-            viewport.Update(extents[extents.GetSize() - 1], false);
-            viewport.Set(cmd);
-            scissor.Update(extents[extents.GetSize() - 1]);
-            scissor.Set(cmd);
+            int j     = 0;
+            int fsize = mFramebuffers.GetSize();
+            int table = fsize - 4;
 
-            mRenderPass.UpdateRenderArea({ {}, extents[extents.GetSize() - 1] });
-            mRenderPass.Begin(cmd, mFramebuffers[mFramebuffers.GetSize() - 5]);
-            recompose.graphicsPipeline.Bind(cmd);
-            recompose.descriptorSets[0].Bind(cmd, imageIndex);
+            for (int i = extents.GetSize() - 2; i > 0; --i) {
+                viewport.Update(extents[i], false);
+                viewport.Set(cmd);
+                scissor.Update(extents[i]);
+                scissor.Set(cmd);
 
-            vkCmdDraw(cmd, 3, 1, 0, 0);
-            mRenderPass.End(cmd);
+                mRenderPass.UpdateRenderArea({ {}, extents[i] });
+
+                mRenderPass.Begin(cmd, mFramebuffers[table]);
+                table -= 2;
+
+                recompose.graphicsPipeline.Bind(cmd);
+
+                recompose.descriptorSets[j++].Bind(cmd, imageIndex);
+
+                vkCmdDraw(cmd, 3, 1, 0, 0);
+                mRenderPass.End(cmd);
+            }
         }
 
         // mRenderPass.Begin(cmd, mFramebuffers[0]);

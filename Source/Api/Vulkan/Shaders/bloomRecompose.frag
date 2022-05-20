@@ -34,6 +34,6 @@ layout (location = 0) in vec2 inUV;
 layout (location = 0) out vec4 outFragColor;
 
 void main() {
-    vec3 res = texture(color2, inUV).rgb;// + texture(color2, inUV).rgb;
+    vec3 res = texture(color1, inUV).rgb + texture(color2, inUV).rgb;
     outFragColor = vec4(res, 1.0);
 }
