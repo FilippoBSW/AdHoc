@@ -602,12 +602,7 @@ struct GaussianBlur {
 
         e.width /= 2;
         e.height /= 2;
-
-        // while (e.width > 10 && e.height > 10) {
-        //     extents.EmplaceBack(e);
-        //     e.width /= 2;
-        //     e.height /= 2;
-        // }
+        extents.EmplaceBack(e);
 
         uboUniformBuffer.Create(&ubo, sizeof(ubo), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
@@ -736,7 +731,6 @@ struct GaussianBlur {
             mImages.Resize(2);
             mFramebuffers.Resize(2);
             descriptorImageInfos.Resize(2);
-            extents.EmplaceBack(e);
 
             for (int i{}; i != mImages.GetSize(); ++i) {
                 mImages[i].Create(

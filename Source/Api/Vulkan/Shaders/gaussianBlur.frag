@@ -67,8 +67,8 @@ void main()
     {
         for(int i = 1; i < weight.length(); ++i)
         {
-            result += texture(image, inUV + vec2(tex_offset.x * i, 0.0)).rgb * weight[i] * blurScale;
-            result += texture(image, inUV - vec2(tex_offset.x * i, 0.0)).rgb * weight[i] * blurScale;
+            result += texture(image, inUV + vec2(tex_offset.x * i * 2, 0.0)).rgb * weight[i] * blurScale;
+            result += texture(image, inUV - vec2(tex_offset.x * i * 2, 0.0)).rgb * weight[i] * blurScale;
         }
 
 		outFragColor = vec4(result, 1.0);
