@@ -873,26 +873,43 @@ struct GaussianBlur {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
 
-            // int startPoint = descriptorImageInfos.GetSize() - 3;
-            // for (int i{ 1 }; i != recompose.descriptorSets.GetSize(); ++i) {
-            //     auto tempSize = startPoint - 1;
-            //     recompose.descriptorSets[i].Update(
-            //         descriptorImageInfos[tempSize],
-            //         0u,                                       // descriptor index
-            //         1u,                                       // binding
-            //         0u,                                       // array element
-            //         1u,                                       // array count
-            //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            //     );
-            //     recompose.descriptorSets[i].Update(
-            //         descriptorImageInfos[tempSize - 1],
-            //         0u,                                       // descriptor index
-            //         2u,                                       // binding
-            //         0u,                                       // array element
-            //         1u,                                       // array count
-            //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            //     );
-            // }
+            int j = descriptorImageInfos.GetSize() - 3;
+
+            for (int i{ 1 }; i != recompose.descriptorSets.GetSize() - 1; ++i) {
+                recompose.descriptorSets[i].Update(
+                    descriptorImageInfos[j--],
+                    0u,                                       // descriptor index
+                    1u,                                       // binding
+                    0u,                                       // array element
+                    1u,                                       // array count
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+                );
+                recompose.descriptorSets[i].Update(
+                    descriptorImageInfos[j--],
+                    0u,                                       // descriptor index
+                    2u,                                       // binding
+                    0u,                                       // array element
+                    1u,                                       // array count
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+                );
+            }
+
+            recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
+                brightColor.imageInfo,
+                0u,                                       // descriptor index
+                1u,                                       // binding
+                0u,                                       // array element
+                1u,                                       // array count
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            );
+            recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
+                descriptorImageInfos[0],
+                0u,                                       // descriptor index
+                2u,                                       // binding
+                0u,                                       // array element
+                1u,                                       // array count
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            );
         }
 
         // TODO: temp only one pass
@@ -1491,7 +1508,8 @@ class AdHoc {
         // hdrDraw.Create(renderPass, hdrBuffer.descriptor);
 
         gaussianBlur.Create(window, swapchain, sampler, hdrBuffer.descriptor);
-        hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
+        // hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
+        hdrDraw.Create(renderPass, gaussianBlur.brightColor.imageInfo);
 
         renderingReady = true;
     }
@@ -2494,7 +2512,8 @@ class AdHoc {
 
         hdrBuffer.Recreate(swapchain);
         gaussianBlur.Recreate(swapchain, hdrBuffer.descriptor);
-        hdrDraw.Update(gaussianBlur.finalPassdescriptor);
+        // hdrDraw.Update(gaussianBlur.finalPassdescriptor);
+        hdrDraw.Create(renderPass, gaussianBlur.brightColor.imageInfo);
     }
 
     void RecreateEditor() {
