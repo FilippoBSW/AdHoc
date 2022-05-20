@@ -522,13 +522,14 @@ struct HDRBuffer {
 };
 
 struct HDRDraw {
-    void Create(RenderPass& renderPass, VkDescriptorImageInfo& info) {
+    void Create(RenderPass& renderPass, VkDescriptorImageInfo& info, VkDescriptorImageInfo& info2) {
         Shader shader("hdr.vert", "hdr.frag");
 
         VertexLayout vertexLayout;
         vertexLayout.Create();
 
         pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
         pipelineLayout.Create();
@@ -538,7 +539,7 @@ struct HDRDraw {
                                 VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
 
         descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3);
-        descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+        descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2);
         descriptorSet.Create(pipelineLayout.GetSetLayout());
 
         descriptorSet.Update(
@@ -549,13 +550,29 @@ struct HDRDraw {
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
+        descriptorSet.Update(
+            info2,
+            0u,                                       // descriptor index
+            2u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
     }
 
-    void Update(VkDescriptorImageInfo& info) {
+    void Update(VkDescriptorImageInfo& info, VkDescriptorImageInfo& info2) {
         descriptorSet.Update(
             info,
             0u,                                       // descriptor index
             1u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        descriptorSet.Update(
+            info2,
+            0u,                                       // descriptor index
+            2u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -1584,7 +1601,7 @@ class AdHoc {
         // hdrDraw.Create(renderPass, hdrBuffer.descriptor);Orecreate
         gaussianBlur.Create(window, swapchain, sampler, hdrBuffer.descriptor);
         // hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
-        hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
+        hdrDraw.Create(renderPass, hdrBuffer.descriptor, gaussianBlur.finalPassdescriptor);
 
         renderingReady = true;
     }
@@ -2517,7 +2534,7 @@ class AdHoc {
 
         hdrBuffer.Recreate(swapchain);
         gaussianBlur.Recreate(swapchain, hdrBuffer.descriptor);
-        hdrDraw.Update(gaussianBlur.finalPassdescriptor);
+        hdrDraw.Update(hdrBuffer.descriptor, gaussianBlur.finalPassdescriptor);
 
         // hdrDraw.Update(gaussianBlur.finalPassdescriptor);
         // hdrDraw.Create(renderPass, gaussianBlur.brightColor.imageInfo[1]);
