@@ -36,11 +36,13 @@ void main() {
     vec3 result      = texture(samplerColor, inUV).rgb;
 	float brightness = dot(result, vec3(0.2126, 0.7152, 0.0722));
 
-    float threshold = 1.0;
+    float threshold =  1;
 
-    if(brightness > threshold){
-        outFragColor = vec4(result, 1.0);
-    } else {
-         outFragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    }
+     outFragColor = vec4(result * brightness * threshold, 1.0);
+
+    // if(brightness > threshold){
+    //     outFragColor = vec4(result, 1.0);
+    // } else {
+    //      outFragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    // }
 }

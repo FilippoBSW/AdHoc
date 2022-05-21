@@ -1554,8 +1554,8 @@ struct GaussianBlur {
     RenderPass mRenderPass;
 
     struct UBO {
-        float blurScale{ 0.5f };
-        float blurStrength{ 0.5f };
+        float blurScale{ 1.0f };
+        float blurStrength{ 1.0f };
     };
 
     int horizontalBlur = 1;
@@ -2398,7 +2398,7 @@ class AdHoc {
 
         directionalLight.direction = sunPosition;
         directionalLight.color     = { 1.0f, 1.0f, 1.0f };
-        directionalLight.intensity = 20.0f;
+        directionalLight.intensity = 10.0f;
 
         descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
         descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4);
@@ -2460,7 +2460,7 @@ class AdHoc {
         fragmentUbo.cameraPosition = { 0.0f, 0.0, -8.0f };
         directionalLight.direction = sunPosition;
         directionalLight.color     = { 1.0f, 1.0f, 1.0f };
-        directionalLight.intensity = 20.0f;
+        directionalLight.intensity = 10.0f;
         {
             editorDescriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
             editorDescriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4);

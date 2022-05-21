@@ -40,7 +40,8 @@ void main() {
     vec3 hdrColor = texture(hdrBuffer, inUV).rgb;
     vec3 bloomColor = texture(bloomBuffer, inUV).rgb;
     
-    vec3 temp = hdrColor + (bloomColor * 0.5);
+    float intensity = 1.0;
+    vec3 temp = hdrColor + (bloomColor * intensity);
 
     // vec3 result = vec3(1.0) - exp(-hdrColor * exposure);       
     vec3 result = vec3(1.0) - exp(-temp * exposure);       
