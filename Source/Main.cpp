@@ -532,6 +532,8 @@ struct HDRDraw {
         pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
+        pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(float), 0);
+
         pipelineLayout.Create();
 
         graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, renderPass,
@@ -582,6 +584,8 @@ struct HDRDraw {
     DescriptorSet descriptorSet;
     PipelineLayout pipelineLayout;
     GraphicsPipeline graphicsPipeline;
+
+    float intensity = 1.0f;
 };
 
 struct GaussianBlur {
@@ -675,6 +679,8 @@ struct GaussianBlur {
 
             brightColor.pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             brightColor.pipelineLayout.CreateSet();
+
+            brightColor.pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(float), 0);
 
             brightColor.pipelineLayout.Create();
 
@@ -1322,7 +1328,6 @@ struct GaussianBlur {
     }
 
     void Draw(VkCommandBuffer cmd, std::uint32_t imageIndex, Viewport& viewport, Scissor& scissor) {
-
         // Bright color
         {
             viewport.Update(brightColor.extent, false);
@@ -1335,12 +1340,21 @@ struct GaussianBlur {
             mRenderPass.Begin(cmd, brightColor.mFramebuffers);
             brightColor.graphicsPipeline.Bind(cmd);
             brightColor.descriptorSets.Bind(cmd, imageIndex);
+
+            vkCmdPushConstants(
+                cmd,
+                brightColor.pipelineLayout,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                0u,
+                sizeof(float), &brightColor.threshold);
+
             vkCmdDraw(cmd, 3, 1, 0, 0);
             mRenderPass.End(cmd);
         }
 
         // Blur
         {
+            uboUniformBuffer.Update(imageIndex);
             int count      = 0;
             horizontalBlur = 1;
             for (int i{}; i != mFramebuffers.GetSize(); ++i) {
@@ -1574,6 +1588,8 @@ struct GaussianBlur {
 
         PipelineLayout pipelineLayout;
         GraphicsPipeline graphicsPipeline;
+
+        float threshold = 1.0f;
     } brightColor;
 
     struct Recompose {
@@ -1650,6 +1666,8 @@ class AdHoc {
     HDRDraw hdrDraw;
 
     GaussianBlur gaussianBlur;
+
+    float* floats[5];
 
   public:
     ~AdHoc() {
@@ -1814,6 +1832,11 @@ class AdHoc {
         // hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
         hdrDraw.Create(renderPass, hdrBuffer.descriptor, gaussianBlur.finalPassdescriptor);
 
+        floats[0]      = &hdrDraw.intensity;
+        floats[1]      = &gaussianBlur.brightColor.threshold;
+        floats[2]      = &gaussianBlur.ubo.blurScale;
+        floats[3]      = &gaussianBlur.ubo.blurStrength;
+        floats[4]      = &directionalLight.intensity;
         renderingReady = true;
     }
 
@@ -1965,6 +1988,8 @@ class AdHoc {
         }
 
         auto cmd = commandBuffer.Begin(currentFrame);
+
+        lightBuffer.Update(imageIndex);
 
         // Draw shadowmap
         {
@@ -2234,10 +2259,17 @@ class AdHoc {
             hdrDraw.graphicsPipeline.Bind(cmd);
             hdrDraw.descriptorSet.Bind(cmd, imageIndex);
 
+            vkCmdPushConstants(
+                cmd,
+                hdrDraw.pipelineLayout,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                0u,
+                sizeof(hdrDraw.intensity), &hdrDraw.intensity);
+
             vkCmdDraw(cmd, 3, 1, 0, 0);
 
         } else {
-            editor.Draw(cmd, currentFrame, &g_MaximizeOnPlay, &g_IsPlaying, &g_IsPaused);
+            editor.Draw(cmd, currentFrame, &g_MaximizeOnPlay, &g_IsPlaying, &g_IsPaused, floats);
         }
 
         renderPass.End(cmd);

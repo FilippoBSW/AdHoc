@@ -75,7 +75,7 @@ namespace adh {
         void OnUpdate(Scene* scene, float delta, bool drawEditor);
 
         void Draw(VkCommandBuffer commandBuffer, std::uint32_t imageIndex,
-                  bool* maximizeOnPlay, bool* play, bool* pause) noexcept;
+                  bool* maximizeOnPlay, bool* play, bool* pause, float* floats[]) noexcept;
 
         void SetUpDisplaySize(float width, float height) const noexcept;
 
@@ -94,7 +94,7 @@ namespace adh {
 
         void MenuBar(bool* drawEditor, bool* play, bool* pause);
 
-        void NewFrame(bool* maximizeOnPlay, bool* play, bool* pause) noexcept;
+        void NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, float* floats[]) noexcept;
 
         void SetUpConfigFlags() const noexcept;
 

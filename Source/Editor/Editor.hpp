@@ -79,7 +79,7 @@ namespace adh {
 
         void OnUpdate(Scene* scene, float deltaTime, bool drawEditor);
 
-        void Draw(VkCommandBuffer cmd, std::uint32_t imageIndex, bool* maximizeOnPlay, bool* play, bool* pause);
+        void Draw(VkCommandBuffer cmd, std::uint32_t imageIndex, bool* maximizeOnPlay, bool* play, bool* pause, float* floats[]);
 
         void Recreate(vk::Swapchain& swapchain);
 

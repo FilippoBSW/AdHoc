@@ -28,6 +28,10 @@
 
 layout (binding = 1) uniform sampler2D samplerColor;
 
+layout(push_constant) uniform Threshold {
+     float threshold;
+};
+
 layout (location = 0) in vec2 inUV;
 
 layout (location = 0) out vec4 outFragColor;
@@ -35,8 +39,6 @@ layout (location = 0) out vec4 outFragColor;
 void main() {
     vec3 result      = texture(samplerColor, inUV).rgb;
 	float brightness = dot(result, vec3(0.2126, 0.7152, 0.0722));
-
-    float threshold =  1;
 
      outFragColor = vec4(result * brightness * threshold, 1.0);
 

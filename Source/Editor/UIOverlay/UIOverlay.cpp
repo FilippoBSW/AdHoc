@@ -143,8 +143,8 @@ namespace adh {
     }
 
     void UIOverlay::Draw(VkCommandBuffer commandBuffer, std::uint32_t imageIndex,
-                         bool* drawEditor, bool* play, bool* pause) noexcept {
-        NewFrame(drawEditor, play, pause);
+                         bool* drawEditor, bool* play, bool* pause, float* floats[]) noexcept {
+        NewFrame(drawEditor, play, pause, floats);
         m_ImGui.Draw(commandBuffer, imageIndex);
     }
 
@@ -386,7 +386,7 @@ namespace adh {
         }
     }
 
-    void UIOverlay::NewFrame(bool* maximizeOnPlay, bool* play, bool* pause) noexcept {
+    void UIOverlay::NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, float* floats[]) noexcept {
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
         BeginDockSpace();
@@ -405,6 +405,13 @@ namespace adh {
             } else {
                 auto& io = ImGui::GetIO();
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+                ImGui::SliderFloat("Inteisty", floats[0], 0.0, 20.0);
+                ImGui::SliderFloat("Threshold", floats[1], 0.0, 20.0);
+                ImGui::SliderFloat("Blur Scale", floats[2], 0.0, 5.0);
+                ImGui::SliderFloat("Blur Strengt", floats[3], 0.0, 5.0);
+                ImGui::SliderFloat("Light intensity", floats[4], 0.0, 100.0);
+
                 ImGui::End();
             }
         }

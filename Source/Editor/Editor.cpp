@@ -157,8 +157,8 @@ namespace adh {
         m_Overlay.OnUpdate(scene, deltaTime, drawEditor);
     }
 
-    void Editor::Draw(VkCommandBuffer cmd, std::uint32_t imageIndex, bool* maximizeOnPlay, bool* play, bool* pause) {
-        m_Overlay.Draw(cmd, imageIndex, maximizeOnPlay, play, pause);
+    void Editor::Draw(VkCommandBuffer cmd, std::uint32_t imageIndex, bool* maximizeOnPlay, bool* play, bool* pause, float* floats[]) {
+        m_Overlay.Draw(cmd, imageIndex, maximizeOnPlay, play, pause, floats);
     }
 
     bool Editor::GetKeyDown(std::uint64_t keycode) noexcept {

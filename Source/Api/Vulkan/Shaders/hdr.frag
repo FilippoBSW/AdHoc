@@ -33,6 +33,9 @@ layout (location = 0) in vec2 inUV;
 
 layout (location = 0) out vec4 outFragColor;
 
+layout(push_constant) uniform Intensity {
+     float intensity;
+};
 
 void main() {
     float exposure = 1;
@@ -40,7 +43,6 @@ void main() {
     vec3 hdrColor = texture(hdrBuffer, inUV).rgb;
     vec3 bloomColor = texture(bloomBuffer, inUV).rgb;
     
-    float intensity = 1.0;
     vec3 temp = hdrColor + (bloomColor * intensity);
 
     // vec3 result = vec3(1.0) - exp(-hdrColor * exposure);       
