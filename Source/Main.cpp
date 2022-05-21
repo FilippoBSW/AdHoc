@@ -1554,8 +1554,8 @@ struct GaussianBlur {
     RenderPass mRenderPass;
 
     struct UBO {
-        float blurScale{ 1.0f };
-        float blurStrength{ 1.0f };
+        float blurScale{ 0.5f };
+        float blurStrength{ 0.5f };
     };
 
     int horizontalBlur = 1;
