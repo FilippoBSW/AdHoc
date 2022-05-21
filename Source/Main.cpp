@@ -585,7 +585,10 @@ struct HDRDraw {
     PipelineLayout pipelineLayout;
     GraphicsPipeline graphicsPipeline;
 
-    float intensity = 1.0f;
+    float intensity[2]{
+        1.0f,
+        1.0f
+    };
 };
 
 struct GaussianBlur {
@@ -1568,8 +1571,8 @@ struct GaussianBlur {
     RenderPass mRenderPass;
 
     struct UBO {
-        float blurScale{ 1.0f };
-        float blurStrength{ 1.0f };
+        float blurScale{ 0.25f };
+        float blurStrength{ 0.25f };
     };
 
     int horizontalBlur = 1;
@@ -1667,7 +1670,7 @@ class AdHoc {
 
     GaussianBlur gaussianBlur;
 
-    float* floats[5];
+    float* floats[6];
 
   public:
     ~AdHoc() {
@@ -1832,11 +1835,12 @@ class AdHoc {
         // hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
         hdrDraw.Create(renderPass, hdrBuffer.descriptor, gaussianBlur.finalPassdescriptor);
 
-        floats[0]      = &hdrDraw.intensity;
+        floats[0]      = &hdrDraw.intensity[0];
         floats[1]      = &gaussianBlur.brightColor.threshold;
         floats[2]      = &gaussianBlur.ubo.blurScale;
         floats[3]      = &gaussianBlur.ubo.blurStrength;
         floats[4]      = &directionalLight.intensity;
+        floats[5]      = &hdrDraw.intensity[1];
         renderingReady = true;
     }
 
@@ -2265,7 +2269,7 @@ class AdHoc {
                 hdrDraw.pipelineLayout,
                 VK_SHADER_STAGE_FRAGMENT_BIT,
                 0u,
-                sizeof(hdrDraw.intensity), &hdrDraw.intensity);
+                sizeof(float) * 2, hdrDraw.intensity);
 
             vkCmdDraw(cmd, 3, 1, 0, 0);
 

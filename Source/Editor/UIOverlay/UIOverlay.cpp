@@ -411,6 +411,7 @@ namespace adh {
                 ImGui::SliderFloat("Blur Scale", floats[2], 0.0, 5.0);
                 ImGui::SliderFloat("Blur Strengt", floats[3], 0.0, 5.0);
                 ImGui::SliderFloat("Light intensity", floats[4], 0.0, 100.0);
+                ImGui::SliderFloat("Exposure", floats[5], 0.0, 10.0);
 
                 ImGui::End();
             }

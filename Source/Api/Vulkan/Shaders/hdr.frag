@@ -35,17 +35,14 @@ layout (location = 0) out vec4 outFragColor;
 
 layout(push_constant) uniform Intensity {
      float intensity;
+     float exposure;
 };
 
 void main() {
-    float exposure = 1;
 	const float gamma = 2.2;
     vec3 hdrColor = texture(hdrBuffer, inUV).rgb;
     vec3 bloomColor = texture(bloomBuffer, inUV).rgb;
-    
-    vec3 temp = hdrColor + (bloomColor * intensity);
-
-    // vec3 result = vec3(1.0) - exp(-hdrColor * exposure);       
+    vec3 temp = hdrColor + (bloomColor * intensity);    
     vec3 result = vec3(1.0) - exp(-temp * exposure);       
     result = pow(result, vec3(1.0 / gamma));
     outFragColor = vec4(result, 1.0);
