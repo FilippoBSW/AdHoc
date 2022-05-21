@@ -608,6 +608,22 @@ struct GaussianBlur {
         e.height /= 2;
         extents.EmplaceBack(e);
 
+        e.width /= 2;
+        e.height /= 2;
+        extents.EmplaceBack(e);
+
+        e.width /= 2;
+        e.height /= 2;
+        extents.EmplaceBack(e);
+
+        e.width /= 2;
+        e.height /= 2;
+        extents.EmplaceBack(e);
+
+        e.width /= 2;
+        e.height /= 2;
+        extents.EmplaceBack(e);
+
         uboUniformBuffer.Create(&ubo, sizeof(ubo), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         Attachment attachment;
@@ -803,56 +819,78 @@ struct GaussianBlur {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
 
-            descriptorSets[1].Update(
-                uboUniformBuffer.GetDescriptor(),
-                0u,                               // descriptor index
-                0u,                               // binding
-                0u,                               // array element
-                1u,                               // array count
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-            );
-            descriptorSets[1].Update(
-                descriptorImageInfos[0],
-                0u,                                       // descriptor index
-                1u,                                       // binding
-                0u,                                       // array element
-                1u,                                       // array count
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            );
+            for (int i{ 1 }; i != descriptorSets.GetSize(); ++i) {
+                descriptorSets[i].Update(
+                    uboUniformBuffer.GetDescriptor(),
+                    0u,                               // descriptor index
+                    0u,                               // binding
+                    0u,                               // array element
+                    1u,                               // array count
+                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
+                );
+                descriptorSets[i].Update(
+                    descriptorImageInfos[i - 1],
+                    0u,                                       // descriptor index
+                    1u,                                       // binding
+                    0u,                                       // array element
+                    1u,                                       // array count
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+                );
+            }
 
-            descriptorSets[2].Update(
-                uboUniformBuffer.GetDescriptor(),
-                0u,                               // descriptor index
-                0u,                               // binding
-                0u,                               // array element
-                1u,                               // array count
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-            );
-            descriptorSets[2].Update(
-                descriptorImageInfos[1],
-                0u,                                       // descriptor index
-                1u,                                       // binding
-                0u,                                       // array element
-                1u,                                       // array count
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            );
+            //     // Pass 2
+            //     descriptorSets[1].Update(
+            //         uboUniformBuffer.GetDescriptor(),
+            //         0u,                               // descriptor index
+            //         0u,                               // binding
+            //         0u,                               // array element
+            //         1u,                               // array count
+            //         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
+            //     );
+            // descriptorSets[1].Update(
+            //     descriptorImageInfos[0],
+            //     0u,                                       // descriptor index
+            //     1u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
 
-            descriptorSets[3].Update(
-                uboUniformBuffer.GetDescriptor(),
-                0u,                               // descriptor index
-                0u,                               // binding
-                0u,                               // array element
-                1u,                               // array count
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-            );
-            descriptorSets[3].Update(
-                descriptorImageInfos[2],
-                0u,                                       // descriptor index
-                1u,                                       // binding
-                0u,                                       // array element
-                1u,                                       // array count
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            );
+            // // Pass 3
+            // descriptorSets[2].Update(
+            //     uboUniformBuffer.GetDescriptor(),
+            //     0u,                               // descriptor index
+            //     0u,                               // binding
+            //     0u,                               // array element
+            //     1u,                               // array count
+            //     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
+            // );
+            // descriptorSets[2].Update(
+            //     descriptorImageInfos[1],
+            //     0u,                                       // descriptor index
+            //     1u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
+
+            // // Pass 4
+            // descriptorSets[3].Update(
+            //     uboUniformBuffer.GetDescriptor(),
+            //     0u,                               // descriptor index
+            //     0u,                               // binding
+            //     0u,                               // array element
+            //     1u,                               // array count
+            //     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
+            // );
+            // descriptorSets[3].Update(
+            //     descriptorImageInfos[2],
+            //     0u,                                       // descriptor index
+            //     1u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
         }
 
         // Recompose
@@ -915,7 +953,7 @@ struct GaussianBlur {
             }
 
             recompose.descriptorSets[0].Update(
-                descriptorImageInfos[1],
+                descriptorImageInfos[descriptorImageInfos.GetSize() - 3],
                 0u,                                       // descriptor index
                 1u,                                       // binding
                 0u,                                       // array element
@@ -923,7 +961,7 @@ struct GaussianBlur {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
             recompose.descriptorSets[0].Update(
-                descriptorImageInfos[3],
+                descriptorImageInfos[descriptorImageInfos.GetSize() - 1],
                 0u,                                       // descriptor index
                 2u,                                       // binding
                 0u,                                       // array element
@@ -931,7 +969,61 @@ struct GaussianBlur {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
 
-            recompose.descriptorSets[1].Update(
+            int count = descriptorImageInfos.GetSize() - 2;
+            for (int i{ 1 }; i != recompose.descriptorSets.GetSize() - 1; ++i) {
+                recompose.descriptorSets[i].Update(
+                    descriptorImageInfos[count - 1 - (2 * i)],
+                    0u,                                       // descriptor index
+                    1u,                                       // binding
+                    0u,                                       // array element
+                    1u,                                       // array count
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+                );
+                recompose.descriptorSets[i].Update(
+                    descriptorImageInfos[count - (2 * i)],
+                    0u,                                       // descriptor index
+                    2u,                                       // binding
+                    0u,                                       // array element
+                    1u,                                       // array count
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+                );
+            }
+
+            // recompose.descriptorSets[0].Update(
+            //     descriptorImageInfos[3],
+            //     0u,                                       // descriptor index
+            //     1u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
+            // recompose.descriptorSets[0].Update(
+            //     descriptorImageInfos[5],
+            //     0u,                                       // descriptor index
+            //     2u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
+
+            // recompose.descriptorSets[1].Update(
+            //     descriptorImageInfos[1],
+            //     0u,                                       // descriptor index
+            //     1u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
+            // recompose.descriptorSets[1].Update(
+            //     descriptorImageInfos[2],
+            //     0u,                                       // descriptor index
+            //     2u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
+
+            recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
                 brightColor.imageInfo,
                 0u,                                       // descriptor index
                 1u,                                       // binding
@@ -939,7 +1031,7 @@ struct GaussianBlur {
                 1u,                                       // array count
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
-            recompose.descriptorSets[1].Update(
+            recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
                 descriptorImageInfos[0],
                 0u,                                       // descriptor index
                 2u,                                       // binding
@@ -1281,22 +1373,64 @@ struct GaussianBlur {
 
         // Recompose
         {
-            viewport.Update(extents[0], false);
-            viewport.Set(cmd);
-            scissor.Update(extents[0]);
-            scissor.Set(cmd);
+            int size        = descriptorImageInfos.GetSize() - 4;
+            int extentIndex = extents.GetSize() - 2;
+            for (int i{}; i != recompose.descriptorSets.GetSize() - 1; ++i) {
+                viewport.Update(extents[extentIndex], false);
+                viewport.Set(cmd);
+                scissor.Update(extents[extentIndex]);
+                scissor.Set(cmd);
 
-            mRenderPass.UpdateRenderArea({ {}, extents[0] });
+                mRenderPass.UpdateRenderArea({ {}, extents[extentIndex] });
+                extentIndex--;
 
-            mRenderPass.Begin(cmd, mFramebuffers[0]);
+                mRenderPass.Begin(cmd, mFramebuffers[size]);
+                size -= 2;
 
-            recompose.graphicsPipeline.Bind(cmd);
+                recompose.graphicsPipeline.Bind(cmd);
 
-            recompose.descriptorSets[0].Bind(cmd, imageIndex);
+                recompose.descriptorSets[i].Bind(cmd, imageIndex);
 
-            vkCmdDraw(cmd, 3, 1, 0, 0);
-            mRenderPass.End(cmd);
+                vkCmdDraw(cmd, 3, 1, 0, 0);
+                mRenderPass.End(cmd);
+            }
         }
+
+        // Recompose
+        // {
+        //     viewport.Update(extents[1], false);
+        //     viewport.Set(cmd);
+        //     scissor.Update(extents[1]);
+        //     scissor.Set(cmd);
+
+        //     mRenderPass.UpdateRenderArea({ {}, extents[1] });
+
+        //     mRenderPass.Begin(cmd, mFramebuffers[2]);
+
+        //     recompose.graphicsPipeline.Bind(cmd);
+
+        //     recompose.descriptorSets[0].Bind(cmd, imageIndex);
+
+        //     vkCmdDraw(cmd, 3, 1, 0, 0);
+        //     mRenderPass.End(cmd);
+        // }
+        // {
+        //     viewport.Update(extents[0], false);
+        //     viewport.Set(cmd);
+        //     scissor.Update(extents[0]);
+        //     scissor.Set(cmd);
+
+        //     mRenderPass.UpdateRenderArea({ {}, extents[0] });
+
+        //     mRenderPass.Begin(cmd, mFramebuffers[0]);
+
+        //     recompose.graphicsPipeline.Bind(cmd);
+
+        //     recompose.descriptorSets[1].Bind(cmd, imageIndex);
+
+        //     vkCmdDraw(cmd, 3, 1, 0, 0);
+        //     mRenderPass.End(cmd);
+        // }
         {
             viewport.Update(brightColor.extent, false);
             viewport.Set(cmd);
@@ -1309,7 +1443,7 @@ struct GaussianBlur {
 
             recompose.graphicsPipeline.Bind(cmd);
 
-            recompose.descriptorSets[1].Bind(cmd, imageIndex);
+            recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Bind(cmd, imageIndex);
 
             vkCmdDraw(cmd, 3, 1, 0, 0);
             mRenderPass.End(cmd);
