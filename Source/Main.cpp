@@ -2115,6 +2115,7 @@ class AdHoc {
             for (std::uint32_t i{}; i != 2u; ++i) {
                 editor.BeginRenderPass(cmd, imageIndex, i);
                 editor.BindGraphicsPipeline(cmd);
+
                 viewport.Update(swapchain.GetExtent(), false);
                 viewport.Set(cmd);
                 scissor.Update(swapchain.GetExtent());
