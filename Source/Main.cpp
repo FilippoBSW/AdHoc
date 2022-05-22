@@ -1715,8 +1715,8 @@ class AdHoc {
 
     std::vector<std::function<void()>> collisionCallbacks;
 
-    bool clearFramebuffers;
-    int clearFramebuffersCount;
+    bool clearFramebuffers     = true;
+    int clearFramebuffersCount = 0;
 
     HDRBuffer hdrBuffer;
     HDRDraw hdrDraw;
@@ -2231,10 +2231,11 @@ class AdHoc {
             clearFramebuffers = true;
             renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
         } else if (!g_DrawEditor && !clearFramebuffers) {
-            renderPass.SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            renderPass.SetClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             renderPass.UpdateRenderArea(g_AspectRatio.GetRect());
         } else if (!g_DrawEditor && clearFramebuffers) {
             renderPass.SetClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
             if (clearFramebuffersCount++ == swapchain.GetImageViewCount()) {
                 clearFramebuffers      = false;
                 clearFramebuffersCount = 0;
