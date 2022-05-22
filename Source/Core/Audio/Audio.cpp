@@ -32,7 +32,9 @@ namespace adh {
         Create(filePath);
     }
 
-    Audio::~Audio() = default;
+    Audio::~Audio() {
+        [mSound stop];
+    }
 
     void Audio::Create(const char* filePath, float seconds) {
         @autoreleasepool {
