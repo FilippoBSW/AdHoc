@@ -532,7 +532,7 @@ struct HDRDraw {
         pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
-        pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(float), 0);
+        pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(float) * 2, 0);
 
         pipelineLayout.Create();
 
@@ -610,26 +610,35 @@ struct GaussianBlur {
         e.width /= 2;
         e.height /= 2;
         extents.EmplaceBack(e);
+        while (e.width > 20 && e.height > 20) {
+            e.width /= 2;
+            e.height /= 2;
+            extents.EmplaceBack(e);
+        }
 
-        e.width /= 2;
-        e.height /= 2;
-        extents.EmplaceBack(e);
+        // e.width /= 2;
+        // e.height /= 2;
+        // extents.EmplaceBack(e);
 
-        e.width /= 2;
-        e.height /= 2;
-        extents.EmplaceBack(e);
+        // e.width /= 2;
+        // e.height /= 2;
+        // extents.EmplaceBack(e);
 
-        e.width /= 2;
-        e.height /= 2;
-        extents.EmplaceBack(e);
+        // e.width /= 2;
+        // e.height /= 2;
+        // extents.EmplaceBack(e);
 
-        e.width /= 2;
-        e.height /= 2;
-        extents.EmplaceBack(e);
+        // e.width /= 2;
+        // e.height /= 2;
+        // extents.EmplaceBack(e);
 
-        e.width /= 2;
-        e.height /= 2;
-        extents.EmplaceBack(e);
+        // e.width /= 2;
+        // e.height /= 2;
+        // extents.EmplaceBack(e);
+
+        // e.width /= 2;
+        // e.height /= 2;
+        // extents.EmplaceBack(e);
 
         uboUniformBuffer.Create(&ubo, sizeof(ubo), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
@@ -921,6 +930,46 @@ struct GaussianBlur {
                                               VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE,
                                               VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
 
+            int s = recomposePasses - 1;
+            recompose.flickerImages.Resize(s);
+            recompose.flickerFramebuffers.Resize(s);
+            recompose.flickerImageInfo.Resize(s);
+
+            for (int i{}; i != s; ++i) {
+                recompose.flickerImages[i].Create(
+                    { extents[extents.GetSize() - 2 - i].width, extents[extents.GetSize() - 2 - i].height, 1u },
+                    VK_FORMAT_R32G32B32A32_SFLOAT,
+                    VK_IMAGE_TILING_OPTIMAL,
+                    VK_IMAGE_TYPE_2D,
+                    VkImageCreateFlagBits(0),
+                    1,
+                    1u,
+                    VK_SAMPLE_COUNT_1_BIT,
+                    VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
+                    VK_IMAGE_ASPECT_COLOR_BIT,
+                    VK_IMAGE_VIEW_TYPE_2D,
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                    VK_SHARING_MODE_EXCLUSIVE);
+
+                vk::TransferImageLayout(
+                    recompose.flickerImages[i],
+                    VK_IMAGE_LAYOUT_UNDEFINED,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    VK_IMAGE_ASPECT_COLOR_BIT);
+
+                VkImageView viewAttachments[]{
+                    recompose.flickerImages[i].GetImageView()
+                };
+
+                auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[extents.GetSize() - 2 - i], 1u) };
+                ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &recompose.flickerFramebuffers[i]) == VK_SUCCESS,
+                          "Failed to create frame buffers!");
+
+                recompose.flickerImageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                recompose.flickerImageInfo[i].sampler     = sampler;
+                recompose.flickerImageInfo[i].imageView   = recompose.flickerImages[i].GetImageView();
+            }
+
             recompose.mImages.Create(
                 { brightColor.extent.width, brightColor.extent.height, 1u },
                 VK_FORMAT_R32G32B32A32_SFLOAT,
@@ -989,7 +1038,7 @@ struct GaussianBlur {
                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
                 );
                 recompose.descriptorSets[i].Update(
-                    descriptorImageInfos[count - (2 * i)],
+                    recompose.flickerImageInfo[i - 1],
                     0u,                                       // descriptor index
                     2u,                                       // binding
                     0u,                                       // array element
@@ -1041,7 +1090,7 @@ struct GaussianBlur {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
             recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
-                descriptorImageInfos[0],
+                recompose.flickerImageInfo[s - 1],
                 0u,                                       // descriptor index
                 2u,                                       // binding
                 0u,                                       // array element
@@ -1401,7 +1450,7 @@ struct GaussianBlur {
                 mRenderPass.UpdateRenderArea({ {}, extents[extentIndex] });
                 extentIndex--;
 
-                mRenderPass.Begin(cmd, mFramebuffers[size]);
+                mRenderPass.Begin(cmd, recompose.flickerFramebuffers[i]);
                 size -= 2;
 
                 recompose.graphicsPipeline.Bind(cmd);
@@ -1603,6 +1652,10 @@ struct GaussianBlur {
         Image mImages;
         VkFramebuffer mFramebuffers;
         VkDescriptorImageInfo imageInfo;
+
+        Array<Image> flickerImages;
+        Array<VkFramebuffer> flickerFramebuffers;
+        Array<VkDescriptorImageInfo> flickerImageInfo;
     } recompose;
 };
 
