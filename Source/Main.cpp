@@ -169,16 +169,7 @@ struct ShadowMap2D {
         GraphicsPipeline graphicsPipeline;
     };
 
-    // ~ShadowMap2D() {
-    //     auto device{ Context::Get()->GetDevice() };
-    //     vkDeviceWaitIdle(device);
-    //     vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
-    // }
-
     void Create(RenderPass& renderPass, Sampler& sampler) {
-        // m_Extent.width  = 2048 * 2;
-        // m_Extent.height = 2048 * 2;
-
         Attachment attachment;
         attachment.AddDescription(
             tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
@@ -224,10 +215,6 @@ struct ShadowMap2D {
         m_RenderPass.Create(attachment, subpass, renderArea, Move(clearValues));
         m_RenderPass.UpdateRenderArea({ {}, m_Extent });
 
-        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u) };
-        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-        //           "Failed to create frame buffers!");
-
         Shader shader("shadowmap.vert", "shadowmap.frag");
 
         VertexLayout vertexLayout;
@@ -249,8 +236,6 @@ struct ShadowMap2D {
         descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3);
         descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
         descriptorSet.Create(pipelineLayout.GetSetLayout());
-
-        // lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
 
         lightSpaceBuffer.Create(&lightSpace, sizeof(lightSpace), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         descriptorSet.Update(
@@ -296,7 +281,6 @@ struct ShadowMap2D {
         m_Extent = extent;
         auto device{ Context::Get()->GetDevice() };
         vkDeviceWaitIdle(device);
-        // vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
 
         m_Framebuffer.Destroy();
 
@@ -324,16 +308,11 @@ struct ShadowMap2D {
         };
 
         m_Framebuffer.Create(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u);
-
-        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u) };
-        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-        //           "Failed to create frame buffers!");
     }
 
     RenderPass m_RenderPass;
     VkExtent2D m_Extent;
     vk::Image m_Image;
-    // VkFramebuffer m_Framebuffer;
     Framebuffer m_Framebuffer;
 
     xmm::Matrix lightSpace{ 1.0f };
@@ -352,12 +331,6 @@ struct ShadowMap2D {
 };
 
 struct HDRBuffer {
-    // ~HDRBuffer() {
-    //     auto device{ Context::Get()->GetDevice() };
-    //     vkDeviceWaitIdle(device);
-    //     vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
-    // }
-
     void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler) {
         Attachment attachment;
         attachment.AddDescription(
@@ -470,10 +443,6 @@ struct HDRBuffer {
 
         m_Framebuffer.Create(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u);
 
-        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
-        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-        //           "Failed to create frame buffers!");
-
         descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         descriptor.sampler     = sampler;
         descriptor.imageView   = m_Image.GetImageView();
@@ -483,10 +452,6 @@ struct HDRBuffer {
         m_Image.Destroy();
 
         m_Framebuffer.Destroy();
-
-        // auto device{ Context::Get()->GetDevice() };
-        // vkDeviceWaitIdle(device);
-        // vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
 
         m_Image.Create(
             { swapchain.GetExtent().width, swapchain.GetExtent().height, 1u },
@@ -516,16 +481,11 @@ struct HDRBuffer {
 
         m_Framebuffer.Create(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u);
 
-        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
-        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-        //           "Failed to create frame buffers!");
-
         descriptor.imageView = m_Image.GetImageView();
         m_RenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
     }
 
     vk::Image m_Image;
-    // VkFramebuffer m_Framebuffer;
     Framebuffer m_Framebuffer;
     RenderPass m_RenderPass;
 
@@ -606,14 +566,6 @@ struct HDRDraw {
 };
 
 struct GaussianBlur {
-    ~GaussianBlur() {
-        // auto device{ Context::Get()->GetDevice() };
-        // vkDeviceWaitIdle(device);
-        // for (int i{}; i != mFramebuffers.GetSize(); ++i) {
-        //     vkDestroyFramebuffer(Context::Get()->GetDevice(), mFramebuffers[i], nullptr);
-        // }
-    }
-
     void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler, VkDescriptorImageInfo imageInfo) {
         auto e = swapchain.GetExtent();
         e.width /= 2;
@@ -717,10 +669,6 @@ struct GaussianBlur {
 
             brightColor.mFramebuffers.Create(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u);
 
-            // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u) };
-            // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &brightColor.mFramebuffers) == VK_SUCCESS,
-            //           "Failed to create frame buffers!");
-
             brightColor.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             brightColor.imageInfo.sampler     = sampler;
             brightColor.imageInfo.imageView   = brightColor.mImages.GetImageView();
@@ -792,10 +740,6 @@ struct GaussianBlur {
                 };
 
                 mFramebuffers[i].Create(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u);
-
-                // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[count], 1u) };
-                // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
-                //           "Failed to create frame buffers!");
 
                 descriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 descriptorImageInfos[i].sampler     = sampler;
@@ -904,10 +848,6 @@ struct GaussianBlur {
 
                 recompose.flickerFramebuffers[i].Create(mRenderPass, std::size(viewAttachments), viewAttachments, extents[extents.GetSize() - 2 - i], 1u);
 
-                // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[extents.GetSize() - 2 - i], 1u) };
-                // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &recompose.flickerFramebuffers[i]) == VK_SUCCESS,
-                //           "Failed to create frame buffers!");
-
                 recompose.flickerImageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 recompose.flickerImageInfo[i].sampler     = sampler;
                 recompose.flickerImageInfo[i].imageView   = recompose.flickerImages[i].GetImageView();
@@ -939,10 +879,6 @@ struct GaussianBlur {
             };
 
             recompose.mFramebuffers.Create(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u);
-
-            // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u) };
-            // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &recompose.mFramebuffers) == VK_SUCCESS,
-            //           "Failed to create frame buffers!");
 
             recompose.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             recompose.imageInfo.sampler     = sampler;
@@ -1155,7 +1091,6 @@ struct GaussianBlur {
     }
 
     Array<Image> mImages;
-    // Array<VkFramebuffer> mFramebuffers;
     Array<Framebuffer> mFramebuffers;
 
     Array<DescriptorSet> descriptorSets;
@@ -1182,7 +1117,6 @@ struct GaussianBlur {
     struct BrightColor {
         VkExtent2D extent;
         Image mImages;
-        // VkFramebuffer mFramebuffers;
         Framebuffer mFramebuffers;
 
         DescriptorSet descriptorSets;
@@ -1200,12 +1134,10 @@ struct GaussianBlur {
         GraphicsPipeline graphicsPipeline;
 
         Image mImages;
-        // VkFramebuffer mFramebuffers;
         Framebuffer mFramebuffers;
         VkDescriptorImageInfo imageInfo;
 
         Array<Image> flickerImages;
-        // Array<VkFramebuffer> flickerFramebuffers;
         Array<Framebuffer> flickerFramebuffers;
         Array<VkDescriptorImageInfo> flickerImageInfo;
     } recompose;
@@ -1223,7 +1155,6 @@ class AdHoc {
     Scene scene;
     Editor editor;
     Array<Framebuffer> swapchainFramebuffers;
-    // Array<VkFramebuffer> swapchainFramebuffers;
     PipelineLayout pipelineLayout;
     DescriptorSet descriptorSet;
     DescriptorSet editorDescriptorSet;
@@ -1280,9 +1211,7 @@ class AdHoc {
     ~AdHoc() {
         auto device{ Context::Get()->GetDevice() };
         vkDeviceWaitIdle(device);
-        // vkDestroyFramebuffer(device, shadowMap.m_Framebuffer, nullptr);
         for (int i{}; i != swapchain.GetImageViewCount(); ++i) {
-            // vkDestroyFramebuffer(device, swapchainFramebuffers[i], nullptr);
             vkDestroySemaphore(device, presentSempahore[i], nullptr);
             vkDestroySemaphore(device, renderSemaphore[i], nullptr);
             vkDestroyFence(device, fence1[i], nullptr);
@@ -1434,9 +1363,7 @@ class AdHoc {
         input.Initialize();
 
         hdrBuffer.Create(window, swapchain, sampler);
-        // hdrDraw.Create(renderPass, hdrBuffer.descriptor);Orecreate
         gaussianBlur.Create(window, swapchain, sampler, hdrBuffer.descriptor);
-        // hdrDraw.Create(renderPass, gaussianBlur.finalPassdescriptor);
         hdrDraw.Create(renderPass, hdrBuffer.descriptor, gaussianBlur.finalPassdescriptor);
 
         floats[0]      = &hdrDraw.intensity[0];
@@ -1650,22 +1577,6 @@ class AdHoc {
         }
 
         // End shadowmap
-
-        // g_AspectRatio.CalculateViewport(swapchain.GetExtent(), editor.GetSelectedAspectRatioWidth(), editor.GetSelectedAspectRatioHeight());
-
-        // if (g_DrawEditor == true) {
-        //     clearFramebuffers = true;
-        //     renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
-        // } else if (!g_DrawEditor && !clearFramebuffers) {
-        //     renderPass.SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        //     renderPass.UpdateRenderArea(g_AspectRatio.GetRect());
-        // } else if (!g_DrawEditor && clearFramebuffers) {
-        //     renderPass.SetClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        //     if (clearFramebuffersCount++ == swapchain.GetImageViewCount()) {
-        //         clearFramebuffers      = false;
-        //         clearFramebuffersCount = 0;
-        //     }
-        // }
 
         // Draw hdr texture
         {
@@ -1967,17 +1878,6 @@ class AdHoc {
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
             Attachment::Type::eDepth);
 
-        // attachment.AddDescription(
-        //     VK_FORMAT_B8G8R8A8_UNORM,
-        //     VK_SAMPLE_COUNT_1_BIT,
-        //     VK_ATTACHMENT_LOAD_OP_CLEAR,
-        //     VK_ATTACHMENT_STORE_OP_STORE,
-        //     VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        //     VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        //     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        //     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        //     Attachment::Type::eResolve);
-
         Subpass subpass;
         subpass.AddDescription(VK_PIPELINE_BIND_POINT_GRAPHICS, attachment);
         subpass.AddDependencies(
@@ -2008,7 +1908,6 @@ class AdHoc {
             1.0f, // float    depth
             0u    // uint32_t stencil
         };
-        // clearValues[2].color = { 0.1f, 0.1f, 0.1f, 1.0f };
 
         renderPass.Create(attachment, subpass, renderArea, Move(clearValues));
         renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
@@ -2227,9 +2126,6 @@ class AdHoc {
 
             };
             swapchainFramebuffers.EmplaceBack().Create(renderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u);
-            // auto info{ initializers::FramebufferCreateInfo(renderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
-            // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &swapchainFramebuffers.EmplaceBack()) == VK_SUCCESS,
-            //           "Failed to create frame buffers!");
         }
     }
 
@@ -2376,9 +2272,6 @@ class AdHoc {
 
     void RecreateSwapchain() {
         swapchain.Destroy();
-        // for (std::size_t i{}; i != swapchainFramebuffers.GetSize(); ++i) {
-        //     vkDestroyFramebuffer(Context::Get()->GetDevice(), swapchainFramebuffers[i], nullptr);
-        // }
         swapchainFramebuffers.Clear();
 
         swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
