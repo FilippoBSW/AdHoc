@@ -107,8 +107,7 @@ namespace adh {
                 if (!scene->GetWorld().Contains<lua::Script>(entity)) {
                     auto [s]      = scene->GetWorld().Add<lua::Script>(entity, lua::Script{ scene->GetState().CreateScript2(file) });
                     currentEntity = static_cast<std::uint64_t>(entity);
-                    lua_pcall(scene->GetState(), 0, LUA_MULTRET, 0);
-                    // s.Run();
+                    s.Run();
                     s.Bind();
                     s.Call("Start");
                     s.Unbind();

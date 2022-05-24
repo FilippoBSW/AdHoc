@@ -637,7 +637,6 @@ namespace adh {
 
           private:
             Script CreateScript(const std::string& script, std::uint64_t id) {
-                std::cout << "Create 1 begin: " << lua_gettop(m_State) << std::endl;
                 auto uniqueScript{ CreateUniqueScript(script, id) };
                 luaL_loadfile(m_State, script.data());
                 lua_newtable(m_State);
@@ -649,12 +648,10 @@ namespace adh {
                 lua_getfield(m_State, LUA_REGISTRYINDEX, uniqueScript.data());
                 lua_setupvalue(m_State, 1, 1);
                 lua_setglobal(m_State, uniqueScript.data());
-                std::cout << "Create 1 end: " <<  lua_gettop(m_State) << std::endl;
                 return Script(Move(uniqueScript), m_State, script);
             }
 
             Script CreateScript2(const char* script, std::uint64_t id) {
-                std::cout << "Create 2 begin: " << lua_gettop(m_State) << std::endl;
                 auto uniqueScript{ CreateUniqueScript("Script.lua", id) };
                 luaL_loadstring(m_State, script);
                 lua_newtable(m_State);
@@ -666,8 +663,6 @@ namespace adh {
                 lua_getfield(m_State, LUA_REGISTRYINDEX, uniqueScript.data());
                 lua_setupvalue(m_State, 1, 1);
                 lua_setglobal(m_State, uniqueScript.data());
-                std::cout << "Create 2 end: " << lua_gettop(m_State) << std::endl;
-
                 return Script(Move(uniqueScript), m_State, "Script.lua");
             }
 

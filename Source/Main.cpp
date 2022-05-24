@@ -1046,7 +1046,7 @@ struct GaussianBlur {
                 horizontalBlur = horizontalBlur == 1 ? 0 : 1;
                 if (!horizontalBlur) {
                     if (!i) {
-                        int p[3]{ horizontalBlur, brightColor.extent.width, brightColor.extent.height };
+                        int p[3]{ horizontalBlur, (int)brightColor.extent.width, (int)brightColor.extent.height };
                         vkCmdPushConstants(
                             cmd,
                             pipelineLayout,
@@ -1054,7 +1054,7 @@ struct GaussianBlur {
                             0u,
                             sizeof(int) * 3, p);
                     } else {
-                        int p[3]{ horizontalBlur, extents[count - 1].width, extents[count - 1].height };
+                        int p[3]{ horizontalBlur, (int)extents[count - 1].width, (int)extents[count - 1].height };
                         vkCmdPushConstants(
                             cmd,
                             pipelineLayout,
@@ -1063,7 +1063,7 @@ struct GaussianBlur {
                             sizeof(int) * 3, p);
                     }
                 } else {
-                    int p[3]{ horizontalBlur, extents[count].width, extents[count].height };
+                    int p[3]{ horizontalBlur, (int)extents[count].width, (int)extents[count].height };
                     vkCmdPushConstants(
                         cmd,
                         pipelineLayout,
@@ -1101,7 +1101,7 @@ struct GaussianBlur {
 
                 recompose.descriptorSets[i].Bind(cmd, imageIndex);
 
-                int p[2]{ extents[extentIndex + 1].width, extents[extentIndex + 1].height };
+                int p[2]{ (int)extents[extentIndex + 1].width, (int)extents[extentIndex + 1].height };
 
                 vkCmdPushConstants(
                     cmd,
@@ -1561,6 +1561,7 @@ class AdHoc {
                     script.Call("FixedUpdate");
                     script.fixedUpdateAcculumator = {};
                 }
+                script.Unbind();
             });
         }
     }
