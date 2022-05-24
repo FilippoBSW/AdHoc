@@ -278,6 +278,8 @@ if(Vulkan_FOUND)
     ${VULKAN_API_SRC}/Buffer.cpp
     ${VULKAN_API_SRC}/Image.hpp
     ${VULKAN_API_SRC}/Image.cpp
+	${VULKAN_API_SRC}/Framebuffer.hpp
+	${VULKAN_API_SRC}/Framebuffer.cpp
     ${VULKAN_API_SRC}/Shader.hpp
     ${VULKAN_API_SRC}/Shader.cpp
     ${VULKAN_API_SRC}/Shader.inl

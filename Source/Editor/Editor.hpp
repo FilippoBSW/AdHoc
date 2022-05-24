@@ -27,6 +27,7 @@
 #include <Std/Array.hpp>
 #include <Std/StaticArray.hpp>
 #include <Vulkan/Attachments.hpp>
+#include <Vulkan/Framebuffer.hpp>
 #include <Vulkan/GraphicsPipeline.hpp>
 #include <Vulkan/Image.hpp>
 #include <Vulkan/PipelineLayout.hpp>
@@ -106,7 +107,8 @@ namespace adh {
 
       private:
         Array<vk::Image> m_Images;
-        Array<VkFramebuffer> m_Framebuffers;
+        Array<vk::Framebuffer> m_Framebuffers;
+        // Array<VkFramebuffer> m_Framebuffers;
         vk::RenderPass m_RenderPass;
         Array<vk::GraphicsPipeline> m_GraphicsPipelines;
         UIOverlay m_Overlay;

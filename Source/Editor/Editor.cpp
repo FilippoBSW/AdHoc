@@ -101,9 +101,10 @@ namespace adh {
                 swapchain.GetDepthBuffer().GetImageView()
             };
 
-            auto info{ vk::initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
-            ADH_THROW(vkCreateFramebuffer(vk::Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffers[i]) == VK_SUCCESS,
-                      "Failed to create frame buffers!");
+            m_Framebuffers[i].Create(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u);
+            // auto info{ vk::initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+            // ADH_THROW(vkCreateFramebuffer(vk::Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffers[i]) == VK_SUCCESS,
+            //           "Failed to create frame buffers!");
         }
         m_RenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
         m_SwapchainImageCount = swapchain.GetImageViewCount();
@@ -180,7 +181,8 @@ namespace adh {
     void Editor::Recreate(vk::Swapchain& swapchain) {
         for (std::uint32_t i{}; i != swapchain.GetImageViewCount() * 2; ++i) {
             m_Images[i].Destroy();
-            vkDestroyFramebuffer(vk::Context::Get()->GetDevice(), m_Framebuffers[i], nullptr);
+            m_Framebuffers[i].Destroy();
+            // vkDestroyFramebuffer(vk::Context::Get()->GetDevice(), m_Framebuffers[i], nullptr);
         }
         CreateFramebuffers(swapchain);
         m_RenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
@@ -211,9 +213,9 @@ namespace adh {
 
     void Editor::Clear() noexcept {
         m_Images.Clear();
-        for (std::uint32_t i{}; i != m_Framebuffers.GetSize(); ++i) {
-            vkDestroyFramebuffer(vk::Context::Get()->GetDevice(), m_Framebuffers[i], nullptr);
-        }
+        // for (std::uint32_t i{}; i != m_Framebuffers.GetSize(); ++i) {
+        //     vkDestroyFramebuffer(vk::Context::Get()->GetDevice(), m_Framebuffers[i], nullptr);
+        // }
         m_Framebuffers.Clear();
         m_RenderPass.Destroy();
         m_GraphicsPipelines.Clear();

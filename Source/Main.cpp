@@ -22,8 +22,7 @@
 // SOFTWARE.
 // *********************************************************************************
 
-#include "Vulkan/Attachments.hpp"
-#include "Vulkan/Subpass.hpp"
+#include <Audio/Audio.hpp>
 #include <Editor/Editor.hpp>
 #include <Entity/Entity.hpp>
 #include <Event/Event.hpp>
@@ -34,17 +33,21 @@
 #include <Std/StaticArray.hpp>
 #include <Std/Stopwatch.hpp>
 #include <Utility.hpp>
+#include <Vulkan/Attachments.hpp>
 #include <Vulkan/CommandBuffer.hpp>
 #include <Vulkan/CommandPool.hpp>
 #include <Vulkan/Context.hpp>
 #include <Vulkan/DescriptorSet.hpp>
+#include <Vulkan/Framebuffer.hpp>
 #include <Vulkan/GraphicsPipeline.hpp>
 #include <Vulkan/IndexBuffer.hpp>
+#include <Vulkan/Memory.hpp>
 #include <Vulkan/PipelineLayout.hpp>
 #include <Vulkan/RenderPass.hpp>
 #include <Vulkan/Sampler.hpp>
 #include <Vulkan/Scissor.hpp>
 #include <Vulkan/Shader.hpp>
+#include <Vulkan/Subpass.hpp>
 #include <Vulkan/Swapchain.hpp>
 #include <Vulkan/Tools.hpp>
 #include <Vulkan/UniformBuffer.hpp>
@@ -52,10 +55,6 @@
 #include <Vulkan/VertexLayout.hpp>
 #include <Vulkan/Viewport.hpp>
 #include <Window.hpp>
-
-#include <Vulkan/Memory.hpp>
-
-#include <Audio/Audio.hpp>
 
 #if defined(ADH_IOS)
 #    include <UIKit/UIKit.h>
@@ -170,30 +169,15 @@ struct ShadowMap2D {
         GraphicsPipeline graphicsPipeline;
     };
 
-    ~ShadowMap2D() {
-        auto device{ Context::Get()->GetDevice() };
-        vkDeviceWaitIdle(device);
-        vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
-    }
+    // ~ShadowMap2D() {
+    //     auto device{ Context::Get()->GetDevice() };
+    //     vkDeviceWaitIdle(device);
+    //     vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+    // }
 
     void Create(RenderPass& renderPass, Sampler& sampler) {
         // m_Extent.width  = 2048 * 2;
         // m_Extent.height = 2048 * 2;
-
-        m_Image.Create(
-            { m_Extent.width, m_Extent.height, 1u },
-            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_TYPE_2D,
-            (VkImageCreateFlagBits)0,
-            1,
-            1,
-            VK_SAMPLE_COUNT_1_BIT,
-            VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
-            VK_IMAGE_ASPECT_DEPTH_BIT,
-            VK_IMAGE_VIEW_TYPE_2D,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            VK_SHARING_MODE_EXCLUSIVE);
 
         Attachment attachment;
         attachment.AddDescription(
@@ -240,13 +224,9 @@ struct ShadowMap2D {
         m_RenderPass.Create(attachment, subpass, renderArea, Move(clearValues));
         m_RenderPass.UpdateRenderArea({ {}, m_Extent });
 
-        VkImageView viewAttachments[]{
-            m_Image.GetImageView()
-        };
-
-        auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u) };
-        ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-                  "Failed to create frame buffers!");
+        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u) };
+        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
+        //           "Failed to create frame buffers!");
 
         Shader shader("shadowmap.vert", "shadowmap.frag");
 
@@ -284,9 +264,30 @@ struct ShadowMap2D {
 
         lightSpaceBuffer.Update();
 
+        m_Image.Create(
+            { m_Extent.width, m_Extent.height, 1u },
+            tools::GetSupportedDepthFormat(Context::Get()->GetPhysicalDevice()),
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_TYPE_2D,
+            (VkImageCreateFlagBits)0,
+            1,
+            1,
+            VK_SAMPLE_COUNT_1_BIT,
+            VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            VK_IMAGE_VIEW_TYPE_2D,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            VK_SHARING_MODE_EXCLUSIVE);
+
+        VkImageView viewAttachments[]{
+            m_Image.GetImageView()
+        };
+
         descriptor.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         descriptor.sampler     = sampler;
         descriptor.imageView   = m_Image.GetImageView();
+
+        m_Framebuffer.Create(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u);
 
         debug.Create(renderPass, descriptor);
     }
@@ -295,7 +296,9 @@ struct ShadowMap2D {
         m_Extent = extent;
         auto device{ Context::Get()->GetDevice() };
         vkDeviceWaitIdle(device);
-        vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+        // vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+
+        m_Framebuffer.Destroy();
 
         m_Image.Destroy();
 
@@ -320,15 +323,18 @@ struct ShadowMap2D {
             m_Image.GetImageView()
         };
 
-        auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u) };
-        ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-                  "Failed to create frame buffers!");
+        m_Framebuffer.Create(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u);
+
+        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, m_Extent, 1u) };
+        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
+        //           "Failed to create frame buffers!");
     }
 
     RenderPass m_RenderPass;
     VkExtent2D m_Extent;
     vk::Image m_Image;
-    VkFramebuffer m_Framebuffer;
+    // VkFramebuffer m_Framebuffer;
+    Framebuffer m_Framebuffer;
 
     xmm::Matrix lightSpace{ 1.0f };
     UniformBuffer lightSpaceBuffer;
@@ -346,11 +352,11 @@ struct ShadowMap2D {
 };
 
 struct HDRBuffer {
-    ~HDRBuffer() {
-        auto device{ Context::Get()->GetDevice() };
-        vkDeviceWaitIdle(device);
-        vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
-    }
+    // ~HDRBuffer() {
+    //     auto device{ Context::Get()->GetDevice() };
+    //     vkDeviceWaitIdle(device);
+    //     vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
+    // }
 
     void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler) {
         Attachment attachment;
@@ -462,9 +468,11 @@ struct HDRBuffer {
             swapchain.GetDepthBuffer().GetImageView()
         };
 
-        auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
-        ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-                  "Failed to create frame buffers!");
+        m_Framebuffer.Create(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u);
+
+        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
+        //           "Failed to create frame buffers!");
 
         descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         descriptor.sampler     = sampler;
@@ -473,9 +481,12 @@ struct HDRBuffer {
 
     void Recreate(Swapchain& swapchain) {
         m_Image.Destroy();
-        auto device{ Context::Get()->GetDevice() };
-        vkDeviceWaitIdle(device);
-        vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
+
+        m_Framebuffer.Destroy();
+
+        // auto device{ Context::Get()->GetDevice() };
+        // vkDeviceWaitIdle(device);
+        // vkDestroyFramebuffer(Context::Get()->GetDevice(), m_Framebuffer, nullptr);
 
         m_Image.Create(
             { swapchain.GetExtent().width, swapchain.GetExtent().height, 1u },
@@ -503,16 +514,19 @@ struct HDRBuffer {
             swapchain.GetDepthBuffer().GetImageView()
         };
 
-        auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
-        ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
-                  "Failed to create frame buffers!");
+        m_Framebuffer.Create(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u);
+
+        // auto info{ initializers::FramebufferCreateInfo(m_RenderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+        // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &m_Framebuffer) == VK_SUCCESS,
+        //           "Failed to create frame buffers!");
 
         descriptor.imageView = m_Image.GetImageView();
         m_RenderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
     }
 
     vk::Image m_Image;
-    VkFramebuffer m_Framebuffer;
+    // VkFramebuffer m_Framebuffer;
+    Framebuffer m_Framebuffer;
     RenderPass m_RenderPass;
 
     PipelineLayout pipelineLayout;
@@ -701,9 +715,11 @@ struct GaussianBlur {
                 brightColor.mImages.GetImageView()
             };
 
-            auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u) };
-            ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &brightColor.mFramebuffers) == VK_SUCCESS,
-                      "Failed to create frame buffers!");
+            brightColor.mFramebuffers.Create(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u);
+
+            // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u) };
+            // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &brightColor.mFramebuffers) == VK_SUCCESS,
+            //           "Failed to create frame buffers!");
 
             brightColor.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             brightColor.imageInfo.sampler     = sampler;
@@ -775,9 +791,11 @@ struct GaussianBlur {
                     mImages[i].GetImageView()
                 };
 
-                auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[count], 1u) };
-                ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
-                          "Failed to create frame buffers!");
+                mFramebuffers[i].Create(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u);
+
+                // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[count], 1u) };
+                // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
+                //           "Failed to create frame buffers!");
 
                 descriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 descriptorImageInfos[i].sampler     = sampler;
@@ -884,9 +902,11 @@ struct GaussianBlur {
                     recompose.flickerImages[i].GetImageView()
                 };
 
-                auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[extents.GetSize() - 2 - i], 1u) };
-                ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &recompose.flickerFramebuffers[i]) == VK_SUCCESS,
-                          "Failed to create frame buffers!");
+                recompose.flickerFramebuffers[i].Create(mRenderPass, std::size(viewAttachments), viewAttachments, extents[extents.GetSize() - 2 - i], 1u);
+
+                // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[extents.GetSize() - 2 - i], 1u) };
+                // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &recompose.flickerFramebuffers[i]) == VK_SUCCESS,
+                //           "Failed to create frame buffers!");
 
                 recompose.flickerImageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 recompose.flickerImageInfo[i].sampler     = sampler;
@@ -918,9 +938,11 @@ struct GaussianBlur {
                 recompose.mImages.GetImageView()
             };
 
-            auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u) };
-            ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &recompose.mFramebuffers) == VK_SUCCESS,
-                      "Failed to create frame buffers!");
+            recompose.mFramebuffers.Create(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u);
+
+            // auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u) };
+            // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &recompose.mFramebuffers) == VK_SUCCESS,
+            //           "Failed to create frame buffers!");
 
             recompose.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             recompose.imageInfo.sampler     = sampler;
@@ -1133,7 +1155,8 @@ struct GaussianBlur {
     }
 
     Array<Image> mImages;
-    Array<VkFramebuffer> mFramebuffers;
+    // Array<VkFramebuffer> mFramebuffers;
+    Array<Framebuffer> mFramebuffers;
 
     Array<DescriptorSet> descriptorSets;
     Array<VkDescriptorImageInfo> descriptorImageInfos;
@@ -1159,7 +1182,8 @@ struct GaussianBlur {
     struct BrightColor {
         VkExtent2D extent;
         Image mImages;
-        VkFramebuffer mFramebuffers;
+        // VkFramebuffer mFramebuffers;
+        Framebuffer mFramebuffers;
 
         DescriptorSet descriptorSets;
         VkDescriptorImageInfo imageInfo;
@@ -1176,11 +1200,13 @@ struct GaussianBlur {
         GraphicsPipeline graphicsPipeline;
 
         Image mImages;
-        VkFramebuffer mFramebuffers;
+        // VkFramebuffer mFramebuffers;
+        Framebuffer mFramebuffers;
         VkDescriptorImageInfo imageInfo;
 
         Array<Image> flickerImages;
-        Array<VkFramebuffer> flickerFramebuffers;
+        // Array<VkFramebuffer> flickerFramebuffers;
+        Array<Framebuffer> flickerFramebuffers;
         Array<VkDescriptorImageInfo> flickerImageInfo;
     } recompose;
 };
@@ -1196,7 +1222,8 @@ class AdHoc {
     Sampler sampler;
     Scene scene;
     Editor editor;
-    Array<VkFramebuffer> swapchainFramebuffers;
+    Array<Framebuffer> swapchainFramebuffers;
+    // Array<VkFramebuffer> swapchainFramebuffers;
     PipelineLayout pipelineLayout;
     DescriptorSet descriptorSet;
     DescriptorSet editorDescriptorSet;
@@ -1237,16 +1264,14 @@ class AdHoc {
     bool g_IsPaused{ false };
     bool g_AreScriptsReady{ false };
 
-    ShadowMap2D shadowMap;
-
     std::vector<std::function<void()>> collisionCallbacks;
 
     bool clearFramebuffers     = true;
     int clearFramebuffersCount = 0;
 
+    ShadowMap2D shadowMap;
     HDRBuffer hdrBuffer;
     HDRDraw hdrDraw;
-
     GaussianBlur gaussianBlur;
 
     float* floats[6];
@@ -1257,7 +1282,7 @@ class AdHoc {
         vkDeviceWaitIdle(device);
         // vkDestroyFramebuffer(device, shadowMap.m_Framebuffer, nullptr);
         for (int i{}; i != swapchain.GetImageViewCount(); ++i) {
-            vkDestroyFramebuffer(device, swapchainFramebuffers[i], nullptr);
+            // vkDestroyFramebuffer(device, swapchainFramebuffers[i], nullptr);
             vkDestroySemaphore(device, presentSempahore[i], nullptr);
             vkDestroySemaphore(device, renderSemaphore[i], nullptr);
             vkDestroyFence(device, fence1[i], nullptr);
@@ -2201,9 +2226,10 @@ class AdHoc {
                 swapchain.GetDepthBuffer().GetImageView(),
 
             };
-            auto info{ initializers::FramebufferCreateInfo(renderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
-            ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &swapchainFramebuffers.EmplaceBack()) == VK_SUCCESS,
-                      "Failed to create frame buffers!");
+            swapchainFramebuffers.EmplaceBack().Create(renderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u);
+            // auto info{ initializers::FramebufferCreateInfo(renderPass, std::size(viewAttachments), viewAttachments, swapchain.GetExtent(), 1u) };
+            // ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &swapchainFramebuffers.EmplaceBack()) == VK_SUCCESS,
+            //           "Failed to create frame buffers!");
         }
     }
 
@@ -2350,9 +2376,9 @@ class AdHoc {
 
     void RecreateSwapchain() {
         swapchain.Destroy();
-        for (std::size_t i{}; i != swapchainFramebuffers.GetSize(); ++i) {
-            vkDestroyFramebuffer(Context::Get()->GetDevice(), swapchainFramebuffers[i], nullptr);
-        }
+        // for (std::size_t i{}; i != swapchainFramebuffers.GetSize(); ++i) {
+        //     vkDestroyFramebuffer(Context::Get()->GetDevice(), swapchainFramebuffers[i], nullptr);
+        // }
         swapchainFramebuffers.Clear();
 
         swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
