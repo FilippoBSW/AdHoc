@@ -616,30 +616,6 @@ struct GaussianBlur {
             extents.EmplaceBack(e);
         }
 
-        // e.width /= 2;
-        // e.height /= 2;
-        // extents.EmplaceBack(e);
-
-        // e.width /= 2;
-        // e.height /= 2;
-        // extents.EmplaceBack(e);
-
-        // e.width /= 2;
-        // e.height /= 2;
-        // extents.EmplaceBack(e);
-
-        // e.width /= 2;
-        // e.height /= 2;
-        // extents.EmplaceBack(e);
-
-        // e.width /= 2;
-        // e.height /= 2;
-        // extents.EmplaceBack(e);
-
-        // e.width /= 2;
-        // e.height /= 2;
-        // extents.EmplaceBack(e);
-
         uboUniformBuffer.Create(&ubo, sizeof(ubo), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         Attachment attachment;
@@ -760,7 +736,7 @@ struct GaussianBlur {
             pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             pipelineLayout.CreateSet();
 
-            pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(int), 0);
+            pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(int) * 3, 0);
 
             pipelineLayout.Create();
 
@@ -855,62 +831,7 @@ struct GaussianBlur {
                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
                 );
             }
-
-            //     // Pass 2
-            //     descriptorSets[1].Update(
-            //         uboUniformBuffer.GetDescriptor(),
-            //         0u,                               // descriptor index
-            //         0u,                               // binding
-            //         0u,                               // array element
-            //         1u,                               // array count
-            //         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-            //     );
-            // descriptorSets[1].Update(
-            //     descriptorImageInfos[0],
-            //     0u,                                       // descriptor index
-            //     1u,                                       // binding
-            //     0u,                                       // array element
-            //     1u,                                       // array count
-            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            // );
-
-            // // Pass 3
-            // descriptorSets[2].Update(
-            //     uboUniformBuffer.GetDescriptor(),
-            //     0u,                               // descriptor index
-            //     0u,                               // binding
-            //     0u,                               // array element
-            //     1u,                               // array count
-            //     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-            // );
-            // descriptorSets[2].Update(
-            //     descriptorImageInfos[1],
-            //     0u,                                       // descriptor index
-            //     1u,                                       // binding
-            //     0u,                                       // array element
-            //     1u,                                       // array count
-            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            // );
-
-            // // Pass 4
-            // descriptorSets[3].Update(
-            //     uboUniformBuffer.GetDescriptor(),
-            //     0u,                               // descriptor index
-            //     0u,                               // binding
-            //     0u,                               // array element
-            //     1u,                               // array count
-            //     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-            // );
-            // descriptorSets[3].Update(
-            //     descriptorImageInfos[2],
-            //     0u,                                       // descriptor index
-            //     1u,                                       // binding
-            //     0u,                                       // array element
-            //     1u,                                       // array count
-            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            // );
         }
-
         // Recompose
         {
             int recomposePasses = extents.GetSize();
@@ -923,6 +844,8 @@ struct GaussianBlur {
             recompose.pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             recompose.pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
             recompose.pipelineLayout.CreateSet();
+
+            recompose.pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(int) * 2, 0);
 
             recompose.pipelineLayout.Create();
 
@@ -1047,40 +970,6 @@ struct GaussianBlur {
                 );
             }
 
-            // recompose.descriptorSets[0].Update(
-            //     descriptorImageInfos[3],
-            //     0u,                                       // descriptor index
-            //     1u,                                       // binding
-            //     0u,                                       // array element
-            //     1u,                                       // array count
-            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            // );
-            // recompose.descriptorSets[0].Update(
-            //     descriptorImageInfos[5],
-            //     0u,                                       // descriptor index
-            //     2u,                                       // binding
-            //     0u,                                       // array element
-            //     1u,                                       // array count
-            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            // );
-
-            // recompose.descriptorSets[1].Update(
-            //     descriptorImageInfos[1],
-            //     0u,                                       // descriptor index
-            //     1u,                                       // binding
-            //     0u,                                       // array element
-            //     1u,                                       // array count
-            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            // );
-            // recompose.descriptorSets[1].Update(
-            //     descriptorImageInfos[2],
-            //     0u,                                       // descriptor index
-            //     2u,                                       // binding
-            //     0u,                                       // array element
-            //     1u,                                       // array count
-            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            // );
-
             recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
                 brightColor.imageInfo,
                 0u,                                       // descriptor index
@@ -1100,272 +989,6 @@ struct GaussianBlur {
         }
 
         finalPassdescriptor = recompose.imageInfo;
-
-        // // bright color pass
-        // {
-        //     Shader shader("brightColor.vert", "brightColor.frag");
-        //     VertexLayout vertexLayout;
-        //     vertexLayout.Create();
-
-        //     brightColor.pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-        //     brightColor.pipelineLayout.CreateSet();
-
-        //     brightColor.pipelineLayout.Create();
-
-        //     brightColor.graphicsPipeline.Create(shader, vertexLayout, brightColor.pipelineLayout, mRenderPass,
-        //                                         VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        //                                         VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
-
-        //     for (int i{}; i != 2; ++i) {
-        //         brightColor.mImages[i].Create(
-        //             { brightColor.extent.width, brightColor.extent.height, 1u },
-        //             VK_FORMAT_R32G32B32A32_SFLOAT,
-        //             VK_IMAGE_TILING_OPTIMAL,
-        //             VK_IMAGE_TYPE_2D,
-        //             VkImageCreateFlagBits(0),
-        //             1,
-        //             1u,
-        //             VK_SAMPLE_COUNT_1_BIT,
-        //             VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-        //             VK_IMAGE_ASPECT_COLOR_BIT,
-        //             VK_IMAGE_VIEW_TYPE_2D,
-        //             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        //             VK_SHARING_MODE_EXCLUSIVE);
-
-        //         vk::TransferImageLayout(
-        //             brightColor.mImages[i],
-        //             VK_IMAGE_LAYOUT_UNDEFINED,
-        //             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        //             VK_IMAGE_ASPECT_COLOR_BIT);
-
-        //         VkImageView viewAttachments[]{
-        //             brightColor.mImages[i].GetImageView()
-        //         };
-        //         {
-        //             auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u) };
-        //             ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &brightColor.mFramebuffers[i]) == VK_SUCCESS,
-        //                       "Failed to create frame buffers!");
-        //         }
-        //     }
-
-        //     brightColor.descriptorSets.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, brightColor.pipelineLayout, swapchain.GetImageViewCount());
-        //     brightColor.descriptorSets.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-        //     brightColor.descriptorSets.Create(brightColor.pipelineLayout.GetSetLayout());
-
-        //     brightColor.descriptorSets.Update(
-        //         info,
-        //         0u,                                       // descriptor index
-        //         1u,                                       // binding
-        //         0u,                                       // array element
-        //         1u,                                       // array count
-        //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //     );
-
-        //     brightColor.imageInfo[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        //     brightColor.imageInfo[0].sampler     = sampler;
-        //     brightColor.imageInfo[0].imageView   = brightColor.mImages[0].GetImageView();
-
-        //     brightColor.imageInfo[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        //     brightColor.imageInfo[1].sampler     = sampler;
-        //     brightColor.imageInfo[1].imageView   = brightColor.mImages[1].GetImageView();
-        // }
-
-        // uboUniformBuffer.Create(&ubo, sizeof(ubo), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-
-        // // Blur passes
-        // {
-        //     Shader shader("gaussianBlur.vert", "gaussianBlur.frag");
-
-        //     VertexLayout vertexLayout;
-        //     vertexLayout.Create();
-
-        //     pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-        //     pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-        //     pipelineLayout.CreateSet();
-
-        //     pipelineLayout.AddPushConstant(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(int), 0);
-
-        //     pipelineLayout.Create();
-
-        //     graphicsPipeline.Create(shader, vertexLayout, pipelineLayout, mRenderPass,
-        //                             VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        //                             VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
-
-        //     auto numOfBlurPasses = extents.GetSize() * 2;
-        //     mImages.Resize(numOfBlurPasses);
-        //     mFramebuffers.Resize(numOfBlurPasses);
-        //     descriptorSets.Resize(numOfBlurPasses);
-
-        //     int count = 0;
-        //     for (int i{}; i != numOfBlurPasses; ++i) {
-        //         mImages[i].Create(
-        //             { extents[count].width, extents[count].height, 1u },
-        //             VK_FORMAT_R32G32B32A32_SFLOAT,
-        //             VK_IMAGE_TILING_OPTIMAL,
-        //             VK_IMAGE_TYPE_2D,
-        //             VkImageCreateFlagBits(0),
-        //             1,
-        //             1u,
-        //             VK_SAMPLE_COUNT_1_BIT,
-        //             VkImageUsageFlagBits(VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT),
-        //             VK_IMAGE_ASPECT_COLOR_BIT,
-        //             VK_IMAGE_VIEW_TYPE_2D,
-        //             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        //             VK_SHARING_MODE_EXCLUSIVE);
-
-        //         vk::TransferImageLayout(
-        //             mImages[i],
-        //             VK_IMAGE_LAYOUT_UNDEFINED,
-        //             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        //             VK_IMAGE_ASPECT_COLOR_BIT);
-
-        //         VkImageView viewAttachments[]{
-        //             mImages[i].GetImageView()
-        //         };
-
-        //         auto info{ initializers::FramebufferCreateInfo(mRenderPass, std::size(viewAttachments), viewAttachments, extents[count], 1u) };
-        //         ADH_THROW(vkCreateFramebuffer(Context::Get()->GetDevice(), &info, nullptr, &mFramebuffers[i]) == VK_SUCCESS,
-        //                   "Failed to create frame buffers!");
-
-        //         descriptorSets[i].Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
-        //         descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-        //         descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-        //         descriptorSets[i].Create(pipelineLayout.GetSetLayout());
-
-        //         if (i % 2) {
-        //             count++;
-        //         }
-        //     }
-
-        //     descriptorSets[0].Update(
-        //         uboUniformBuffer.GetDescriptor(),
-        //         0u,                               // descriptor index
-        //         0u,                               // binding
-        //         0u,                               // array element
-        //         1u,                               // array count
-        //         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-        //     );
-        //     descriptorSets[0].Update(
-        //         brightColor.imageInfo,
-        //         0u,                                       // descriptor index
-        //         1u,                                       // binding
-        //         0u,                                       // array element
-        //         1u,                                       // array count
-        //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //     );
-
-        //     descriptorImageInfos.Resize(numOfBlurPasses - 1);
-        //     for (int i{ 0 }; i != descriptorImageInfos.GetSize(); ++i) {
-        //         descriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        //         descriptorImageInfos[i].sampler     = sampler;
-        //         descriptorImageInfos[i].imageView   = mImages[i].GetImageView();
-        //     }
-
-        //     for (int i{ 1 }; i != descriptorSets.GetSize(); ++i) {
-        //         descriptorSets[i].Update(
-        //             uboUniformBuffer.GetDescriptor(),
-        //             0u,                               // descriptor index
-        //             0u,                               // binding
-        //             0u,                               // array element
-        //             1u,                               // array count
-        //             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER // type
-        //         );
-        //         descriptorSets[i].Update(
-        //             descriptorImageInfos[i - 1],
-        //             0u,                                       // descriptor index
-        //             1u,                                       // binding
-        //             0u,                                       // array element
-        //             1u,                                       // array count
-        //             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //         );
-        //     }
-
-        //     finalPassdescriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        //     finalPassdescriptor.sampler     = sampler;
-        //     finalPassdescriptor.imageView   = mImages[numOfBlurPasses - 1].GetImageView();
-        // }
-
-        // // Recompose
-        // {
-        //     Shader shader("bloomRecompose.vert", "bloomRecompose.frag");
-
-        //     VertexLayout vertexLayout;
-        //     vertexLayout.Create();
-
-        //     recompose.pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-        //     recompose.pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-        //     recompose.pipelineLayout.CreateSet();
-
-        //     recompose.pipelineLayout.Create();
-
-        //     recompose.graphicsPipeline.Create(shader, vertexLayout, recompose.pipelineLayout, mRenderPass,
-        //                                       VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        //                                       VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 0.0f, VK_TRUE);
-
-        //     auto numOfBlurPasses  = extents.GetSize();
-        //     auto numOfBlurPasses2 = extents.GetSize() * 2;
-        //     recompose.descriptorSets.Resize(numOfBlurPasses);
-        //     for (int i{}; i != numOfBlurPasses; ++i) {
-        //         recompose.descriptorSets[i].Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, recompose.pipelineLayout, swapchain.GetImageViewCount());
-        //         recompose.descriptorSets[i].AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2);
-        //         recompose.descriptorSets[i].Create(recompose.pipelineLayout.GetSetLayout());
-        //     }
-
-        //     recompose.descriptorSets[0].Update(
-        //         finalPassdescriptor,
-        //         0u,                                       // descriptor index
-        //         1u,                                       // binding
-        //         0u,                                       // array element
-        //         1u,                                       // array count
-        //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //     );
-        //     recompose.descriptorSets[0].Update(
-        //         descriptorImageInfos[numOfBlurPasses2 - 2],
-        //         0u,                                       // descriptor index
-        //         2u,                                       // binding
-        //         0u,                                       // array element
-        //         1u,                                       // array count
-        //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //     );
-
-        //     int j = descriptorImageInfos.GetSize() - 3;
-
-        //     for (int i{ 1 }; i != recompose.descriptorSets.GetSize() - 1; ++i) {
-        //         recompose.descriptorSets[i].Update(
-        //             descriptorImageInfos[j--],
-        //             0u,                                       // descriptor index
-        //             1u,                                       // binding
-        //             0u,                                       // array element
-        //             1u,                                       // array count
-        //             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //         );
-        //         recompose.descriptorSets[i].Update(
-        //             descriptorImageInfos[j--],
-        //             0u,                                       // descriptor index
-        //             2u,                                       // binding
-        //             0u,                                       // array element
-        //             1u,                                       // array count
-        //             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //         );
-        //     }
-
-        //     recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
-        //         brightColor.imageInfo[0],
-        //         0u,                                       // descriptor index
-        //         1u,                                       // binding
-        //         0u,                                       // array element
-        //         1u,                                       // array count
-        //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //     );
-        //     recompose.descriptorSets[recompose.descriptorSets.GetSize() - 1].Update(
-        //         descriptorImageInfos[0],
-        //         0u,                                       // descriptor index
-        //         2u,                                       // binding
-        //         0u,                                       // array element
-        //         1u,                                       // array count
-        //         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        //     );
-        // }
     }
 
     void Recreate(Swapchain& swapchain, VkDescriptorImageInfo info) {
@@ -1421,12 +1044,33 @@ struct GaussianBlur {
                 descriptorSets[i].Bind(cmd, imageIndex);
 
                 horizontalBlur = horizontalBlur == 1 ? 0 : 1;
-                vkCmdPushConstants(
-                    cmd,
-                    pipelineLayout,
-                    VK_SHADER_STAGE_FRAGMENT_BIT,
-                    0u,
-                    sizeof(int), &horizontalBlur);
+                if (!horizontalBlur) {
+                    if (!i) {
+                        int p[3]{ horizontalBlur, brightColor.extent.width, brightColor.extent.height };
+                        vkCmdPushConstants(
+                            cmd,
+                            pipelineLayout,
+                            VK_SHADER_STAGE_FRAGMENT_BIT,
+                            0u,
+                            sizeof(int) * 3, p);
+                    } else {
+                        int p[3]{ horizontalBlur, extents[count - 1].width, extents[count - 1].height };
+                        vkCmdPushConstants(
+                            cmd,
+                            pipelineLayout,
+                            VK_SHADER_STAGE_FRAGMENT_BIT,
+                            0u,
+                            sizeof(int) * 3, p);
+                    }
+                } else {
+                    int p[3]{ horizontalBlur, extents[count].width, extents[count].height };
+                    vkCmdPushConstants(
+                        cmd,
+                        pipelineLayout,
+                        VK_SHADER_STAGE_FRAGMENT_BIT,
+                        0u,
+                        sizeof(int) * 3, p);
+                }
 
                 vkCmdDraw(cmd, 3, 1, 0, 0);
                 mRenderPass.End(cmd);
@@ -1457,47 +1101,19 @@ struct GaussianBlur {
 
                 recompose.descriptorSets[i].Bind(cmd, imageIndex);
 
+                int p[2]{ extents[extentIndex + 1].width, extents[extentIndex + 1].height };
+
+                vkCmdPushConstants(
+                    cmd,
+                    recompose.pipelineLayout,
+                    VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0u,
+                    sizeof(int) * 2, p);
+
                 vkCmdDraw(cmd, 3, 1, 0, 0);
                 mRenderPass.End(cmd);
             }
-        }
 
-        // Recompose
-        // {
-        //     viewport.Update(extents[1], false);
-        //     viewport.Set(cmd);
-        //     scissor.Update(extents[1]);
-        //     scissor.Set(cmd);
-
-        //     mRenderPass.UpdateRenderArea({ {}, extents[1] });
-
-        //     mRenderPass.Begin(cmd, mFramebuffers[2]);
-
-        //     recompose.graphicsPipeline.Bind(cmd);
-
-        //     recompose.descriptorSets[0].Bind(cmd, imageIndex);
-
-        //     vkCmdDraw(cmd, 3, 1, 0, 0);
-        //     mRenderPass.End(cmd);
-        // }
-        // {
-        //     viewport.Update(extents[0], false);
-        //     viewport.Set(cmd);
-        //     scissor.Update(extents[0]);
-        //     scissor.Set(cmd);
-
-        //     mRenderPass.UpdateRenderArea({ {}, extents[0] });
-
-        //     mRenderPass.Begin(cmd, mFramebuffers[0]);
-
-        //     recompose.graphicsPipeline.Bind(cmd);
-
-        //     recompose.descriptorSets[1].Bind(cmd, imageIndex);
-
-        //     vkCmdDraw(cmd, 3, 1, 0, 0);
-        //     mRenderPass.End(cmd);
-        // }
-        {
             viewport.Update(brightColor.extent, false);
             viewport.Set(cmd);
             scissor.Update(brightColor.extent);
@@ -1514,96 +1130,6 @@ struct GaussianBlur {
             vkCmdDraw(cmd, 3, 1, 0, 0);
             mRenderPass.End(cmd);
         }
-
-        // // Bright color
-        // {
-        //     viewport.Update(brightColor.extent, false);
-        //     viewport.Set(cmd);
-
-        //     scissor.Update(brightColor.extent);
-        //     scissor.Set(cmd);
-
-        //     mRenderPass.UpdateRenderArea({ {}, brightColor.extent });
-        //     mRenderPass.Begin(cmd, brightColor.mFramebuffers[0]);
-        //     brightColor.graphicsPipeline.Bind(cmd);
-        //     brightColor.descriptorSets.Bind(cmd, imageIndex);
-        //     vkCmdDraw(cmd, 3, 1, 0, 0);
-        //     mRenderPass.End(cmd);
-        // }
-
-        // // Blur
-        // {
-        //     int count      = 0;
-        //     horizontalBlur = 1;
-        //     for (int i{}; i != mFramebuffers.GetSize(); ++i) {
-        //         viewport.Update(extents[count], false);
-        //         viewport.Set(cmd);
-        //         scissor.Update(extents[count]);
-        //         scissor.Set(cmd);
-
-        //         mRenderPass.UpdateRenderArea({ {}, extents[count] });
-        //         mRenderPass.Begin(cmd, mFramebuffers[i]);
-        //         graphicsPipeline.Bind(cmd);
-        //         descriptorSets[i].Bind(cmd, imageIndex);
-
-        //         horizontalBlur = horizontalBlur == 1 ? 0 : 1;
-        //         vkCmdPushConstants(
-        //             cmd,
-        //             pipelineLayout,
-        //             VK_SHADER_STAGE_FRAGMENT_BIT,
-        //             0u,
-        //             sizeof(int), &horizontalBlur);
-
-        //         vkCmdDraw(cmd, 3, 1, 0, 0);
-        //         mRenderPass.End(cmd);
-
-        //         if (i % 2) {
-        //             count++;
-        //         }
-        //     }
-        // }
-
-        // // Reconpose
-        // {
-        //     int j     = 0;
-        //     int fsize = mFramebuffers.GetSize();
-        //     int table = fsize - 4;
-
-        //     for (int i = extents.GetSize() - 2; i > -1; --i) {
-        //         viewport.Update(extents[i], false);
-        //         viewport.Set(cmd);
-        //         scissor.Update(extents[i]);
-        //         scissor.Set(cmd);
-
-        //         mRenderPass.UpdateRenderArea({ {}, extents[i] });
-
-        //         mRenderPass.Begin(cmd, mFramebuffers[table]);
-        //         table -= 2;
-
-        //         recompose.graphicsPipeline.Bind(cmd);
-
-        //         recompose.descriptorSets[j++].Bind(cmd, imageIndex);
-
-        //         vkCmdDraw(cmd, 3, 1, 0, 0);
-        //         mRenderPass.End(cmd);
-        //     }
-
-        //     viewport.Update(brightColor.extent, false);
-        //     viewport.Set(cmd);
-        //     scissor.Update(brightColor.extent);
-        //     scissor.Set(cmd);
-
-        //     mRenderPass.UpdateRenderArea({ {}, brightColor.extent });
-
-        //     mRenderPass.Begin(cmd, brightColor.mFramebuffers[1]);
-
-        //     recompose.graphicsPipeline.Bind(cmd);
-
-        //     recompose.descriptorSets[j].Bind(cmd, imageIndex);
-
-        //     vkCmdDraw(cmd, 3, 1, 0, 0);
-        //     mRenderPass.End(cmd);
-        // }
     }
 
     Array<Image> mImages;
@@ -1958,6 +1484,13 @@ class AdHoc {
                 scene.GetState().ClearStack();
                 scene.ResetPhysicsWorld();
                 ReadyScript();
+            }
+
+            if (!ScriptHandler::scriptComponentEvent.IsEmpty()) {
+                for (auto&& i : ScriptHandler::scriptComponentEvent) {
+                    i();
+                }
+                ScriptHandler::scriptComponentEvent.Clear();
             }
         }
     }

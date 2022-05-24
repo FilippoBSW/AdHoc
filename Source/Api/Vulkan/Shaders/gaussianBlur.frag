@@ -39,6 +39,8 @@ layout (binding = 0) uniform UBO {
 
 layout(push_constant) uniform BlurDirection {
      int horizontalBlur;
+         int width;
+    int height;
 };
 
 const float weight[] = float[] (0.227027,
@@ -65,10 +67,44 @@ void main()
 
     if(horizontalBlur == 0)
     {
+        vec2 texelSize = vec2(1.0 / width, 1.0 / height);
+
+        const vec2 DOWNSAMPLE_OFFSETS[4] = vec2[]
+        (
+        vec2(-0.5, -0.5) * texelSize,
+        vec2(-0.5, 0.5) * texelSize,
+        vec2(0.5, -0.5) * texelSize,
+        vec2(0.5, 0.5) * texelSize
+        );
+
         for(int i = 1; i < weight.length(); ++i)
         {
-            result += texture(image, inUV + vec2(tex_offset.x * i * 2, 0.0)).rgb * weight[i] * blurScale;
-            result += texture(image, inUV - vec2(tex_offset.x * i * 2, 0.0)).rgb * weight[i] * blurScale;
+            {
+            vec3 uv1 = texture(image, inUV + DOWNSAMPLE_OFFSETS[0] + vec2(tex_offset.x * i * 2, 0.0)).rgb;
+            vec3 uv2 = texture(image, inUV + DOWNSAMPLE_OFFSETS[1] + vec2(tex_offset.x * i * 2, 0.0)).rgb;
+            vec3 uv3 = texture(image, inUV + DOWNSAMPLE_OFFSETS[2] + vec2(tex_offset.x * i * 2, 0.0)).rgb;
+            vec3 uv4 = texture(image, inUV + DOWNSAMPLE_OFFSETS[3] + vec2(tex_offset.x * i * 2, 0.0)).rgb;
+
+            vec3 s = uv1 + uv2 + uv3 + uv4;
+            s /= 4;
+
+            result +=  s * weight[i] * blurScale;
+            }
+
+            {
+            vec3 uv1 = texture(image, inUV + DOWNSAMPLE_OFFSETS[0] - vec2(tex_offset.x * i * 2, 0.0)).rgb;
+            vec3 uv2 = texture(image, inUV + DOWNSAMPLE_OFFSETS[1] - vec2(tex_offset.x * i * 2, 0.0)).rgb;
+            vec3 uv3 = texture(image, inUV + DOWNSAMPLE_OFFSETS[2] - vec2(tex_offset.x * i * 2, 0.0)).rgb;
+            vec3 uv4 = texture(image, inUV + DOWNSAMPLE_OFFSETS[3] - vec2(tex_offset.x * i * 2, 0.0)).rgb;
+
+            vec3 s = uv1 + uv2 + uv3 + uv4;
+            s /= 4;
+
+            result +=  s * weight[i] * blurScale;
+            }
+
+            // result += texture(image, inUV + vec2(tex_offset.x * i * 2, 0.0)).rgb * weight[i] * blurScale;
+            // result += texture(image, inUV - vec2(tex_offset.x * i * 2, 0.0)).rgb * weight[i] * blurScale;
         }
 
 		outFragColor = vec4(result, 1.0);

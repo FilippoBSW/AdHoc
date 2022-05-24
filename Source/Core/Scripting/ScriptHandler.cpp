@@ -102,16 +102,19 @@ namespace adh {
                 scene->GetWorld().Add<Camera3D>(entity, Camera3D{});
             }
         } else if (!std::strcmp(name, "Script")) {
-            if (!scene->GetWorld().Contains<lua::Script>(entity)) {
-                auto [s]      = scene->GetWorld().Add<lua::Script>(entity, lua::Script{});
-                auto file     = lua_tostring(L, 3);
-                s             = scene->GetState().CreateScript2(file);
-                currentEntity = static_cast<std::uint64_t>(entity);
-                lua_pcall(scene->GetState(), 0, LUA_MULTRET, 0);
-                s.Bind();
-                s.Call("Start");
-                s.Unbind();
-            }
+            auto file = lua_tostring(L, 3);
+            scriptComponentEvent.EmplaceBack([file = file, entity = entity]() {
+                if (!scene->GetWorld().Contains<lua::Script>(entity)) {
+                    auto [s]      = scene->GetWorld().Add<lua::Script>(entity, lua::Script{ scene->GetState().CreateScript2(file) });
+                    currentEntity = static_cast<std::uint64_t>(entity);
+                    lua_pcall(scene->GetState(), 0, LUA_MULTRET, 0);
+                    // s.Run();
+                    s.Bind();
+                    s.Call("Start");
+                    s.Unbind();
+                }
+            });
+
         } else if (!std::strcmp(name, "RigidBody")) {
             if (!scene->GetWorld().Contains<RigidBody>(entity)) {
                 if (lua_isstring(L, 3)) {
@@ -219,7 +222,9 @@ namespace adh {
             }
         } else if (!std::strcmp(name, "Script")) {
             if (scene->GetWorld().Contains<lua::Script>(entity)) {
-                scene->GetWorld().Remove<lua::Script>(entity);
+                scriptComponentEvent.EmplaceBack([scene = scene, entity = entity]() {
+                    scene->GetWorld().Remove<lua::Script>(entity);
+                });
             }
         } else {
             std::string err = "Component: [" + std::string(name) + "] is invalid!\n";

@@ -74,5 +74,7 @@ namespace adh {
         inline static float deltaTime;
 
         inline static const char* loadSceneFilename{ nullptr };
+
+        inline static Array<std::function<void()>> scriptComponentEvent;
     };
 } // namespace adh
