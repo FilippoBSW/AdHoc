@@ -226,7 +226,7 @@ namespace adh {
                         auto& typeIDs{ r.archetype->type };
                         for (std::size_t i{}; i != components.GetSize(); ++i) {
                             node->components.Add(typeIDs[i], components[typeIDs[i]]->Create());
-                            components[typeIDs[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[typeIDs[i]].get());
+                            components[typeIDs[i]]->Move(GetIndex(GetType(entity)), node->components[typeIDs[i]].get());
                         }
                     }
                     (AddComponent<T>(node),
@@ -236,21 +236,21 @@ namespace adh {
                         auto& components{ r.archetype->components };
                         auto& typeIDs{ r.archetype->type };
                         for (std::size_t i{}; i != components.GetSize(); ++i) {
-                            components[typeIDs[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[typeIDs[i]].get());
+                            components[typeIDs[i]]->Move(GetIndex(GetType(entity)), node->components[typeIDs[i]].get());
                         }
                     }
                 }
 
                 if constexpr (sizeof...(Args) == sizeof...(T)) {
-                    (EmplaceData<T>(node, GetIndex(GetType(entity)) - 1, std::forward<Args>(args)), ...);
+                    (EmplaceData<T>(node, GetIndex(GetType(entity)), std::forward<Args>(args)), ...);
                 } else if constexpr (sizeof...(T) == 1) {
-                    GetPointer<std::decay<T...>>(node)->Emplace(GetIndex(GetType(entity)) - 1, std::forward<Args>(args)...);
+                    GetPointer<std::decay<T...>>(node)->Emplace(GetIndex(GetType(entity)), std::forward<Args>(args)...);
                 } else {
                     throw std::runtime_error("Invalid T... and Args... combination");
                 }
                 r.archetype = node;
                 r.archetype->entities.emplace_back(entity);
-                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(GetIndex(GetType(entity)) - 1)...);
+                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(GetIndex(GetType(entity)))...);
             }
 
             template <typename... T>
@@ -279,11 +279,11 @@ namespace adh {
                 if (node->components.IsEmpty()) {
                     for (std::size_t i{}; i != type.size(); ++i) {
                         node->components.Add(type[i], components[type[i]]->Create());
-                        components[type[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[type[i]].get());
+                        components[type[i]]->Move(GetIndex(GetType(entity)), node->components[type[i]].get());
                     }
                 } else {
                     for (std::size_t i{}; i != type.size(); ++i) {
-                        components[type[i]]->Move(GetIndex(GetType(entity)) - 1, node->components[type[i]].get());
+                        components[type[i]]->Move(GetIndex(GetType(entity)), node->components[type[i]].get());
                     }
                 }
 
@@ -297,7 +297,7 @@ namespace adh {
                     return;
                 }
                 for (std::size_t i{}; i != r.archetype->components.GetSize(); ++i) {
-                    r.archetype->components[r.archetype->type[i]]->Delete(GetIndex(GetType(entity)) - 1);
+                    r.archetype->components[r.archetype->type[i]]->Delete(GetIndex(GetType(entity)));
                 }
                 PopEntity(entity, r.archetype);
                 r.archetype = nullptr;
@@ -316,7 +316,7 @@ namespace adh {
             decltype(auto) Get(Entity entity) {
                 Record& r{ m_EntityArchetype[entity] };
                 ADH_THROW(Contains<T...>(entity), "Entity doesn't have component!");
-                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(GetIndex(GetType(entity)) - 1)...);
+                return std::forward_as_tuple(GetPointer<T>(r.archetype)->Get(GetIndex(GetType(entity)))...);
             }
 
             void Destroy(Entity entity) {
@@ -332,7 +332,7 @@ namespace adh {
 
             bool IsValid(Entity entity) const noexcept {
                 std::uint32_t pos{ GetIndex(GetType(entity)) };
-                return (pos <= m_Entities.GetSize() && m_Entities[pos - 1u] == entity);
+                return (pos <= m_Entities.GetSize() && m_Entities[pos] == entity);
             }
 
             template <typename... T>
@@ -405,8 +405,8 @@ namespace adh {
             Entity RecycleID() {
                 Entity temp{ m_RecicledEntities.Front() };
                 m_RecicledEntities.Pop();
-                Entity id                                = CreateID(GetIndex(GetType(temp)), GetVersion(GetType(temp)) + 1u);
-                m_Entities[GetIndex(GetType(temp)) - 1u] = id;
+                Entity id                                = CreateID(GetIndex(GetType(temp)) + 1u, GetVersion(GetType(temp)) + 1u);
+                m_Entities[GetIndex(GetType(temp))] = id;
                 m_EntityArchetype.emplace(id, Record{ nullptr });
                 return id;
             }
@@ -418,7 +418,7 @@ namespace adh {
 
             void DeleteID(Entity entity) {
                 m_RecicledEntities.Emplace(entity);
-                m_Entities[GetIndex(GetType(entity)) - 1u] = null_entity;
+                m_Entities[GetIndex(GetType(entity))] = null_entity;
                 m_EntityArchetype.erase(entity);
             }
 
@@ -427,7 +427,7 @@ namespace adh {
             }
 
             std::uint32_t GetIndex(EntityID entity) const noexcept {
-                return static_cast<std::uint32_t>(entity >> entity_shift);
+                return static_cast<std::uint32_t>(entity >> entity_shift) - 1u;
             }
 
             std::uint32_t GetVersion(EntityID entity) const noexcept {
