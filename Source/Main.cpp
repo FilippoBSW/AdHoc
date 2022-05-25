@@ -22,34 +22,6 @@
 // SOFTWARE.
 // *********************************************************************************
 
-// require "AdHoc"
-
-//     local this      = GetThis()
-//         local input = GetInput()
-
-//                           function
-//                           Start()
-
-//                               end
-
-//                                   function
-//                                   Update() if input : GetKeyDown(AdHoc.Key.a) == true then
-//                                                                                      local e = CreateEntity()
-//                           AddComponent(e, "RigidBody", "Box", "Dynamic")
-//                               AddComponent(e, "Script", [[require "AdHoc" local this = GetThis()
-
-//                                                                 local audio
-
-//                                                                     function Start() local m = GetComponent(this, "Material") m.albedo.x = math.random(0, 10) m.albedo.y = math.random(0, 10) m.albedo.z = math.random(0, 10)
-
-//                                                                                                                                                                                                                audio = Audio:new ()
-//                                                                                                                                                                                                                        audio:Create("wall_collision02.wav", 0) end
-
-//                                                                                                                                                                                                                                  function OnCollisionEnter(rhs) LogMessage("PLAY")
-//                                                                                                                                                                                                                        audio:Play() end]])
-//                                   end
-//                                       end
-
 #include <Audio/Audio.hpp>
 #include <Editor/Editor.hpp>
 #include <Entity/Entity.hpp>
