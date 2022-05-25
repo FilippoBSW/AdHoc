@@ -739,7 +739,7 @@ struct GaussianBlur {
                     mImages[i].GetImageView()
                 };
 
-                mFramebuffers[i].Create(mRenderPass, std::size(viewAttachments), viewAttachments, brightColor.extent, 1u);
+                mFramebuffers[i].Create(mRenderPass, std::size(viewAttachments), viewAttachments, extents[count], 1u);
 
                 descriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 descriptorImageInfos[i].sampler     = sampler;

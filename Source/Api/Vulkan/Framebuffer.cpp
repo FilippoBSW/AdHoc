@@ -23,7 +23,6 @@
 // *********************************************************************************
 
 #include "Framebuffer.hpp"
-#include "vulkan/vulkan_core.h"
 #include <Vulkan/Context.hpp>
 #include <Vulkan/Initializers.hpp>
 
