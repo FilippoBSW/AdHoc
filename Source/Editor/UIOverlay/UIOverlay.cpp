@@ -143,8 +143,8 @@ namespace adh {
     }
 
     void UIOverlay::Draw(VkCommandBuffer commandBuffer, std::uint32_t imageIndex,
-                         bool* drawEditor, bool* play, bool* pause, float* floats[]) noexcept {
-        NewFrame(drawEditor, play, pause, floats);
+                         bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[]) noexcept {
+        NewFrame(maximizeOnPlay, play, pause, fpsLimit, floats);
         m_ImGui.Draw(commandBuffer, imageIndex);
     }
 
@@ -386,7 +386,7 @@ namespace adh {
         }
     }
 
-    void UIOverlay::NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, float* floats[]) noexcept {
+    void UIOverlay::NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[]) noexcept {
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
         BeginDockSpace();
@@ -405,6 +405,8 @@ namespace adh {
             } else {
                 auto& io = ImGui::GetIO();
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+                ImGui::Checkbox("Editor fps limit", fpsLimit);
 
                 ImGui::SliderFloat("Inteisty", floats[0], 0.0, 20.0);
                 ImGui::SliderFloat("Threshold", floats[1], 0.0, 20.0);

@@ -1149,7 +1149,7 @@ class AdHoc {
     Window window;
     Context context;
     Swapchain swapchain;
-    std::uint32_t swapchanImageCount{ 3 };
+    std::uint32_t swapchanImageCount{ 2 };
 
     Sampler sampler;
     Scene scene;
@@ -1188,6 +1188,7 @@ class AdHoc {
 
     AspectRatio g_AspectRatio;
     bool g_DrawEditor{ true };
+    bool g_EditorFpsLimit{ true };
     bool g_MaximizeOnPlay{ false };
     bool maximizeOnPlay2{ false };
 
@@ -1443,6 +1444,10 @@ class AdHoc {
                     i();
                 }
                 ScriptHandler::scriptComponentEvent.Clear();
+            }
+
+            if (g_DrawEditor && g_EditorFpsLimit) {
+                timer.SleepUntil(16);
             }
         }
     }
@@ -1798,7 +1803,7 @@ class AdHoc {
             vkCmdDraw(cmd, 3, 1, 0, 0);
 
         } else {
-            editor.Draw(cmd, currentFrame, &g_MaximizeOnPlay, &g_IsPlaying, &g_IsPaused, floats);
+            editor.Draw(cmd, currentFrame, &g_MaximizeOnPlay, &g_IsPlaying, &g_IsPaused, &g_EditorFpsLimit, floats);
         }
 
         renderPass.End(cmd);
