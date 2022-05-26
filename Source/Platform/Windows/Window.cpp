@@ -44,7 +44,6 @@ namespace adh {
         Clear();
     }
 
-    // TODO: Fullscreen
     void Window::Create(const char* name, std::int32_t width, std::int32_t height, bool isPrepared, bool setFullscreen) {
         RECT rect;
         SystemParametersInfoA(SPI_GETWORKAREA, NULL, &rect, NULL);

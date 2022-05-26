@@ -1,9 +1,6 @@
 [submodule "assimp"]
 	path = External/Assimp
 	url = https://github.com/assimp/assimp.git
-[submodule "bullet3"]
-	path = External/bullet3
-	url = https://github.com/bulletphysics/bullet3.git
 [submodule "External/PhysX"]
 	path = External/PhysX
 	url = https://github.com/NVIDIAGameWorks/PhysX.git

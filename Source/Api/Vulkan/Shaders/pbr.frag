@@ -25,76 +25,10 @@
 #version 460 core
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_GOOGLE_include_directive    : enable
+//#extension GL_EXT_debug_printf : enable
 
 #include "pbr_data.glsl"
 #include "pbr_functions.glsl"
-
-//#extension GL_EXT_debug_printf : enable
-
-// const float PI = 3.14159265359;
-
-// struct Attenuation {
-// 	float constant;
-// 	float linear;
-// 	float quadratic;
-// };
-
-// struct Material {
-// 	float roughness;
-// 	float metallicness;
-// 	vec3  albedo;
-// 	int   textureIndex;
-// };
-
-// struct DirectionalLight {
-// 	vec3  direction;
-// 	vec3  color;
-// 	float intensity;
-// 	int   castsShadow;
-// 	int   samplerId;
-// };
-
-// struct PointLight {
-// 	float       intensity;
-// 	vec3        position;
-// 	vec3        color;
-// 	Attenuation attenuation;
-// };
-
-// struct SpotLight {
-// 	vec3        position;
-// 	vec3        color;
-// 	Attenuation attenuation;
-
-// 	vec3  direction;
-// 	float coneSize;		 // Phi
-// 	float smoothness;	 // Gamma
-// 	float intensity;
-// };
-
-// float DistributionGGX(float NdotH, float roughness) {
-// 	float alpha = roughness * roughness;
-// 	float alpha2 = alpha * alpha;
-
-// 	float denom = NdotH * NdotH * (alpha2 - 1.0f) + 1.0f;
-// 	denom = PI * denom * denom;
-
-// 	return alpha2 / max(denom, 0.0000001f);
-// }
-
-// float GeometrySmith(float NdotV, float NdotL, float roughness) {
-// 	float r = roughness + 1.0f;
-// 	float k = (r * r) / 8.0f;
-
-// 	float ggx1 = NdotV / (NdotV * (1.0f - k) + k);
-// 	float ggx2 = NdotL / (NdotL * (1.0f - k) + k);
-
-// 	return ggx1 * ggx2;
-// }
-
-// vec3 FresnelSchlick(float NdotV, vec3 baseReflectivity) {
-// 	return baseReflectivity + (1.0f - baseReflectivity) * pow(1.0f - NdotV, 5.0f);
-// }
 
  layout(location = 0) in vec3 inNormals;
  layout(location = 1) in vec3 inWorldPosition;
@@ -214,12 +148,11 @@ vec3 CalculateSpotLights(vec3 N, vec3 V, vec3 reflectivity, SpotLight light) {
 
 float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
     vec3 projCoords    = shadowCoords.xyz / shadowCoords.w;
-    // float closestDepth = texture(shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
 
+    // float closestDepth = texture(shadowMap, projCoords.xy).r;
 	// return  currentDepth > closestDepth ? 1.0f : 0.0f;
 
-	// TODO: pcf
 	float shadow = 0.0;
 	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 
@@ -229,10 +162,7 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
     	for(int y = -pcf; y <= pcf; ++y)
    		{
         	float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-
-			// float bias = 0.005;
         	shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0; 
-			
 			retDiv += 1.0;
     	}    	
 	}

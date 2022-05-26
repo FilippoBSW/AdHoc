@@ -25,7 +25,6 @@
 #pragma once
 #include <Math/Math.hpp>
 
-// TODO: Not using inheritance atm for simpler integration with lua
 namespace adh {
     struct Camera2D {
         Camera2D() = default;

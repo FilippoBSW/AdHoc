@@ -42,5 +42,3 @@ namespace adh {
         bool isOpen{ true };
     };
 } // namespace adh
-
-// #TODO batching

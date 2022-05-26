@@ -36,7 +36,6 @@ namespace adh {
             Create(instance);
         }
 
-        // TODO: Better algorithm to find the best graphics card available
         void PhysicalDevice::Create(VkInstance instance) {
             VkBool32 physicalDeviceFound{};
             ADH_THROW(instance != VK_NULL_HANDLE, "Instance is null!");

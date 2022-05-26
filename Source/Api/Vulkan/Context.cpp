@@ -63,7 +63,7 @@ namespace adh {
         }
 
         Context* Context::Get() noexcept {
-            return m_Contexts[0]; // TODO: Multiple contexts
+            return m_Contexts[0];
         }
 
         VkInstance Context::GetInstance() noexcept {

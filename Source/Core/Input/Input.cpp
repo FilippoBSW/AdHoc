@@ -25,7 +25,6 @@
 #include "Input.hpp"
 #include <Event/Event.hpp>
 
-// TODO: apple controller events + abstraction with no if def in this file
 #if defined(ADH_WINDOWS)
 #    include <windows.h>
 #    include <xinput.h>

@@ -348,7 +348,7 @@ namespace adh {
             }
             //untilDate:[NSDate distantFuture] // GetMessage
 
-            // FIXME: super temp super bad dont look
+            // TODO: temp
             NSArray<GCController*>* x = [GCController controllers];
             for (std::size_t i{}; i != [x count] && i < 4; ++i) {
                 GCExtendedGamepad* profile = x[i].extendedGamepad;

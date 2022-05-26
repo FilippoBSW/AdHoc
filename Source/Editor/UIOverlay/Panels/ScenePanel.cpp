@@ -50,7 +50,6 @@ namespace adh {
                     rect.bottom = cursorScreenPos.y + imageViewPort.y;
                     ImGui::Image(viewportID, imageViewPort, ImVec2(0, 1), ImVec2(1, 0));
 
-                    // TODO: Super temp implementation.
                     // Guizmo begin
                     ImGuizmo::SetOrthographic(false);
                     ImGuizmo::SetDrawlist();

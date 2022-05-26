@@ -82,7 +82,6 @@ set(CMAKEMODULES_PATH ${PHYSX_ROOT_DIR}/../externals/cmakemodules)
 set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/External/PhysX)
 set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/${LIB_PATH})
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/External/bullet3)
 add_subdirectory(${PHYSX_ROOT_DIR}/compiler/public)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/Assimp)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/yaml-cpp)
@@ -98,17 +97,10 @@ set(ADH_CORE_SRC ${CMAKE_SOURCE_DIR}/Source/Core)
 target_include_directories(${PROJECT_NAME} PRIVATE ${ADH_CORE_SRC})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/bullet3/src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/physx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/pxshared/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/yaml-cpp/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/lua-5.4.3/src)
-
-set(BULLET_LIBRARIES
-    BulletDynamics 
-    BulletCollision  
-    LinearMath 
-    Bullet3Common)
 
 set(PHYSX_LIBRARIES
 	PhysXExtensions
@@ -126,7 +118,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ImGuizmo
     assimp
     yaml-cpp
-	${BULLET_LIBRARIES}
 	${PHYSX_LIBRARIES})
      
 if(APPLE)
@@ -149,7 +140,6 @@ set_target_properties(
     ImGuizmo
 	assimp 
 	yaml-cpp
-	${BULLET_LIBRARIES}
 	${PHYSX_LIBRARIES}
     PROPERTIES 
 	ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIB_PATH}"
@@ -251,7 +241,7 @@ if(Vulkan_FOUND)
         	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_MACOS_MVK)
             target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_MVK_MACOS_SURFACE_EXTENSION_NAME")
     elseif(UNIX)
-        	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_DIRECTFB_EXT)
+		# TODO
     endif()
  
 	set(VULKAN_API_SRC ${CMAKE_SOURCE_DIR}/Source/Api/Vulkan)
