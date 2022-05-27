@@ -1446,7 +1446,7 @@ class AdHoc {
                 ScriptHandler::scriptComponentEvent.Clear();
             }
 
-            if (g_DrawEditor && g_EditorFpsLimit) {
+            if (g_DrawEditor && g_EditorFpsLimit && !g_IsPlaying) {
                 timer.SleepUntil(16);
             }
         }
