@@ -1377,8 +1377,9 @@ class AdHoc {
     }
 
     void Run() {
-        Stopwatch timer;
-        float deltaTime;
+        auto start             = std::chrono::high_resolution_clock::now();
+        const double maxFPS    = 60.0;
+        const double maxPeriod = 1.0 / maxFPS;
 
         while (window.IsOpen()) {
             if (!renderingReady) {
@@ -1389,8 +1390,11 @@ class AdHoc {
                 window.PollEvents();
             }
 
-            deltaTime                = timer.Lap();
+            auto end                 = std::chrono::high_resolution_clock::now();
+            float deltaTime          = std::chrono::duration<float>(end - start).count();
             ScriptHandler::deltaTime = deltaTime;
+
+            // if (deltaTime >= maxPeriod) {
             editor.OnUpdate(&scene, deltaTime, g_DrawEditor);
             input.OnUpdate();
             input.PollEvents();
@@ -1446,9 +1450,8 @@ class AdHoc {
                 ScriptHandler::scriptComponentEvent.Clear();
             }
 
-            if (g_DrawEditor && g_EditorFpsLimit && !g_IsPlaying) {
-                timer.SleepUntil(16);
-            }
+            start = end;
+            // }
         }
     }
 
