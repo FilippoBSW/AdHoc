@@ -305,6 +305,7 @@ namespace adh {
                     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 10, 10 });
                     if (ImGui::Button("Stop")) {
                         Event::Dispatch<StatusEvent>(StatusEvent::Type::eStop);
+                        m_SelectedEntity = ecs::null_entity;
                     }
 
                     ImGui::PopStyleVar(1);

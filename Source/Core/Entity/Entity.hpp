@@ -405,7 +405,7 @@ namespace adh {
             Entity RecycleID() {
                 Entity temp{ m_RecicledEntities.Front() };
                 m_RecicledEntities.Pop();
-                Entity id                                = CreateID(GetIndex(GetType(temp)) + 1u, GetVersion(GetType(temp)) + 1u);
+                Entity id                           = CreateID(GetIndex(GetType(temp)) + 1u, GetVersion(GetType(temp)) + 1u);
                 m_Entities[GetIndex(GetType(temp))] = id;
                 m_EntityArchetype.emplace(id, Record{ nullptr });
                 return id;

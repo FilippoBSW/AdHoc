@@ -1377,9 +1377,9 @@ class AdHoc {
     }
 
     void Run() {
-        auto start             = std::chrono::high_resolution_clock::now();
-        const double maxFPS    = 60.0;
-        const double maxPeriod = 1.0 / maxFPS;
+        auto start            = std::chrono::steady_clock::now();
+        const float maxFPS    = 60.0;
+        const float maxPeriod = 1.0 / maxFPS;
 
         while (window.IsOpen()) {
             if (!renderingReady) {
@@ -1390,68 +1390,67 @@ class AdHoc {
                 window.PollEvents();
             }
 
-            auto end                 = std::chrono::high_resolution_clock::now();
+            auto end                 = std::chrono::steady_clock::now();
             float deltaTime          = std::chrono::duration<float>(end - start).count();
             ScriptHandler::deltaTime = deltaTime;
 
-            // if (deltaTime >= maxPeriod) {
-            editor.OnUpdate(&scene, deltaTime, g_DrawEditor);
-            input.OnUpdate();
-            input.PollEvents();
-            window.PollEvents();
+            if (!g_EditorFpsLimit || g_IsPlaying || deltaTime >= maxPeriod) {
+                editor.OnUpdate(&scene, deltaTime, g_DrawEditor);
+                input.OnUpdate();
+                input.PollEvents();
+                window.PollEvents();
 
-            UpdateCameras();
-            UpdateScripts(deltaTime);
+                UpdateCameras();
+                UpdateScripts(deltaTime);
 
-            if (g_IsPlaying && !g_IsPaused) {
-                scene.GetPhysics().StepSimulation(deltaTime);
+                if (g_IsPlaying && !g_IsPaused) {
+                    scene.GetPhysics().StepSimulation(deltaTime);
 
-                if (!collisionCallbacks.empty()) {
-                    for (auto&& i : collisionCallbacks) {
+                    if (!collisionCallbacks.empty()) {
+                        for (auto&& i : collisionCallbacks) {
+                            i();
+                        }
+                        collisionCallbacks.clear();
+                    }
+
+                    scene.GetWorld().GetSystem<Transform, RigidBody>().ForEach([&](Transform& transform, RigidBody& rigidBody) {
+                        rigidBody.OnUpdate(transform);
+                    });
+                }
+
+                if (g_IsPlaying && g_MaximizeOnPlay) {
+                    g_DrawEditor = false;
+                } else {
+                    g_DrawEditor = true;
+                }
+
+                if (editor.GetKeyDown(ADH_ESCAPE)) {
+                    g_MaximizeOnPlay = false;
+                }
+
+                if (swapchain.isValid) {
+                    Draw();
+                } else if (!swapchain.isValid && !window.IsMinimized()) {
+                    RecreateSwapchain();
+                    RecreateEditor();
+                }
+
+                if (ScriptHandler::loadSceneFilename) {
+                    scene.LoadFromFile((Context::Get()->GetDataDirectory() + "Assets/Scenes/" + ScriptHandler::loadSceneFilename).data());
+                    ScriptHandler::loadSceneFilename = nullptr;
+                    scene.GetState().ClearStack();
+                    scene.ResetPhysicsWorld();
+                    ReadyScript();
+                }
+
+                if (!ScriptHandler::scriptComponentEvent.IsEmpty()) {
+                    for (auto&& i : ScriptHandler::scriptComponentEvent) {
                         i();
                     }
-                    collisionCallbacks.clear();
+                    ScriptHandler::scriptComponentEvent.Clear();
                 }
-
-                scene.GetWorld().GetSystem<Transform, RigidBody>().ForEach([&](Transform& transform, RigidBody& rigidBody) {
-                    rigidBody.OnUpdate(transform);
-                });
+                start = end;
             }
-
-            if (g_IsPlaying && g_MaximizeOnPlay) {
-                g_DrawEditor = false;
-            } else {
-                g_DrawEditor = true;
-            }
-
-            if (editor.GetKeyDown(ADH_ESCAPE)) {
-                g_MaximizeOnPlay = false;
-            }
-
-            if (swapchain.isValid) {
-                Draw();
-            } else if (!swapchain.isValid && !window.IsMinimized()) {
-                RecreateSwapchain();
-                RecreateEditor();
-            }
-
-            if (ScriptHandler::loadSceneFilename) {
-                scene.LoadFromFile((Context::Get()->GetDataDirectory() + "Assets/Scenes/" + ScriptHandler::loadSceneFilename).data());
-                ScriptHandler::loadSceneFilename = nullptr;
-                scene.GetState().ClearStack();
-                scene.ResetPhysicsWorld();
-                ReadyScript();
-            }
-
-            if (!ScriptHandler::scriptComponentEvent.IsEmpty()) {
-                for (auto&& i : ScriptHandler::scriptComponentEvent) {
-                    i();
-                }
-                ScriptHandler::scriptComponentEvent.Clear();
-            }
-
-            start = end;
-            // }
         }
     }
 
