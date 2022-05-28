@@ -330,68 +330,29 @@ namespace adh {
         return 1;
     }
 
+    int ScriptHandler::SerializeField(lua_State* L) {
+        return 0;
+    }
+
     void ScriptHandler::RegisterBindings() {
         auto& state = scene->GetState();
 
-        lua_pushstring(state, "CallScript");
-        lua_pushcclosure(state, ScriptHandler::CallScript, 1);
-        lua_setglobal(state, "CallScript");
-
-        lua_pushstring(state, "GetScene");
-        lua_pushcclosure(state, ScriptHandler::GetScene, 1);
-        lua_setglobal(state, "GetScene");
-
-        lua_pushstring(state, "LoadScene");
-        lua_pushcclosure(state, ScriptHandler::LoadScene, 1);
-        lua_setglobal(state, "LoadScene");
-
-        lua_pushstring(state, "CreateEntity");
-        lua_pushcclosure(state, ScriptHandler::CreateEntity, 1);
-        lua_setglobal(state, "CreateEntity");
-
-        lua_pushstring(state, "DestroyEntity");
-        lua_pushcclosure(state, ScriptHandler::DestroyEntity, 1);
-        lua_setglobal(state, "DestroyEntity");
-
-        lua_pushstring(state, "AddComponent");
-        lua_pushcclosure(state, ScriptHandler::AddComponent, 1);
-        lua_setglobal(state, "AddComponent");
-
-        lua_pushstring(state, "RemoveComponent");
-        lua_pushcclosure(state, ScriptHandler::RemoveComponent, 1);
-        lua_setglobal(state, "RemoveComponent");
-
-        lua_pushstring(state, "GetComponent");
-        lua_pushcclosure(state, ScriptHandler::GetComponent, 1);
-        lua_setglobal(state, "GetComponent");
-
-        lua_pushstring(state, "GetInput");
-        lua_pushcclosure(state, ScriptHandler::GetInput, 1);
-        lua_setglobal(state, "GetInput");
-
-        lua_pushstring(state, "GetThis");
-        lua_pushcclosure(state, ScriptHandler::GetThis, 1);
-        lua_setglobal(state, "GetThis");
-
-        lua_pushstring(state, "LogMessage");
-        lua_pushcclosure(state, ScriptHandler::LogMessage, 1);
-        lua_setglobal(state, "LogMessage");
-
-        lua_pushstring(state, "LogError");
-        lua_pushcclosure(state, ScriptHandler::LogError, 1);
-        lua_setglobal(state, "LogError");
-
-        lua_pushstring(state, "DeltaTime");
-        lua_pushcclosure(state, ScriptHandler::DeltaTime, 1);
-        lua_setglobal(state, "DeltaTime");
-
-        lua_pushstring(state, "Raycast");
-        lua_pushcclosure(state, ScriptHandler::Raycast, 1);
-        lua_setglobal(state, "Raycast");
-
-        lua_pushstring(state, "SetGravity");
-        lua_pushcclosure(state, ScriptHandler::SetGravity, 1);
-        lua_setglobal(state, "SetGravity");
+        state.AddFunction("CallScript", ScriptHandler::CallScript);
+        state.AddFunction("GetScene", ScriptHandler::GetScene);
+        state.AddFunction("LoadScene", ScriptHandler::LoadScene);
+        state.AddFunction("CreateEntity", ScriptHandler::CreateEntity);
+        state.AddFunction("DestroyEntity", ScriptHandler::DestroyEntity);
+        state.AddFunction("AddComponent", ScriptHandler::AddComponent);
+        state.AddFunction("RemoveComponent", ScriptHandler::RemoveComponent);
+        state.AddFunction("GetComponent", ScriptHandler::GetComponent);
+        state.AddFunction("GetInput", ScriptHandler::GetInput);
+        state.AddFunction("GetThis", ScriptHandler::GetThis);
+        state.AddFunction("LogMessage", ScriptHandler::LogMessage);
+        state.AddFunction("LogError", ScriptHandler::LogError);
+        state.AddFunction("DeltaTime", ScriptHandler::DeltaTime);
+        state.AddFunction("Raycast", ScriptHandler::Raycast);
+        state.AddFunction("SetGravity", ScriptHandler::SetGravity);
+        state.AddFunction("SerializeField", ScriptHandler::SerializeField);
 
         state.RegisterType<Input>("Input");
         state.RegisterTypeFunction<Input>("GetKey", &Input::RepeatGetKey);

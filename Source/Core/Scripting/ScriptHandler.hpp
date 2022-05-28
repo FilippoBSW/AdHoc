@@ -66,6 +66,8 @@ namespace adh {
 
         static int CallScript(lua_State* L);
 
+        static int SerializeField(lua_State* L);
+
         static void RegisterBindings();
 
         inline static Scene* scene;

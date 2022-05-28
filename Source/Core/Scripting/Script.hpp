@@ -626,6 +626,12 @@ namespace adh {
                 return 1;
             }
 
+            void AddFunction(const char* funcName, lua_CFunction funcPtr) {
+                lua_pushstring(m_State, funcName);
+                lua_pushcclosure(m_State, funcPtr, 1);
+                lua_setglobal(m_State, funcName);
+            }
+
             [[nodiscard]] Script CreateScript(const std::string& script) {
                 return CreateScript(script, uniqueId++);
             }
