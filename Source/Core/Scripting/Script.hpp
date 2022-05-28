@@ -452,7 +452,6 @@ namespace adh {
             template <typename... Args>
             void Call(const char* funcName, Args&&... args) {
                 lua_getfield(m_State, -1, funcName);
-
                 if (lua_isfunction(m_State, -1)) {
                     (PushValue<std::decay_t<decltype(args)>>()(m_State, args), ...);
                     if (lua_pcall(m_State, sizeof...(args), LUA_MULTRET, 0) != LUA_OK) {
