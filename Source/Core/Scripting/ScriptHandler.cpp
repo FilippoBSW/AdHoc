@@ -272,6 +272,11 @@ namespace adh {
                 auto [temp] = scene->GetWorld().Get<RigidBody>(entity);
                 return scene->GetState().BindObject(&temp);
             }
+        } else if (!std::strcmp(name, "Script")) {
+            if (scene->GetWorld().Contains<lua::Script>(entity)) {
+                auto [temp] = scene->GetWorld().Get<lua::Script>(entity);
+                return scene->GetState().BindObject(&temp);
+            }
         } else {
             std::string err = "Component: [" + std::string(name) + "] is invalid!\n";
             Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eLog, err.data());
@@ -316,8 +321,21 @@ namespace adh {
         return 0;
     }
 
+    int ScriptHandler::CallScript(lua_State* L) {
+        auto& script = **static_cast<lua::Script**>(lua_touserdata(L, 1));
+        auto func    = lua_tostring(L, 2);
+        script.Bind();
+        script.Call(func);
+        lua_remove(L, -2);
+        return 1;
+    }
+
     void ScriptHandler::RegisterBindings() {
         auto& state = scene->GetState();
+
+        lua_pushstring(state, "CallScript");
+        lua_pushcclosure(state, ScriptHandler::CallScript, 1);
+        lua_setglobal(state, "CallScript");
 
         lua_pushstring(state, "GetScene");
         lua_pushcclosure(state, ScriptHandler::GetScene, 1);
