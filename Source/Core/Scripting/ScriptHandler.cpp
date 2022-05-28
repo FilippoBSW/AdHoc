@@ -321,12 +321,11 @@ namespace adh {
         return 0;
     }
 
-    // TODO: arguments
     int ScriptHandler::CallScript(lua_State* L) {
         auto& script = **static_cast<lua::Script**>(lua_touserdata(L, 1));
         auto func    = lua_tostring(L, 2);
         script.Bind();
-        script.Call(func);
+        script.Call2(func);
         lua_remove(L, -2);
         return 1;
     }

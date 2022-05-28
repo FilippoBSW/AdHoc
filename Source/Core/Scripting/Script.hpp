@@ -470,6 +470,28 @@ namespace adh {
                 }
             }
 
+            template <typename... Args>
+            void Call2(const char* funcName) {
+                lua_getfield(m_State, -1, funcName);
+                if (lua_isfunction(m_State, -1)) {
+                    auto temp = lua_gettop(m_State) - 4;
+                    for (int i{}; i != temp; ++i) {
+                        lua_pushvalue(m_State, 3 + i);
+                    }
+                    if (lua_pcall(m_State, temp, LUA_MULTRET, 0) != LUA_OK) {
+                        std::string message = lua_tostring(m_State, -1);
+                        auto pos            = message.find_last_of(':') + 1;
+                        std::string err     = message.substr(pos);
+                        auto pos2           = m_Id.find_last_of('-');
+                        auto filename       = m_Id.substr(pos2 + 1);
+                        errorText           = "File: " + filename + " - Function: " + funcName + " -> " + err + "\n ";
+                        Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eError, errorText.data());
+                    }
+                } else {
+                    lua_pop(m_State, 1);
+                }
+            }
+
           public:
             std::string fileName;
             std::string filePath;
