@@ -36,6 +36,7 @@
 #include <Vulkan/Attachments.hpp>
 #include <Vulkan/CommandBuffer.hpp>
 #include <Vulkan/CommandPool.hpp>
+#include <Vulkan/ImageView.hpp>
 #include <Vulkan/Context.hpp>
 #include <Vulkan/DescriptorSet.hpp>
 #include <Vulkan/Framebuffer.hpp>
