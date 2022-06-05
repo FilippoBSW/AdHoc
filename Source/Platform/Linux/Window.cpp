@@ -42,7 +42,7 @@ namespace adh {
     Window::Window() noexcept : m_Connection{},
                                 m_Screen{},
                                 m_Window{},
-                                m_Atom_wm_delete_window{},
+                                // m_Atom_wm_delete_window{},
                                 m_Name{},
                                 m_IsOpen{},
                                 m_IsMinimized{},
@@ -111,19 +111,19 @@ namespace adh {
         m_ScreenWidth    = width;
         m_ScreenHeight   = height;
 
-        xcb_intern_atom_reply_t* reply = intern_atom_helper(m_Connection, true, "WM_PROTOCOLS");
-        m_Atom_wm_delete_window        = intern_atom_helper(m_Connection, false, "WM_DELETE_WINDOW");
+        // xcb_intern_atom_reply_t* reply = intern_atom_helper(m_Connection, true, "WM_PROTOCOLS");
+        // m_Atom_wm_delete_window        = intern_atom_helper(m_Connection, false, "WM_DELETE_WINDOW");
 
-        xcb_change_property(m_Connection, XCB_PROP_MODE_REPLACE,
-                            m_Window, (*reply).atom, 4, 32, 1,
-                            &(*m_Atom_wm_delete_window).atom);
+        // xcb_change_property(m_Connection, XCB_PROP_MODE_REPLACE,
+        //                     m_Window, (*reply).atom, 4, 32, 1,
+        //                     &(*m_Atom_wm_delete_window).atom);
 
         std::string windowTitle = name;
         xcb_change_property(m_Connection, XCB_PROP_MODE_REPLACE,
                             m_Window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
                             windowTitle.size(), windowTitle.c_str());
 
-        free(reply);
+        // free(reply);
     }
 
     void Window::PollEvents() noexcept {
@@ -144,14 +144,16 @@ namespace adh {
                     }
                     break;
                 }
-            // case XCB_CLIENT_MESSAGE:
-            //     {
-            //         if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
-            //             (*m_Atom_wm_delete_window).atom) {
-            //             SetOpen(false);
-            //         }
-            //         break;
-            //     }
+            case XCB_CLIENT_MESSAGE:
+                {
+                    // std::cout << "Client Message" << std::endl;
+                    // if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
+                    //     (*m_Atom_wm_delete_window).atom) {
+                    //     // SetOpen(false);
+                    //     std::cout << "Close message" << std::endl;
+                    // }
+                    break;
+                }
             // case XCB_DESTROY_NOTIFY:
             //     {
             //         // SetOpen(false);

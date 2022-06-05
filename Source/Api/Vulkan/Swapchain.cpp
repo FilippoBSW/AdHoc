@@ -146,7 +146,7 @@ namespace adh {
         void Swapchain::CreateSwapchain(VkSwapchainKHR oldSwapchain) {
             auto context{ Context::Get() };
             auto surfaceCapabilities{ tools::GetSurfaceCapabilities(context->GetPhysicalDevice(), context->GetSurface()) };
-            ADH_THROW(m_ImageBuffersCount <= surfaceCapabilities.maxImageCount, "Requested too many images!");
+            // ADH_THROW(m_ImageBuffersCount <= surfaceCapabilities.maxImageCount, "Requested too many images!");
             std::uint32_t queueIndices[2]{ context->GetQueue(DeviceQueues::Family::eGraphics).index.value(),
                                            context->GetQueue(DeviceQueues::Family::ePrensent).index.value() };
             auto swapchainCreateInfo    = initializers::SwapchainCreateInfo(queueIndices, oldSwapchain);

@@ -127,7 +127,7 @@ namespace adh {
         xcb_connection_t* m_Connection;
         xcb_screen_t* m_Screen;
         xcb_window_t m_Window;
-        xcb_intern_atom_reply_t* m_Atom_wm_delete_window;
+        // xcb_intern_atom_reply_t* m_Atom_wm_delete_window;
         const char* m_Name;
 #endif
     };
