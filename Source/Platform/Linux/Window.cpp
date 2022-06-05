@@ -95,9 +95,9 @@ namespace adh {
         switch (event.type) {
         case KeyPress:
             {
-                std::array<char, 16> buf{};
-                if (XLookupString((XKeyEvent*)&event, buf.data(), buf.size(), nullptr, nullptr)) {
-                    std::cout << buf[0] << std::endl;
+                char buf;
+                if (XLookupString((XKeyEvent*)&event, &buf, 1, nullptr, nullptr)) {
+                    std::cout << buf << std::endl;
                 }
                 break;
             }
