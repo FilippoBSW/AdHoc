@@ -28,6 +28,7 @@
 #    include <Windows.h>
 #elif defined(ADH_LINUX)
 #    include <X11/Xlib.h>
+#    include <xcb/xcb.h>
 #endif
 
 #include <iostream>
@@ -117,14 +118,25 @@ namespace adh {
         const char* m_Name;
 
 #elif defined(ADH_LINUX)
+        //       public:
+        //         Display* GetDisplay() const noexcept;
+        //         ::Window GetWindow() const noexcept;
+
+        //       private:
+        //         Display* mDisplay;
+        //         ::Window mWindow;
+        //         std::int32_t mScreen;
+        //         const char* m_Name;
       public:
-        Display* GetDisplay() const noexcept;
-        ::Window GetWindow() const noexcept;
+        xcb_connection_t* GetConnection() const noexcept;
+        xcb_window_t GetWindow() const noexcept;
 
       private:
-        Display* mDisplay;
-        ::Window mWindow;
-        std::int32_t mScreen;
+        Display* m_Display;
+        xcb_connection_t* m_Connection;
+        xcb_screen_t* m_Screen;
+        xcb_window_t m_Window;
+        xcb_intern_atom_reply_t* m_Atom_wm_delete_window;
         const char* m_Name;
 #endif
     };

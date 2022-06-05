@@ -29,8 +29,9 @@
 #if defined(ADH_WINDOWS)
 #    include <Windows.h>
 #elif defined(ADH_LINUX)
-#    include <X11/Xlib.h>
-#    include <vulkan/vulkan_xlib.h>
+#    include <xcb/xcb.h>
+//    include <X11/Xlib.h>
+// #    include <vulkan/vulkan_xlib.h>
 #endif
 
 #include <Std/Array.hpp>
@@ -91,13 +92,20 @@ namespace adh {
                 return info;
             }
 #elif defined(ADH_LINUX)
-            inline auto XlibSurfaceCreateInfo(Display* dpy, ::Window window) noexcept {
-                VkXlibSurfaceCreateInfoKHR info{};
-                info.sType  = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-                info.dpy    = dpy;
-                info.window = window;
+            // inline auto XlibSurfaceCreateInfo(Display* dpy, ::Window window) noexcept {
+            // VkXlibSurfaceCreateInfoKHR info{};
+            // info.sType  = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+            // info.dpy    = dpy;
+            // info.window = window;
+            // return info;
+            inline auto XcbSurfaceCreateInfo(xcb_connection_t* connection, xcb_window_t window) noexcept {
+                VkXcbSurfaceCreateInfoKHR info = {};
+                info.sType                     = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+                info.connection                = connection;
+                info.window                    = window;
                 return info;
             }
+            // }
 
 #endif
             inline auto DeviceQueueCreateInfo(std::uint32_t queueFamilyIndex) noexcept {
