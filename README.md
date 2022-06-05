@@ -7,18 +7,10 @@
   ..\Install\install_windows.bat Release
 ```
 
-### On macOS ###
+### On macOS - Linux ###
 ```
   git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-  cd AdHoc && chmod +x Install/install_mac.sh && mkdir build && cd build
-  ../Install/install_mac.sh Release
-```
-
-### On Linux ###
-```
-  git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-  cd AdHoc && chmod +x Install/install_linux.sh && mkdir build && cd build
-  ../Install/install_linux.sh Release
+  cd AdHoc && sh build.sh (Mac or Linux) (Debug or Release)
 ```
 
 ![alt text](Movie/mov_01.gif)
