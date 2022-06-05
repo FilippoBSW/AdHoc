@@ -134,7 +134,6 @@ namespace adh {
             switch (event->response_type & ~0x80) {
             case XCB_CONFIGURE_NOTIFY:
                 {
-                    std::cout << "Configure Notify" << std::endl;
                     const xcb_configure_notify_event_t* cfgEvent = (const xcb_configure_notify_event_t*)event;
                     if ((m_IsPrepared) && ((cfgEvent->width != m_Width) || (cfgEvent->height != m_Height))) {
                         auto destWidth  = cfgEvent->width;
@@ -149,7 +148,6 @@ namespace adh {
                 }
             case XCB_CLIENT_MESSAGE:
                 {
-                    std::cout << "Client message" << std::endl;
                     if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*delete_reply).atom) {
                         SetOpen(false);
                         free(delete_reply);
@@ -158,7 +156,6 @@ namespace adh {
                 }
             case XCB_KEY_PRESS:
                 {
-                    std::cout << "Key press" << std::endl;
                     const xcb_key_press_event_t* keyEvent = (const xcb_key_press_event_t*)event;
                     Event::Dispatch<KeyboardEvent>(KeyboardEvent::Type::eKeyDown, keyEvent->detail);
 
