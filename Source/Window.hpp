@@ -128,6 +128,8 @@ namespace adh {
         xcb_screen_t* m_Screen;
         xcb_window_t m_Window;
         // xcb_intern_atom_reply_t* m_Atom_wm_delete_window;
+        xcb_intern_atom_cookie_t cookie2;
+        xcb_intern_atom_reply_t* reply2;
         const char* m_Name;
 #endif
     };

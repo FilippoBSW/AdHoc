@@ -118,6 +118,9 @@ namespace adh {
         //                     m_Window, (*reply).atom, 4, 32, 1,
         //                     &(*m_Atom_wm_delete_window).atom);
 
+        cookie2 = xcb_intern_atom(m_Connection, 0, 16, "WM_DELETE_WINDOW");
+        reply2  = xcb_intern_atom_reply(m_Connection, cookie2, 0);
+
         std::string windowTitle = name;
         xcb_change_property(m_Connection, XCB_PROP_MODE_REPLACE,
                             m_Window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
@@ -146,6 +149,9 @@ namespace adh {
                 }
             case XCB_CLIENT_MESSAGE:
                 {
+                    if((*(xcb_client_message_event_t*)event).data.data32[0] == (*reply2).atom){
+                        std::cout << "Close message!" << std::endl;
+                    }
                     // std::cout << "Client Message" << std::endl;
                     // if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
                     //     (*m_Atom_wm_delete_window).atom) {
