@@ -185,7 +185,7 @@ namespace adh {
     }
 
     void PhysicsWorld::StepSimulation(float deltaTime) {
-        float dt = 1 / 120.0;
+        float dt = 1.0f / 60.0f;
         while (deltaTime > 0.0f) {
             float d = std::min(deltaTime, dt);
             m_Scene[m_CurrentScene]->simulate(d);

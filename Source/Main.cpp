@@ -36,11 +36,11 @@
 #include <Vulkan/Attachments.hpp>
 #include <Vulkan/CommandBuffer.hpp>
 #include <Vulkan/CommandPool.hpp>
-#include <Vulkan/ImageView.hpp>
 #include <Vulkan/Context.hpp>
 #include <Vulkan/DescriptorSet.hpp>
 #include <Vulkan/Framebuffer.hpp>
 #include <Vulkan/GraphicsPipeline.hpp>
+#include <Vulkan/ImageView.hpp>
 #include <Vulkan/IndexBuffer.hpp>
 #include <Vulkan/Memory.hpp>
 #include <Vulkan/PipelineLayout.hpp>
@@ -1150,7 +1150,7 @@ class AdHoc {
     adh::Window window;
     Context context;
     Swapchain swapchain;
-    std::uint32_t swapchanImageCount{ 2 };
+    std::uint32_t swapchanImageCount{ 3 };
 
     Sampler sampler;
     Scene scene;
@@ -1382,6 +1382,9 @@ class AdHoc {
         const float maxFPS    = 60.0;
         const float maxPeriod = 1.0 / maxFPS;
 
+        // Stopwatch timer;
+        // float deltaTime;
+
         while (window.IsOpen()) {
             if (!renderingReady) {
                 continue;
@@ -1391,8 +1394,9 @@ class AdHoc {
                 window.PollEvents();
             }
 
-            auto end                 = std::chrono::steady_clock::now();
-            float deltaTime          = std::chrono::duration<float>(end - start).count();
+            auto end        = std::chrono::steady_clock::now();
+            float deltaTime = std::chrono::duration<float>(end - start).count();
+            // deltaTime                = timer.Lap();
             ScriptHandler::deltaTime = deltaTime;
 
             if (!g_EditorFpsLimit || g_IsPlaying || deltaTime >= maxPeriod) {
