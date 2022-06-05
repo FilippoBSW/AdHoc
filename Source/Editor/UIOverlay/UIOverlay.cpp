@@ -600,7 +600,6 @@ namespace adh {
     void UIOverlay::OnCharEvent(CharEvent* event) noexcept {
         if (m_DrawEditor) {
             auto& io{ ImGui::GetIO() };
-
             io.AddInputCharacterUTF16(event->keycode);
 
             if (io.WantTextInput) {
