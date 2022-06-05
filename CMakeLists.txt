@@ -260,7 +260,7 @@ if(Vulkan_FOUND)
         target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_MVK_MACOS_SURFACE_EXTENSION_NAME")
 	elseif(UNIX AND NOT APPLE)
         target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XCB_KHR)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_XCB_SURFACE_EXTENSION_NAME")
+        target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_XLIB_SURFACE_EXTENSION_NAME")
     endif()
  
 	set(VULKAN_API_SRC ${CMAKE_SOURCE_DIR}/Source/Api/Vulkan)

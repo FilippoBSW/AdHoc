@@ -25,7 +25,12 @@
 #include <Window.hpp>
 
 #include <Event/EventTypes.hpp>
+
 #include <X11/Xlib.h>
+#include <X11/Xresource.h>
+#include <X11/Xutil.h>
+
+#include <array>
 
 namespace adh {
     Window::Window() noexcept : mDisplay{},
@@ -70,10 +75,33 @@ namespace adh {
                          LeaveWindowMask |
                          PropertyChangeMask);
 
+        m_IsOpen         = true;
+        m_IsMinimized    = false;
+        m_IsResizing     = false;
+        m_IsPrepared     = isPrepared;
+        m_IsMouseInFrame = false;
+        m_Width          = width;
+        m_Height         = height;
+        m_ScreenWidth    = width;
+        m_ScreenHeight   = height;
+
         XMapWindow(mDisplay, mWindow);
     }
 
     void Window::PollEvents() noexcept {
+        XEvent event;
+        XPeekEvent(mDisplay, &event);
+
+        switch (event.type) {
+        case KeyPress:
+            {
+                std::array<char, 16> buf{};
+                if (XLookupString((XKeyEvent*)&event, buf.data(), buf.size(), nullptr, nullptr)) {
+                    std::cout << buf[0] << std::endl;
+                }
+                break;
+            }
+        }
     }
 
     void Window::Destroy() noexcept {

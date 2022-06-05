@@ -24,6 +24,7 @@
 
 #pragma once
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 #if defined(ADH_WINDOWS)
 #    include <Windows.h>
@@ -92,6 +93,7 @@ namespace adh {
 #elif defined(ADH_LINUX)
             inline auto XlibSurfaceCreateInfo(Display* dpy, ::Window window) noexcept {
                 VkXlibSurfaceCreateInfoKHR info{};
+                info.sType  = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
                 info.dpy    = dpy;
                 info.window = window;
                 return info;
