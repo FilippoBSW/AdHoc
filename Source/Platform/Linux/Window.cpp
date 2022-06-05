@@ -77,7 +77,7 @@ namespace adh {
 
         std::uint32_t mask{ XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK };
         std::uint32_t values[2];
-        values[0] = m_Screen->black_pixel;
+        values[0] = m_Screen->white_pixel;
         values[1] =
             XCB_EVENT_MASK_KEY_RELEASE |
             XCB_EVENT_MASK_KEY_PRESS |
@@ -87,19 +87,29 @@ namespace adh {
             XCB_EVENT_MASK_BUTTON_PRESS |
             XCB_EVENT_MASK_BUTTON_RELEASE;
 
-        xcb_create_window(m_Connection,                  /* connection    */
-                          XCB_COPY_FROM_PARENT,          /* depth         */
-                          m_Window,                      /* window Id     */
-                          m_Screen->root,                /* parent window */
-                          0, 0,                          /* x, y          */
-                          width, height,                 /* width, height */
-                          0,                             /* border_width  */
-                          XCB_WINDOW_CLASS_INPUT_OUTPUT, /* class         */
-                          m_Screen->root_visual,         /* visual        */
-                          mask, values);                 /* masks         */
+        xcb_create_window(m_Connection,
+                          XCB_COPY_FROM_PARENT,
+                          m_Window,
+                          m_Screen->root,
+                          0, 0,
+                          width, height,
+                          0,
+                          XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                          m_Screen->root_visual,
+                          mask,
+                          values);
 
-        xcb_map_window(m_Connection, m_Window);
         xcb_flush(m_Connection);
+
+        std::string windowTitle = name;
+        xcb_change_property(m_Connection,
+                            XCB_PROP_MODE_REPLACE,
+                            m_Window,
+                            XCB_ATOM_WM_NAME,
+                            XCB_ATOM_STRING,
+                            8,
+                            windowTitle.size(),
+                            windowTitle.data());
 
         m_IsOpen         = true;
         m_IsMinimized    = false;
@@ -111,6 +121,16 @@ namespace adh {
         m_ScreenWidth    = width;
         m_ScreenHeight   = height;
 
+        protocols_cookie = xcb_intern_atom(m_Connection, 1, 12, "WM_PROTOCOLS");
+        protocols_reply  = xcb_intern_atom_reply(m_Connection, protocols_cookie, 0);
+        delete_cookie    = xcb_intern_atom(m_Connection, 0, 16, "WM_DELETE_WINDOW");
+        delete_reply     = xcb_intern_atom_reply(m_Connection, delete_cookie, 0);
+        xcb_change_property(m_Connection, XCB_PROP_MODE_REPLACE, m_Window, (*protocols_reply).atom, 4, 32, 1, &(*delete_reply).atom);
+        free(protocols_reply);
+
+        xcb_map_window(m_Connection, m_Window);
+        xcb_flush(m_Connection);
+
         // xcb_intern_atom_reply_t* reply = intern_atom_helper(m_Connection, true, "WM_PROTOCOLS");
         // m_Atom_wm_delete_window        = intern_atom_helper(m_Connection, false, "WM_DELETE_WINDOW");
 
@@ -118,23 +138,21 @@ namespace adh {
         //                     m_Window, (*reply).atom, 4, 32, 1,
         //                     &(*m_Atom_wm_delete_window).atom);
 
-        cookie2 = xcb_intern_atom(m_Connection, 0, 16, "WM_DELETE_WINDOW");
-        reply2  = xcb_intern_atom_reply(m_Connection, cookie2, 0);
-
-        std::string windowTitle = name;
-        xcb_change_property(m_Connection, XCB_PROP_MODE_REPLACE,
-                            m_Window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-                            windowTitle.size(), windowTitle.c_str());
+        // cookie2 = xcb_intern_atom(m_Connection, 0, 16, "WM_DELETE_WINDOW");
+        // reply2  = xcb_intern_atom_reply(m_Connection, cookie2, 0);
 
         // free(reply);
     }
 
     void Window::PollEvents() noexcept {
         xcb_generic_event_t* event;
-        while ((event = xcb_poll_for_event(m_Connection))) {
+
+        while((event = xcb_poll_for_event(m_Connection))) {
+            std::cout << (event->response_type & 0x08) << std::endl;
             switch (event->response_type & ~0x80) {
             case XCB_CONFIGURE_NOTIFY:
                 {
+                    std::cout << "Configure Notify" << std::endl;
                     const xcb_configure_notify_event_t* cfgEvent = (const xcb_configure_notify_event_t*)event;
                     if ((m_IsPrepared) && ((cfgEvent->width != m_Width) || (cfgEvent->height != m_Height))) {
                         auto destWidth  = cfgEvent->width;
@@ -149,9 +167,15 @@ namespace adh {
                 }
             case XCB_CLIENT_MESSAGE:
                 {
-                    if((*(xcb_client_message_event_t*)event).data.data32[0] == (*reply2).atom){
-                        std::cout << "Close message!" << std::endl;
+                    std::cout << "Client message" << std::endl;
+                    if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*delete_reply).atom) {
+                        SetOpen(false);
+                        free(delete_reply);
                     }
+
+                    // if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*reply2).atom) {
+                    //     std::cout << "Close message!" << std::endl;
+                    // }
                     // std::cout << "Client Message" << std::endl;
                     // if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
                     //     (*m_Atom_wm_delete_window).atom) {
@@ -160,14 +184,9 @@ namespace adh {
                     // }
                     break;
                 }
-            // case XCB_DESTROY_NOTIFY:
-            //     {
-            //         // SetOpen(false);
-            //         // std::cout << "DESTROY" << std::endl;
-            //         break;
-            //     }
             case XCB_KEY_PRESS:
                 {
+                    std::cout << "Key press" << std::endl;
                     const xcb_key_press_event_t* keyEvent = (const xcb_key_press_event_t*)event;
                     Event::Dispatch<KeyboardEvent>(KeyboardEvent::Type::eKeyDown, keyEvent->detail);
 
@@ -239,6 +258,7 @@ namespace adh {
                     break;
                 }
             }
+            free(event);
         }
     }
 
