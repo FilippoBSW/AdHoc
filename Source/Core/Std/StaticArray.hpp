@@ -30,6 +30,7 @@
 #include <Utility.hpp>
 
 #include <iostream>
+#include <cstring>
 
 namespace adh {
     template <typename T, std::size_t Size>

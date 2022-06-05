@@ -3,20 +3,13 @@
 ### On Windows ###
 ```
   git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-  cd AdHoc && mkdir build && cd build
-  ..\install.bat Release
+  cd AdHoc && ./build.bat (Debug or Release)
 ```
 
-### On macOS ###
+### On macOS - Linux ###
 ```
   git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-  cd AdHoc && chmod +x install.sh && mkdir build && cd build
-  ../install.sh Release
-```
-
-### Pre-compiled ###
-```
-https://bswfilippo.wixsite.com/adhoc
+  cd AdHoc && sh build.sh (Mac or Linux) (Debug or Release)
 ```
 
 ![alt text](Movie/mov_01.gif)

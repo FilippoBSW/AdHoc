@@ -44,11 +44,15 @@ namespace adh {
             m_DeviceQueues.Create(m_PhysicalDevice, m_Surface);
             m_Device.Create(m_PhysicalDevice, &m_DeviceQueues);
 
-            if (path) {
+#if defined(ADH_APPLE)
                 std::string p = path;
                 int pos       = p.find("Contents");
                 m_Path        = p.substr(0, pos);
-            }
+#elif defined(ADH_LINUX)
+                std::string p = path;
+                int pos       = p.find("Exe");
+                m_Path        = p.substr(0, pos);
+#endif
         }
 
         void Context::Destroy() noexcept {

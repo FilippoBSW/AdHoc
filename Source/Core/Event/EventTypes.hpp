@@ -24,6 +24,7 @@
 
 #pragma once
 #include <iostream>
+#include <limits>
 
 namespace adh {
     using EventID              = std::uint32_t;

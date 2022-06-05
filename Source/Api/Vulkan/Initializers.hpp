@@ -23,13 +23,16 @@
 // *********************************************************************************
 
 #pragma once
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+
 #if defined(ADH_WINDOWS)
 #    include <Windows.h>
+#elif defined(ADH_LINUX)
+#    include <xcb/xcb.h>
 #endif
 
 #include <Std/Array.hpp>
-
-#include <vulkan/vulkan.h>
 
 namespace adh {
     namespace vk {
@@ -84,6 +87,14 @@ namespace adh {
                     .flags = 0u,
                     .pView = view
                 };
+                return info;
+            }
+#elif defined(ADH_LINUX)
+            inline auto XcbSurfaceCreateInfo(xcb_connection_t* connection, xcb_window_t window) noexcept {
+                VkXcbSurfaceCreateInfoKHR info = {};
+                info.sType                     = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+                info.connection                = connection;
+                info.window                    = window;
                 return info;
             }
 #endif

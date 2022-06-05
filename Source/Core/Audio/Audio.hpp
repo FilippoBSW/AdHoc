@@ -37,7 +37,7 @@
 #    include <digitalv.h>
 #    include <mmsystem.h>
 #else
-#    error Not supported platform!
+// TODO:
 #endif
 
 namespace adh {

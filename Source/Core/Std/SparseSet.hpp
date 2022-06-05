@@ -28,6 +28,7 @@
 #include <Utility.hpp>
 
 #include <iostream>
+#include <limits>
 
 namespace adh {
     template <std::uint64_t S>

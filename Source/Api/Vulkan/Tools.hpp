@@ -25,6 +25,8 @@
 #include <Std/Array.hpp>
 
 #include <iostream>
+#include <limits>
+
 #include <vulkan/vulkan.h>
 
 namespace adh {

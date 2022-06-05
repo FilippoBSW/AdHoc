@@ -28,6 +28,8 @@
 #include "Memory.hpp"
 #include <Std/TGALoader.hpp>
 
+#include <cmath>
+
 namespace adh {
     namespace vk {
         Texture2D::Texture2D() noexcept : m_Descriptor{},

@@ -26,6 +26,9 @@
 
 #if defined(ADH_WINDOWS)
 #    include <Windows.h>
+#elif defined(ADH_LINUX)
+#    include <X11/Xlib.h>
+#    include <xcb/xcb.h>
 #endif
 
 #include <iostream>
@@ -112,6 +115,23 @@ namespace adh {
 
       public:
         void* m_WindowHandle;
+        const char* m_Name;
+
+#elif defined(ADH_LINUX)
+      public:
+        xcb_connection_t* GetConnection() const noexcept;
+        xcb_window_t GetWindow() const noexcept;
+
+      private:
+        Display* m_Display;
+        xcb_connection_t* m_Connection;
+        xcb_screen_t* m_Screen;
+        xcb_window_t m_Window;
+        xcb_intern_atom_cookie_t protocols_cookie;
+        xcb_intern_atom_reply_t* protocols_reply;
+        xcb_intern_atom_cookie_t delete_cookie;
+        xcb_intern_atom_reply_t* delete_reply;
+
         const char* m_Name;
 #endif
     };
