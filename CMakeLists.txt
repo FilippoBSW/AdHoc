@@ -71,7 +71,7 @@ if(APPLE)
 	add_custom_command(TARGET ${PROJECT_NAME}
     POST_BUILD COMMAND 
 	${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../../Lib/bin/mac.x86_64/$<CONFIGURATION>"
-	$<TARGET_FILE:${PROJECT_NAME>)
+	$<TARGET_FILE:${PROJECT_NAME}>)
 elseif(WIN32)
 	set(TARGET_BUILD_PLATFORM "windows")
 		add_custom_command(TARGET ${PROJECT_NAME}
