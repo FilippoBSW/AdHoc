@@ -130,7 +130,6 @@ namespace adh {
         xcb_generic_event_t* event;
 
         while((event = xcb_poll_for_event(m_Connection))) {
-            std::cout << (event->response_type & 0x08) << std::endl;
             switch (event->response_type & ~0x80) {
             case XCB_CONFIGURE_NOTIFY:
                 {
