@@ -3,8 +3,7 @@
 ### On Windows ###
 ```
   git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-  cd AdHoc && mkdir build && cd build
-  ..\Install\install_windows.bat Release
+  cd AdHoc && ./build.bat (Debug or Release)
 ```
 
 ### On macOS - Linux ###
