@@ -63,6 +63,10 @@ namespace adh {
             auto info{ initializers::MacOSSurfaceCreateInfo(window.GetHandle()) };
             ADH_THROW(vkCreateMacOSSurfaceMVK(instance, &info, nullptr, &m_Surface) == VK_SUCCESS,
                       "Failed to create window surface!");
+#elif defined(ADH_LINUX)
+            auto info{ initializers::XlibSurfaceCreateInfo(window.GetDisplay(), window.GetWindow()) };
+            ADH_THROW(vkCreateXlibSurfaceKHR(instance, &info, nullptr, &m_Surface) == VK_SUCCESS,
+                      "Failed to create window surface!");
 #endif
         }
 

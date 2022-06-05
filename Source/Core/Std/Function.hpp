@@ -93,7 +93,7 @@ namespace adh {
             InitializeConstruct(Move(func));
         }
 
-        void operator=(nullptr_t) noexcept {
+        void operator=(std::nullptr_t) noexcept {
             Clear();
         }
 

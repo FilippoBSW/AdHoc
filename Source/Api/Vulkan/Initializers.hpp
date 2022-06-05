@@ -23,13 +23,16 @@
 // *********************************************************************************
 
 #pragma once
+#include <vulkan/vulkan.h>
+
 #if defined(ADH_WINDOWS)
 #    include <Windows.h>
+#elif defined(ADH_LINUX)
+#    include <X11/Xlib.h>
+#    include <vulkan/vulkan_xlib.h>
 #endif
 
 #include <Std/Array.hpp>
-
-#include <vulkan/vulkan.h>
 
 namespace adh {
     namespace vk {
@@ -86,6 +89,14 @@ namespace adh {
                 };
                 return info;
             }
+#elif defined(ADH_LINUX)
+            inline auto XlibSurfaceCreateInfo(Display* dpy, ::Window window) noexcept {
+                VkXlibSurfaceCreateInfoKHR info{};
+                info.dpy    = dpy;
+                info.window = window;
+                return info;
+            }
+
 #endif
             inline auto DeviceQueueCreateInfo(std::uint32_t queueFamilyIndex) noexcept {
                 float queuePriority[]{ 1.0f };

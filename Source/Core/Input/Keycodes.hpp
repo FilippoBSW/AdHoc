@@ -296,5 +296,87 @@ using Keycode = std::uint64_t;
 #    define ADH_BUTTON_RTHUMB_UPRIGHT 0x1d
 #    define ADH_BUTTON_RTHUMB_DOWNRIGHT 0x1e
 #    define ADH_BUTTON_RTHUMB_DOWNLEFT 0x1f
+
+#elif defined(ADH_LINUX)
+#    include <X11/keysym.h>
+#    define ADH_KEY_KPADD 20
+#    define ADH_KEY_KPSUB 21
+
+#    define ADH_SHIFT 50
+#    define ADH_CONTROL 37
+#    define ADH_MENU 133
+#    define ADH_END 115
+#    define ADH_HOME 110
+
+#    define ADH_LEFT 113
+#    define ADH_UP 111
+#    define ADH_RIGHT 114
+#    define ADH_DOWN 116
+
+#    define ADH_INSERT 118
+#    define ADH_DELETE 119
+
+#    define ADH_BACK 22
+#    define ADH_NEXT -1
+#    define ADH_PRIOR -1
+
+#    define ADH_F1 67
+#    define ADH_F2 68
+#    define ADH_F3 69
+#    define ADH_F4 70
+#    define ADH_F5 71
+#    define ADH_F6 72
+#    define ADH_F7 73
+#    define ADH_F8 74
+#    define ADH_F9 75
+#    define ADH_F10 76
+#    define ADH_F11 95
+#    define ADH_F12 96
+
+#    define ADH_KEY_Q 24
+#    define ADH_KEY_W 25
+#    define ADH_KEY_E 26
+#    define ADH_KEY_R 27
+#    define ADH_KEY_T 28
+#    define ADH_KEY_Y 29
+#    define ADH_KEY_U 30
+#    define ADH_KEY_I 31
+#    define ADH_KEY_O 32
+#    define ADH_KEY_P 33
+
+#    define ADH_KEY_A 38
+#    define ADH_KEY_S 39
+#    define ADH_KEY_D 40
+#    define ADH_KEY_F 41
+#    define ADH_KEY_G 42
+#    define ADH_KEY_H 43
+#    define ADH_KEY_J 44
+#    define ADH_KEY_K 45
+#    define ADH_KEY_L 46
+
+#    define ADH_KEY_Z 52
+#    define ADH_KEY_X 53
+#    define ADH_KEY_C 54
+#    define ADH_KEY_V 55
+#    define ADH_KEY_B 56
+#    define ADH_KEY_N 57
+#    define ADH_KEY_M 58
+
+#    define ADH_KEY_1 10
+#    define ADH_KEY_2 11
+#    define ADH_KEY_3 12
+#    define ADH_KEY_4 13
+#    define ADH_KEY_5 14
+#    define ADH_KEY_6 15
+#    define ADH_KEY_7 16
+#    define ADH_KEY_8 17
+#    define ADH_KEY_9 18
+#    define ADH_KEY_0 19
+
+#    define ADH_RETURN 36
+#    define ADH_TAB 23
+#    define ADH_ESCAPE 9
+#    define ADH_SPACE 65
+#    define ADH_KEY_SPACE 65
 #endif
-// TODO: Wayland & X11 Keycodes
+// TODO: overall cleanup

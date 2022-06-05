@@ -872,6 +872,66 @@ namespace adh {
 
                 )");
                 ADH_THROW(lua_pcall(state, 0, LUA_MULTRET, 0) == LUA_OK, lua_tostring(state, -1));
+#elif defined(ADH_LINUX)
+                luaL_loadstring(state, R"(
+                AdHoc = {
+                    Key = {
+						q = 24,
+						w = 25,
+						e = 26,
+						r = 27,
+						t = 28,
+						y = 29,
+						u = 30,
+						i = 31,
+						o = 32,
+						p = 33,
+						a = 38,
+						s = 39,
+						d = 40,
+						f = 41,
+						g = 42,
+						h = 43,
+						j = 44,
+						k = 45,
+						l = 46,
+						z = 52,
+						x = 53,
+						c = 54,
+						v = 55,
+						b = 56,
+						n = 57,
+						m = 58,
+						enter = 36,
+						space = 65,
+						shift = 50,
+						left =  113,
+						up = 111,
+						right = 114,
+						down = 116 },
+                    Controller = {
+						a            = 0x3,
+                        b            = 0x2,
+                        x            = 0x0,
+                        y            = 0x1,
+                        rshoulder    = 0x8,
+                        lshoulder    = 0x9,
+                        ltrigger     = 0xa,
+                        rtrigger     = 0xb,
+                        dpad_up      = 0x4,
+                        dpad_down    = 0x5,
+                        dpad_left    = 0x6,
+                        dpad_right   = 0x7,
+                        start        = 0xc,
+                        back         = 0xd,
+                        lthumb_press = 0xe,
+					    rthumb_press = 0xf },
+                    Global = _G }
+                package.preload['AdHoc'] = function()
+                	return AdHoc
+                end
+                )");
+                ADH_THROW(lua_pcall(state, 0, LUA_MULTRET, 0) == LUA_OK, lua_tostring(state, -1));
 #endif
 
                 return state;

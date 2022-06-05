@@ -332,7 +332,7 @@ struct ShadowMap2D {
 };
 
 struct HDRBuffer {
-    void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler) {
+    void Create(const adh::Window& window, Swapchain& swapchain, const Sampler& sampler) {
         Attachment attachment;
         attachment.AddDescription(
             VK_FORMAT_R32G32B32A32_SFLOAT,
@@ -567,7 +567,7 @@ struct HDRDraw {
 };
 
 struct GaussianBlur {
-    void Create(const Window& window, Swapchain& swapchain, const Sampler& sampler, VkDescriptorImageInfo imageInfo) {
+    void Create(const adh::Window& window, Swapchain& swapchain, const Sampler& sampler, VkDescriptorImageInfo imageInfo) {
         auto e = swapchain.GetExtent();
         e.width /= 2;
         e.height /= 2;
@@ -1147,7 +1147,7 @@ struct GaussianBlur {
 class AdHoc {
   public:
     const char* name{ "AdHoc" };
-    Window window;
+    adh::Window window;
     Context context;
     Swapchain swapchain;
     std::uint32_t swapchanImageCount{ 2 };

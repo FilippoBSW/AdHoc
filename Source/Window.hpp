@@ -26,6 +26,8 @@
 
 #if defined(ADH_WINDOWS)
 #    include <Windows.h>
+#elif defined(ADH_LINUX)
+#    include <X11/Xlib.h>
 #endif
 
 #include <iostream>
@@ -112,6 +114,17 @@ namespace adh {
 
       public:
         void* m_WindowHandle;
+        const char* m_Name;
+
+#elif defined(ADH_LINUX)
+      public:
+        Display* GetDisplay() const noexcept;
+        ::Window GetWindow() const noexcept;
+
+      private:
+        Display* mDisplay;
+        ::Window mWindow;
+        std::int32_t mScreen;
         const char* m_Name;
 #endif
     };

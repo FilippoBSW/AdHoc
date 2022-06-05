@@ -252,6 +252,9 @@ namespace adh {
 #if defined(ADH_APPLE)
                     std::string cmd2 = "open " + meshBuffer->meshFilePath;
                     system(cmd2.data());
+#elif defined(ADH_LINUX)
+                    std::string cmd2 = "vim " + meshBuffer->meshFilePath;
+                    system(cmd2.data());
 #elif defined(ADH_WINDOWS)
                     std::string cmd2 = "start " + meshBuffer->meshFilePath;
 
@@ -397,6 +400,9 @@ namespace adh {
                 if (open) {
 #if defined(ADH_APPLE)
                     std::string cmd2 = "open " + component.filePath;
+                    system(cmd2.data());
+#elif defined(ADH_LINUX)
+                    std::string cmd2 = "vim" + component.filePath;
                     system(cmd2.data());
 #elif defined(ADH_WINDOWS)
                     std::string cmd2 = "start " + component.filePath;
@@ -602,6 +608,13 @@ namespace adh {
                     std::string cmd1 = "cp " + scriptDir + "Resources/Scripts/template.lua " +
                                        scriptDir + "Assets/Scripts/" + buf + ".lua";
                     std::string cmd2 = "open " + scriptDir + "Assets/Scripts/" + buf + ".lua";
+                    system(cmd1.data());
+                    system(cmd2.data());
+#elif defined(ADH_LINUX)
+                    auto scriptDir   = vk::Context::Get()->GetDataDirectory();
+                    std::string cmd1 = "cp " + scriptDir + "Resources/Scripts/template.lua " +
+                                       scriptDir + "Assets/Scripts/" + buf + ".lua";
+                    std::string cmd2 = "vim" + scriptDir + "Assets/Scripts/" + buf + ".lua";
                     system(cmd1.data());
                     system(cmd2.data());
 #elif defined(ADH_WINDOWS)

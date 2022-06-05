@@ -33,6 +33,8 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
+#include <memory>
 
 namespace adh {
     namespace ecs {

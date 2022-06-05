@@ -1,26 +1,26 @@
-# *********************************************************************************
-# MIT License
+#*********************************************************************************
+#MIT License
 #
-# Copyright (c) 2021-2022 Filippo-BSW
+#Copyright(c) 2021 - 2022 Filippo - BSW
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files(the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-# *********************************************************************************
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
+#*********************************************************************************
 
 cmake_minimum_required(VERSION 3.20)
 
@@ -54,22 +54,33 @@ elseif(APPLE)
         XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER "com.github.Filippo-BSW.${PROJECT_NAME}"
     )
     target_compile_features(${PROJECT_NAME} PRIVATE c_std_17)
+elseif(UNIX AND NOT APPLE)
+	add_executable(${PROJECT_NAME} "")
+	set(DATA_PATH "Data")
+	set(LIB_PATH "Lib")
+	set(EXE_PATH "Exe")
+    target_compile_features(${PROJECT_NAME} PRIVATE c_std_17)
+	find_package(Threads REQUIRED)
+	set(CMAKE_CXX_FLAGS "-pthread")
 endif()
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(APPLE)
 	set(TARGET_BUILD_PLATFORM "mac")
-	add_custom_command(TARGET AdHoc 
+	add_custom_command(TARGET ${PROJECT_NAME}
     POST_BUILD COMMAND 
 	${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../../Lib/bin/mac.x86_64/$<CONFIGURATION>"
-	$<TARGET_FILE:AdHoc>)
+	$<TARGET_FILE:${PROJECT_NAME>)
 elseif(WIN32)
 	set(TARGET_BUILD_PLATFORM "windows")
-		add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
 		"${CMAKE_BINARY_DIR}/Lib/bin/win.x86_64.vc142.md/$<CONFIGURATION>"
 		"$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+elseif(UNIX AND NOT APPLE)
+		set(TARGET_BUILD_PLATFORM "linux")
 endif()
 
 set(NV_USE_DEBUG_WINCRT ON CACHE BOOL "Use the debug version of the CRT")
@@ -119,6 +130,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     assimp
     yaml-cpp
 	${PHYSX_LIBRARIES})
+
+if(UNIX AND NOT APPLE)
+	target_link_libraries(${PROJECT_NAME} PRIVATE X11)
+endif()
      
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} PUBLIC 
@@ -178,8 +193,8 @@ if(WIN32)
 elseif(APPLE)
     target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_API= ")
     target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_APPLE= ")
-elseif(UNIX)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_API= )")
+elseif(UNIX AND NOT APPLE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_API= ")
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "ADH_LINUX= ")
 endif()
 
@@ -190,12 +205,13 @@ elseif(APPLE)
 	set(PLATFORM_SRC_DIR ${CMAKE_SOURCE_DIR}/Source/Platform/macOS)
     target_sources(${PROJECT_NAME} PRIVATE ${PLATFORM_SRC_DIR}/Window.mm)
 	target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Utility.mm)
-elseif(UNIX)
-
+elseif(UNIX AND NOT APPLE)
+	set(PLATFORM_SRC_DIR ${CMAKE_SOURCE_DIR}/Source/Platform/Linux)
+    target_sources(${PROJECT_NAME} PRIVATE ${PLATFORM_SRC_DIR}/Window.cpp)
 endif()
 
 #**********************************************
-# Install option:
+#Install option:
 #**********************************************
 option(INSTALL "Install" OFF)
 if(INSTALL)
@@ -206,6 +222,8 @@ else()
 		target_compile_definitions(${PROJECT_NAME} PUBLIC "DATA_DIRECTORY=\"../../Data/\"")
 	elseif(APPLE)
 		target_compile_definitions(${PROJECT_NAME} PUBLIC "DATA_DIRECTORY=\"/Data/\"")
+    elseif(UNIX AND NOT APPLE)
+		target_compile_definitions(${PROJECT_NAME} PUBLIC "DATA_DIRECTORY=\"Data/\"")
 	endif()
 endif()
 
@@ -216,7 +234,7 @@ else()
 endif()
 
 #**********************************************
-# Add source
+#Add source
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
 	${CMAKE_SOURCE_DIR}/Source/Main.cpp
@@ -227,7 +245,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/sse2neon/sse2neon.h)
 
 #**********************************************
-# Graphics api
+#Graphics api
 #**********************************************
 find_package(Vulkan)
 if(Vulkan_FOUND)
@@ -235,13 +253,14 @@ if(Vulkan_FOUND)
 	target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES})
     target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VULKAN= ")
     if(WIN32)
-            target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
-            target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_WIN32_SURFACE_EXTENSION_NAME")
+        target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_WIN32_KHR)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_WIN32_SURFACE_EXTENSION_NAME")
     elseif(APPLE)
-        	target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_MACOS_MVK)
-            target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_MVK_MACOS_SURFACE_EXTENSION_NAME")
-    elseif(UNIX)
-		# TODO
+        target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_MACOS_MVK)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_MVK_MACOS_SURFACE_EXTENSION_NAME")
+	elseif(UNIX AND NOT APPLE)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XCB_KHR)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_XCB_SURFACE_EXTENSION_NAME")
     endif()
  
 	set(VULKAN_API_SRC ${CMAKE_SOURCE_DIR}/Source/Api/Vulkan)
@@ -317,7 +336,7 @@ if(NOT Vulkan_FOUND)
 endif()
 
 #**********************************************
-# Template library
+#Template library
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Entity/Entity.hpp
@@ -344,14 +363,14 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Std/Utility.hpp)
 
 #**********************************************
-# Physics library
+#Physics library
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Physics/PhysicsWorld.hpp
     ${ADH_CORE_SRC}/Physics/PhysicsWorld.cpp)
 
 #**********************************************
-# Math library
+#Math library
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Math/Math.hpp
@@ -380,7 +399,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Math/source/XmmVector.inl)
 
 #**********************************************
-# Scene
+#Scene
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Scene/Scene.hpp
@@ -400,7 +419,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Scene/Components/Transform.hpp)
 
 #**********************************************
-# Scripting
+#Scripting
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
 	${ADH_CORE_SRC}/Scripting/Script.hpp
@@ -408,14 +427,14 @@ target_sources(${PROJECT_NAME} PRIVATE
 	${ADH_CORE_SRC}/Scripting/ScriptHandler.cpp)
 
 #**********************************************
-# Audio
+#Audio
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
 	${ADH_CORE_SRC}/Audio/Audio.hpp
 	${ADH_CORE_SRC}/Audio/Audio.cpp)
- 
+
 #**********************************************
-# Input
+#Input
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
     ${ADH_CORE_SRC}/Input/Input.hpp
@@ -430,7 +449,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Input/AppleKeycodes.hpp)
 
 #**********************************************
-# Editor
+#Editor
 #**********************************************
 set(ADH_EDITOR_SRC ${CMAKE_SOURCE_DIR}/Source/Editor)
 target_sources(${PROJECT_NAME} PRIVATE 

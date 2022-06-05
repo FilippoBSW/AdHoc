@@ -92,7 +92,9 @@ namespace adh {
 #if defined(ADH_APPLE)
                                 std::string t = "open " + directoryEntry.path().string();
                                 system(t.data());
-
+#elif defined(ADH_LINUX)
+                                std::string t = "vim " + directoryEntry.path().string();
+                                system(t.data());
 #elif defined(ADH_WINDOWS)
                                 std::string t = "start " + directoryEntry.path().string();
                                 for (int i{}; i != t.size(); ++i) {
@@ -113,6 +115,9 @@ namespace adh {
 
                             if (ImGui::MenuItem("Delete")) {
 #if defined(ADH_APPLE)
+                                std::string del = "rm " + directoryEntry.path().string();
+                                system(del.data());
+#elif defined(ADH_LINUX)
                                 std::string del = "rm " + directoryEntry.path().string();
                                 system(del.data());
 #elif defined(ADH_WINDOWS)

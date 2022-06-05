@@ -36,7 +36,7 @@ namespace adh {
                              std::uint32_t levelCount,
                              std::uint32_t layerCount,
                              std::uint32_t baseArrayLayer) ADH_NOEXCEPT {
-            Create(image, viewType, format, imageAspectFlags, levelCount, layerCount);
+            Create(image, viewType, format, imageAspectFlags, levelCount, layerCount, baseArrayLayer);
         }
 
         ImageView::ImageView(ImageView&& rhs) noexcept {

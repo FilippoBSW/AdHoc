@@ -186,4 +186,40 @@ namespace adh {
         }
     }
 } // namespace adh
+#elif defined(ADH_LINUX)
+namespace adh {
+    Audio::Audio(const char* filePath) {
+    }
+
+    Audio::~Audio() {
+    }
+
+    void Audio::Create(const char* filePath, float seconds) {
+    }
+
+    void Audio::Create2(const char* fileName, float seconds) {
+    }
+
+    void Audio::OnUpdate() {
+    }
+
+    void Audio::Play() {
+    }
+
+    void Audio::Stop() {
+    }
+
+    void Audio::Pause() {
+    }
+
+    void Audio::Resume() {
+    }
+
+    void Audio::Loop(bool loop) {
+    }
+
+    bool Audio::IsPlaying() const noexcept {
+        return false;
+    }
+} // namespace adh
 #endif

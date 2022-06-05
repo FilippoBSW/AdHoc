@@ -31,6 +31,7 @@
 #include <Utility.hpp>
 
 #include <iostream>
+#include <cstring>
 
 namespace adh {
     template <typename T, typename Deleter = _internal::ArrayDefaultDeleter<T>>
