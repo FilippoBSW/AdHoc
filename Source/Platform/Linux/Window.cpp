@@ -34,15 +34,9 @@
 #include <array>
 
 namespace adh {
-    // static inline xcb_intern_atom_reply_t* intern_atom_helper(xcb_connection_t* conn, bool only_if_exists, const char* str) {
-    //     xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, only_if_exists, strlen(str), str);
-    //     return xcb_intern_atom_reply(conn, cookie, NULL);
-    // }
-
     Window::Window() noexcept : m_Connection{},
                                 m_Screen{},
                                 m_Window{},
-                                // m_Atom_wm_delete_window{},
                                 m_Name{},
                                 m_IsOpen{},
                                 m_IsMinimized{},
@@ -130,18 +124,6 @@ namespace adh {
 
         xcb_map_window(m_Connection, m_Window);
         xcb_flush(m_Connection);
-
-        // xcb_intern_atom_reply_t* reply = intern_atom_helper(m_Connection, true, "WM_PROTOCOLS");
-        // m_Atom_wm_delete_window        = intern_atom_helper(m_Connection, false, "WM_DELETE_WINDOW");
-
-        // xcb_change_property(m_Connection, XCB_PROP_MODE_REPLACE,
-        //                     m_Window, (*reply).atom, 4, 32, 1,
-        //                     &(*m_Atom_wm_delete_window).atom);
-
-        // cookie2 = xcb_intern_atom(m_Connection, 0, 16, "WM_DELETE_WINDOW");
-        // reply2  = xcb_intern_atom_reply(m_Connection, cookie2, 0);
-
-        // free(reply);
     }
 
     void Window::PollEvents() noexcept {
@@ -172,16 +154,6 @@ namespace adh {
                         SetOpen(false);
                         free(delete_reply);
                     }
-
-                    // if ((*(xcb_client_message_event_t*)event).data.data32[0] == (*reply2).atom) {
-                    //     std::cout << "Close message!" << std::endl;
-                    // }
-                    // std::cout << "Client Message" << std::endl;
-                    // if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
-                    //     (*m_Atom_wm_delete_window).atom) {
-                    //     // SetOpen(false);
-                    //     std::cout << "Close message" << std::endl;
-                    // }
                     break;
                 }
             case XCB_KEY_PRESS:

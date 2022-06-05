@@ -127,9 +127,6 @@ namespace adh {
         xcb_connection_t* m_Connection;
         xcb_screen_t* m_Screen;
         xcb_window_t m_Window;
-        // xcb_intern_atom_reply_t* m_Atom_wm_delete_window;
-        // xcb_intern_atom_cookie_t cookie2;
-        // xcb_intern_atom_reply_t* reply2;
         xcb_intern_atom_cookie_t protocols_cookie;
         xcb_intern_atom_reply_t* protocols_reply;
         xcb_intern_atom_cookie_t delete_cookie;
