@@ -118,15 +118,6 @@ namespace adh {
         const char* m_Name;
 
 #elif defined(ADH_LINUX)
-        //       public:
-        //         Display* GetDisplay() const noexcept;
-        //         ::Window GetWindow() const noexcept;
-
-        //       private:
-        //         Display* mDisplay;
-        //         ::Window mWindow;
-        //         std::int32_t mScreen;
-        //         const char* m_Name;
       public:
         xcb_connection_t* GetConnection() const noexcept;
         xcb_window_t GetWindow() const noexcept;
