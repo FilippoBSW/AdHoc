@@ -184,14 +184,19 @@ namespace adh {
         Clear();
     }
 
+    // TODO: Fixed timestep
     void PhysicsWorld::StepSimulation(float deltaTime) {
-        float dt = 1.0f / 60.0f;
-        while (deltaTime > 0.0f) {
-            float d = std::min(deltaTime, dt);
-            m_Scene[m_CurrentScene]->simulate(d);
-            m_Scene[m_CurrentScene]->fetchResults(true);
-            deltaTime -= d;
-        }
+        // static constexpr float dt = 1.0f / 240.0f;
+        //
+        // while (deltaTime > 0.0f) {
+        // float d = std::min(deltaTime, dt);
+        // m_Scene[m_CurrentScene]->simulate(d);
+        // m_Scene[m_CurrentScene]->fetchResults(true);
+        // deltaTime -= d;
+        // }
+
+        m_Scene[m_CurrentScene]->simulate(deltaTime);
+        m_Scene[m_CurrentScene]->fetchResults(true);
     }
 
     Vector3D& PhysicsWorld::GetGravity() noexcept {

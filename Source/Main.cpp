@@ -1150,7 +1150,7 @@ class AdHoc {
     adh::Window window;
     Context context;
     Swapchain swapchain;
-    std::uint32_t swapchanImageCount{ 3 };
+    std::uint32_t swapchanImageCount{ 2 };
 
     Sampler sampler;
     Scene scene;
