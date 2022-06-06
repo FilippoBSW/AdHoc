@@ -184,22 +184,10 @@ namespace adh {
         Clear();
     }
 
-    const double dt    = 0.01;
-    double accumulator = 0;
-
-    // TODO: Fixed timestep, multithread
+    // TODO: Multithread
     void PhysicsWorld::StepSimulation(float deltaTime) {
-        // static constexpr float dt = 1.0f / 60.0f;
-        //
-        // while (deltaTime > 0.0f) {
-        // float d = std::min(deltaTime, dt);
-        // m_Scene[m_CurrentScene]->simulate(d);
-        // m_Scene[m_CurrentScene]->fetchResults(true);
-        // deltaTime -= d;
-        // }
-
-        // m_Scene[m_CurrentScene]->simulate(deltaTime);
-        // m_Scene[m_CurrentScene]->fetchResults(true);
+        static constexpr double dt = 0.01;
+        static double accumulator  = 0;
 
         accumulator += deltaTime;
 
