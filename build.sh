@@ -33,21 +33,21 @@ function build {
     if [ "$1" == "Mac" ]; then
       USE_PLATFORM="Mac"
       cmake -DUSE_PLATFORM=$USE_PLATFORM\
-      -DCMAKE_BUILD_TYPE=$2\
+		-DCMAKE_BUILD_TYPE=$2\
 	    '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'\
 	    -DASSIMP_BUILD_TESTS=OFF\
 	    -DASSIMP_BUILD_ASSIMP_TOOLS=OFF\
 	    -DYAML_CPP_BUILD_TOOLS=OFF\
-      -DBUILD_TESTING=OFF\
+		-DBUILD_TESTING=OFF\
 	    '-DPHYSX_CXX_FLAGS=-w -arch arm64' ..
     elif [ "$1" == "Linux" ]; then
       USE_PLATFORM="Linux"
       CXX=clang++ cmake -DUSE_PLATFORM=$USE_PLATFORM\
-      -DCMAKE_BUILD_TYPE=$2\
+		-DCMAKE_BUILD_TYPE=$2\
 	    -DASSIMP_BUILD_TESTS=OFF\
 	    -DASSIMP_BUILD_ASSIMP_TOOLS=OFF\
 	    -DYAML_CPP_BUILD_TOOLS=OFF\
-      -DBUILD_TESTING=OFF\
+		-DBUILD_TESTING=OFF\
 	    '-DPHYSX_CXX_FLAGS=-w' ..
     fi
 
