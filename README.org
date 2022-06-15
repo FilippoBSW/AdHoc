@@ -1,12 +1,15 @@
 * AdHoc Engine
 
 ** On Windows
-  git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-  cd AdHoc && ./build.bat (Debug or Release)
+#+begin_src org :eval never-export
+git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
+cd AdHoc && ./build.bat (Debug or Release)
+#+end_src
 
 ** On macOS - Linux
-  git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-  cd AdHoc && sh build.sh (Mac or Linux) (Debug or Release)
-
+#+begin_src org :eval never-export
+git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
+cd AdHoc && sh build.sh (Mac or Linux) (Debug or Release)
+#+end_src
 
 [[./Movie/mov_01.gif]]
