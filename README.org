@@ -3,7 +3,7 @@
 ** On Windows
 #+begin_src org :eval never-export
 git clone --recursive https://github.com/Filippo-BSW/AdHoc.git
-cd AdHoc && ./build.bat (Debug or Release)
+cd AdHoc && .\build.bat (Debug or Release)
 #+end_src
 
 ** On macOS - Linux
