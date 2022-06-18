@@ -4,3 +4,4 @@
 [submodule "External/PhysX"]
 	path = External/PhysX
 	url = https://github.com/NVIDIAGameWorks/PhysX.git
+	ignore = dirty
