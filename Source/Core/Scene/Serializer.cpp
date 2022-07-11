@@ -24,6 +24,7 @@
 
 #include "Serializer.hpp"
 #include "ComponentsSerializer.hpp"
+#include "Utility.hpp"
 
 #include <Scene/Scene.hpp>
 #include <Scripting/Script.hpp>
@@ -33,6 +34,7 @@
 #include <Vulkan/Context.hpp>
 
 #include <Vulkan/Context.hpp>
+#include <exception>
 
 namespace adh {
     template <typename T>
@@ -170,7 +172,13 @@ namespace adh {
     }
 
     void Serializer::DeserializeFromFile(const char* filePath) {
-        YAML::Node node{ YAML::LoadFile(filePath) };
+        YAML::Node node;
+        try {
+            node = YAML::LoadFile(filePath);
+        } catch (const std::exception& e) {
+            ADH_THROW(false, "Bad scene file!");
+            return;
+        }
         Deserialize(&node);
     }
 
