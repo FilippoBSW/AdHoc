@@ -81,12 +81,12 @@ namespace adh {
         switch (event->type) {
         case EditorLogEvent::Type::eLog:
             {
-                debugLog += event->message;
+                debugLog.insert(0, event->message);
                 break;
             }
         case EditorLogEvent::Type::eError:
             {
-                errorLog += event->message;
+                errorLog.insert(0, event->message);
                 break;
             }
         }
