@@ -2259,7 +2259,7 @@ class AdHoc {
         vertexLayout.AddAttribute(1, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, normals));
         vertexLayout.Create();
 
-        Shader shader("pbr.vert", "pbr.frag");
+        Shader shader("pbr.vert", "editor_pbr.frag");
 
         editor.AddGraphicsPipeline(
             shader,
