@@ -69,18 +69,28 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 if(USE_PLATFORM STREQUAL "Mac")
 	set(TARGET_BUILD_PLATFORM "mac")
 	add_custom_command(TARGET ${PROJECT_NAME}
-    POST_BUILD COMMAND 
-	${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../../Lib/bin/mac.x86_64/$<CONFIGURATION>"
-	$<TARGET_FILE:${PROJECT_NAME}>)
+        POST_BUILD COMMAND
+	    ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../../Lib/bin/mac.x86_64/$<CONFIGURATION>"
+	    $<TARGET_FILE:${PROJECT_NAME}>)
 elseif(USE_PLATFORM STREQUAL "Windows")
 	set(TARGET_BUILD_PLATFORM "windows")
-		add_custom_command(TARGET ${PROJECT_NAME}
+	add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD COMMAND
         ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_BINARY_DIR}/Lib/bin/win.x86_64.vc142.md/$<CONFIGURATION>"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+	    "${CMAKE_BINARY_DIR}/Lib/bin/win.x86_64.vc142.md/$<CONFIGURATION>"
+	    "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 elseif(USE_PLATFORM STREQUAL "Linux")
-		set(TARGET_BUILD_PLATFORM "linux")
+	set(TARGET_BUILD_PLATFORM "linux")
+    if($<CONFIGURATION> STREQUAL "Debug")
+        set(PHY_CONFIG "debug")
+    elseif($<CONFIGURATION> STREQUAL "Release")
+        set(PHY_CONFIG "release")
+    endif()
+	add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_BINARY_DIR}/Lib/bin/linux.clang/${PHY_CONFIG}"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 endif()
 
 set(NV_USE_DEBUG_WINCRT ON CACHE BOOL "Use the debug version of the CRT")
