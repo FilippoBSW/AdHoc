@@ -107,6 +107,9 @@ namespace adh {
                 VK_FALSE,
                 0.0f,
                 VK_TRUE);
+
+            // Set dpi
+            // io.FontGlobalScale *= 2;
         }
 
         [[nodiscard]] void* VulkanImGui::AddTexture(const std::string& name, VkImageView imageView, const vk::Sampler& sampler) {

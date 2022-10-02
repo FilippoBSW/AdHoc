@@ -1326,7 +1326,7 @@ class AdHoc {
     void Initialize(const char* path) {
         window.Create(name, 1200, 800, true, false);
         context.Create(window, "AdHoc", path);
-        swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
+        swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
         InitializeRenderPass();
 
         sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
@@ -2286,7 +2286,7 @@ class AdHoc {
         swapchain.Destroy();
         swapchainFramebuffers.Clear();
 
-        swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_MAILBOX_KHR);
+        swapchain.Create(swapchanImageCount, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
         InitializeFramebuffers();
 
         renderPass.UpdateRenderArea({ {}, swapchain.GetExtent() });
