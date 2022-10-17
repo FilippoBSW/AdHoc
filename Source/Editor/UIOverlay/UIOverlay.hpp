@@ -30,6 +30,7 @@
 
 #include "../Core/Input/Keyboard.hpp"
 
+#include "Math/Math.hpp"
 #include "Panels/AssetPanel.hpp"
 #include "Panels/ConsolePanel.hpp"
 #include "Panels/GamePanel.hpp"
@@ -75,7 +76,7 @@ namespace adh {
         void OnUpdate(Scene* scene, float delta, bool drawEditor);
 
         void Draw(VkCommandBuffer commandBuffer, std::uint32_t imageIndex,
-                  bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[]) noexcept;
+                  bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[], Vector3D& sunPosition) noexcept;
 
         void SetUpDisplaySize(float width, float height) const noexcept;
 
@@ -94,7 +95,7 @@ namespace adh {
 
         void MenuBar(bool* drawEditor, bool* play, bool* pause);
 
-        void NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[]) noexcept;
+        void NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[], Vector3D& sunPosition) noexcept;
 
         void SetUpConfigFlags() const noexcept;
 

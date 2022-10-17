@@ -24,6 +24,7 @@
 
 #include "UIOverlay.hpp"
 #include "IconFontCppHeaders/IconFontAwesome5.hpp"
+#include "Math/Math.hpp"
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_internal.h>
 #include <ImGuizmo/ImGuizmo.h>
@@ -143,8 +144,8 @@ namespace adh {
     }
 
     void UIOverlay::Draw(VkCommandBuffer commandBuffer, std::uint32_t imageIndex,
-                         bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[]) noexcept {
-        NewFrame(maximizeOnPlay, play, pause, fpsLimit, floats);
+                         bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[], Vector3D& sunPosition) noexcept {
+        NewFrame(maximizeOnPlay, play, pause, fpsLimit, floats, sunPosition);
         m_ImGui.Draw(commandBuffer, imageIndex);
     }
 
@@ -387,7 +388,7 @@ namespace adh {
         }
     }
 
-    void UIOverlay::NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[]) noexcept {
+    void UIOverlay::NewFrame(bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[], Vector3D& sunPosition) noexcept {
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
         BeginDockSpace();
@@ -415,6 +416,10 @@ namespace adh {
                 ImGui::SliderFloat("Blur Strengt", floats[3], 0.0, 5.0);
                 ImGui::SliderFloat("Light intensity", floats[4], 0.0, 100.0);
                 ImGui::SliderFloat("Exposure", floats[5], 0.0, 10.0);
+
+                ImGui::SliderFloat("Sun X", &sunPosition.x, -100.0, 100.0);
+                ImGui::SliderFloat("Sun Y", &sunPosition.y, -100.0, 100.0);
+                ImGui::SliderFloat("Sun Z", &sunPosition.z, -100.0, 100.0);
 
                 ImGui::End();
             }

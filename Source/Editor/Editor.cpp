@@ -23,6 +23,7 @@
 // *********************************************************************************
 
 #include "Editor.hpp"
+#include "Math/Math.hpp"
 #include "vulkan/vulkan_core.h"
 #include <Scene/Scene.hpp>
 #include <Vulkan/Context.hpp>
@@ -158,8 +159,8 @@ namespace adh {
         m_Overlay.OnUpdate(scene, deltaTime, drawEditor);
     }
 
-    void Editor::Draw(VkCommandBuffer cmd, std::uint32_t imageIndex, bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[]) {
-        m_Overlay.Draw(cmd, imageIndex, maximizeOnPlay, play, pause, fpsLimit, floats);
+    void Editor::Draw(VkCommandBuffer cmd, std::uint32_t imageIndex, bool* maximizeOnPlay, bool* play, bool* pause, bool* fpsLimit, float* floats[], Vector3D& sunPosition) {
+        m_Overlay.Draw(cmd, imageIndex, maximizeOnPlay, play, pause, fpsLimit, floats, sunPosition);
     }
 
     bool Editor::GetKeyDown(std::uint64_t keycode) noexcept {

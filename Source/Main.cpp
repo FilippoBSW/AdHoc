@@ -1544,7 +1544,14 @@ class AdHoc {
 
         auto cmd = commandBuffer.Begin(currentFrame);
 
+        directionalLight.direction = sunPosition;
         lightBuffer.Update(imageIndex);
+
+        shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
+        shadowMap.lightSpaceBuffer.Update(imageIndex);
+
+        lightSpace = lightSpaceBias * shadowMap.lightSpace;
+        lightSpaceBuffer.Update(imageIndex);
 
         // Draw shadowmap
         {
@@ -1810,7 +1817,7 @@ class AdHoc {
             vkCmdDraw(cmd, 3, 1, 0, 0);
 
         } else {
-            editor.Draw(cmd, currentFrame, &g_MaximizeOnPlay, &g_IsPlaying, &g_IsPaused, &g_EditorFpsLimit, floats);
+            editor.Draw(cmd, currentFrame, &g_MaximizeOnPlay, &g_IsPlaying, &g_IsPaused, &g_EditorFpsLimit, floats, sunPosition);
         }
 
         renderPass.End(cmd);
