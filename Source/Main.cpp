@@ -1545,14 +1545,16 @@ class AdHoc {
         auto cmd = commandBuffer.Begin(currentFrame);
 
         // TODO: problem with fullscreen
-        // directionalLight.direction = sunPosition;
-        // lightBuffer.Update(imageIndex);
+        if (g_DrawEditor) {
+            directionalLight.direction = sunPosition;
+            lightBuffer.Update(imageIndex);
 
-        // shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
-        // shadowMap.lightSpaceBuffer.Update(imageIndex);
+            shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
+            shadowMap.lightSpaceBuffer.Update(imageIndex);
 
-        // lightSpace = lightSpaceBias * shadowMap.lightSpace;
-        // lightSpaceBuffer.Update(imageIndex);
+            lightSpace = lightSpaceBias * shadowMap.lightSpace;
+            lightSpaceBuffer.Update(imageIndex);
+        }
 
         // Draw shadowmap
         {
