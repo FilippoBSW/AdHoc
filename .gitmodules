@@ -5,3 +5,6 @@
 	path = External/PhysX
 	url = https://github.com/NVIDIAGameWorks/PhysX.git
 	ignore = dirty
+[submodule "External/openal-soft"]
+	path = External/openal-soft
+	url = https://github.com/kcat/openal-soft.git

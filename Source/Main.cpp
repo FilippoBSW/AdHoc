@@ -57,6 +57,8 @@
 #include <Vulkan/Viewport.hpp>
 #include <Window.hpp>
 
+#include <fstream>
+
 #if defined(ADH_IOS)
 #    include <UIKit/UIKit.h>
 #endif
@@ -1209,6 +1211,8 @@ class AdHoc {
 
     float* floats[6];
 
+    AudioDevice audioDevice;
+
   public:
     ~AdHoc() {
         auto device{ Context::Get()->GetDevice() };
@@ -1368,12 +1372,15 @@ class AdHoc {
         gaussianBlur.Create(window, swapchain, sampler, hdrBuffer.descriptor);
         hdrDraw.Create(renderPass, hdrBuffer.descriptor, gaussianBlur.finalPassdescriptor);
 
-        floats[0]      = &hdrDraw.intensity[0];
-        floats[1]      = &gaussianBlur.brightColor.threshold;
-        floats[2]      = &gaussianBlur.ubo.blurScale;
-        floats[3]      = &gaussianBlur.ubo.blurStrength;
-        floats[4]      = &directionalLight.intensity;
-        floats[5]      = &hdrDraw.intensity[1];
+        floats[0] = &hdrDraw.intensity[0];
+        floats[1] = &gaussianBlur.brightColor.threshold;
+        floats[2] = &gaussianBlur.ubo.blurScale;
+        floats[3] = &gaussianBlur.ubo.blurStrength;
+        floats[4] = &directionalLight.intensity;
+        floats[5] = &hdrDraw.intensity[1];
+
+        audioDevice.Create();
+
         renderingReady = true;
     }
 

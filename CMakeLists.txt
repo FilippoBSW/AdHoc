@@ -109,6 +109,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/External/yaml-cpp)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGui)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/ImGuizmo)
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/lua-5.4.3)
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/openal-soft)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Source)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Api)
@@ -118,6 +119,7 @@ set(ADH_CORE_SRC ${CMAKE_SOURCE_DIR}/Source/Core)
 target_include_directories(${PROJECT_NAME} PRIVATE ${ADH_CORE_SRC})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/openal-soft/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/physx/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/PhysX/pxshared/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/External/yaml-cpp/include)
@@ -139,6 +141,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ImGuizmo
     assimp
     yaml-cpp
+    OpenAL
 	${PHYSX_LIBRARIES})
 
 if(USE_PLATFORM STREQUAL "Linux")
@@ -165,6 +168,7 @@ set_target_properties(
     ImGuizmo
 	assimp 
 	yaml-cpp
+    OpenAL
 	${PHYSX_LIBRARIES}
     PROPERTIES 
 	ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIB_PATH}"

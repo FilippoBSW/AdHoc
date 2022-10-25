@@ -504,12 +504,12 @@ namespace adh {
 
         state.RegisterType<Audio>("Audio");
         state.RegisterTypeConstructor<Audio>("new");
-        state.RegisterTypeFunction<Audio>("OnUpdate", &Audio::OnUpdate);
+        // state.RegisterTypeFunction<Audio>("OnUpdate", &Audio::OnUpdate);
         state.RegisterTypeFunction<Audio>("Create", &Audio::Create2);
         state.RegisterTypeFunction<Audio>("Play", &Audio::Play);
         state.RegisterTypeFunction<Audio>("Stop", &Audio::Stop);
         state.RegisterTypeFunction<Audio>("Pause", &Audio::Pause);
-        state.RegisterTypeFunction<Audio>("Resume", &Audio::Resume);
+        // state.RegisterTypeFunction<Audio>("Resume", &Audio::Resume);
         state.RegisterTypeFunction<Audio>("Loop", &Audio::Loop);
         state.RegisterTypeFunction<Audio>("IsPlaying", &Audio::IsPlaying);
     }
