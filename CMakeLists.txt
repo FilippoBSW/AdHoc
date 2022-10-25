@@ -444,6 +444,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #Audio
 #**********************************************
 target_sources(${PROJECT_NAME} PRIVATE 
+	${ADH_CORE_SRC}/Audio/LoadWav.hpp
 	${ADH_CORE_SRC}/Audio/Audio.hpp
 	${ADH_CORE_SRC}/Audio/Audio.cpp)
 
