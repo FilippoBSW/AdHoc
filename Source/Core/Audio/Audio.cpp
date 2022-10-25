@@ -342,6 +342,9 @@ namespace adh {
         ALsizei size;
         // int channel, sampleRate, bps, size;
         char* data = load_wav(filePath, channel, sampleRate, bps, size);
+        if (!data) {
+            return;
+        }
 
         if (channel == 1) {
             if (bps == 8) {
@@ -368,6 +371,8 @@ namespace adh {
         alSourcei(mSource, AL_BUFFER, mBuffer);
 
         delete[] data;
+
+        mReady = true;
     }
 
     void Audio::Create2(const char* fileName) {
@@ -383,28 +388,40 @@ namespace adh {
     // }
 
     void Audio::Play() {
-        alSourcePlay(mSource);
+        if (mReady) {
+            alSourcePlay(mSource);
+        }
     }
 
     void Audio::Stop() {
-        alSourceStop(mSource);
+        if (mReady) {
+            alSourceStop(mSource);
+        }
     }
 
     void Audio::Pause() {
-        alSourcePause(mSource);
+        if (mReady) {
+            alSourcePause(mSource);
+        }
     }
 
     void Audio::Loop(bool loop) {
-        mLoop = loop;
-        alSourcei(mSource, AL_LOOPING, mLoop);
+        if (mReady) {
+            mLoop = loop;
+            alSourcei(mSource, AL_LOOPING, mLoop);
+        }
     }
 
     bool Audio::IsPlaying() const noexcept {
-        ALint state;
-        alGetSourcei(mSource, AL_SOURCE_STATE, &state);
+        if (mReady) {
+            ALint state;
+            alGetSourcei(mSource, AL_SOURCE_STATE, &state);
 
-        if (state == AL_PLAYING) {
-            return true;
+            if (state == AL_PLAYING) {
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

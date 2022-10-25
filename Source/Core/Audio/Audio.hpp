@@ -112,7 +112,9 @@ namespace adh {
         // std::chrono::steady_clock::time_point mPause{};
         // std::chrono::duration<float> mPauseDuration{};
         // std::atomic<Status> mStatus{ Status::eInvalid };
-        int mDuration{};
+        // int mDuration{};
+
+        bool mReady{ false };
 
         ALuint mFormat;
         ALuint mSource;
