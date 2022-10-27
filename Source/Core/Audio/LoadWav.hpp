@@ -29,6 +29,7 @@
 #include <bit>
 #include <fstream>
 #include <string>
+#include <cstring>
 
 std::int32_t convert_to_int(char* buffer, std::size_t len) {
     std::int32_t a = 0;
