@@ -1146,6 +1146,11 @@ struct GaussianBlur {
     } recompose;
 };
 
+struct CollisionPair {
+    std::uint64_t e[2];
+    CollisionEvent::Type type;
+};
+
 class AdHoc {
   public:
     const char* name{ "AdHoc" };
@@ -1200,6 +1205,7 @@ class AdHoc {
     bool g_AreScriptsReady{ false };
 
     std::vector<std::function<void()>> collisionCallbacks;
+    std::vector<CollisionPair> collisionCallbacks2;
 
     bool clearFramebuffers     = true;
     int clearFramebuffersCount = 0;
@@ -1227,59 +1233,65 @@ class AdHoc {
 
     void OnCollisionEvent(CollisionEvent* event) {
         if (g_IsPlaying && g_AreScriptsReady) {
-            scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
-                bool call{};
-                EntityID rhs{};
-                EntityID e = static_cast<EntityID>(ent);
+            CollisionPair p;
+            p.e[0] = event->entityA;
+            p.e[1] = event->entityB;
+            p.type = event->type;
 
-                if (e == event->entityA) {
-                    rhs  = event->entityB;
-                    call = true;
-                } else if (e == event->entityB) {
-                    rhs  = event->entityA;
-                    call = true;
-                }
+            collisionCallbacks2.emplace_back(p);
+            // scene.GetWorld().GetSystem<lua::Script>().ForEach([&](ecs::Entity ent, lua::Script& script) {
+            //     bool call{};
+            //     EntityID rhs{};
+            //     EntityID e = static_cast<EntityID>(ent);
 
-                if (call) {
-                    collisionCallbacks.emplace_back([&scene = scene, ent = ent, eventType = event->type, rhs = rhs]() {
-                        auto [script] = scene.GetWorld().Get<lua::Script>(ent);
-                        script.Bind();
-                        switch (eventType) {
-                        case CollisionEvent::Type::eCollisionEnter:
-                            {
-                                script.Call("OnCollisionEnter", rhs);
-                                break;
-                            }
-                        case CollisionEvent::Type::eCollisionPersist:
-                            {
-                                script.Call("OnCollisionPersist", rhs);
-                                break;
-                            }
-                        case CollisionEvent::Type::eCollisionExit:
-                            {
-                                script.Call("OnCollisionExit", rhs);
-                                break;
-                            }
-                        case CollisionEvent::Type::eTriggerEnter:
-                            {
-                                script.Call("OnTriggerEnter", rhs);
-                                break;
-                            }
-                        case CollisionEvent::Type::eTriggerPersist:
-                            {
-                                script.Call("OnTriggerPersist", rhs);
-                                break;
-                            }
-                        case CollisionEvent::Type::eTriggerExit:
-                            {
-                                script.Call("OnTriggerExit", rhs);
-                                break;
-                            }
-                        }
-                        script.Unbind();
-                    });
-                }
-            });
+            //     if (e == event->entityA) {
+            //         rhs  = event->entityB;
+            //         call = true;
+            //     } else if (e == event->entityB) {
+            //         rhs  = event->entityA;
+            //         call = true;
+            //     }
+
+            //     if (call) {
+            //         collisionCallbacks.emplace_back([&scene = scene, ent = ent, eventType = event->type, rhs = rhs]() {
+            //             auto [script] = scene.GetWorld().Get<lua::Script>(ent);
+            //             script.Bind();
+            //             switch (eventType) {
+            //             case CollisionEvent::Type::eCollisionEnter:
+            //                 {
+            //                     script.Call("OnCollisionEnter", rhs);
+            //                     break;
+            //                 }
+            //             case CollisionEvent::Type::eCollisionPersist:
+            //                 {
+            //                     script.Call("OnCollisionPersist", rhs);
+            //                     break;
+            //                 }
+            //             case CollisionEvent::Type::eCollisionExit:
+            //                 {
+            //                     script.Call("OnCollisionExit", rhs);
+            //                     break;
+            //                 }
+            //             case CollisionEvent::Type::eTriggerEnter:
+            //                 {
+            //                     script.Call("OnTriggerEnter", rhs);
+            //                     break;
+            //                 }
+            //             case CollisionEvent::Type::eTriggerPersist:
+            //                 {
+            //                     script.Call("OnTriggerPersist", rhs);
+            //                     break;
+            //                 }
+            //             case CollisionEvent::Type::eTriggerExit:
+            //                 {
+            //                     script.Call("OnTriggerExit", rhs);
+            //                     break;
+            //                 }
+            //             }
+            //             script.Unbind();
+            //         });
+            //     }
+            // });
         }
         event->isHandled = true;
     }
@@ -1415,16 +1427,15 @@ class AdHoc {
                 UpdateCameras();
                 UpdateScripts(deltaTime);
 
+                // if (!collisionCallbacks.empty()) {
+                // for (auto&& i : collisionCallbacks) {
+                //     i();
+                // }
+                //     collisionCallbacks.clear();
+                // }
+
                 if (g_IsPlaying && !g_IsPaused) {
                     scene.GetPhysics().StepSimulation(deltaTime);
-
-                    if (!collisionCallbacks.empty()) {
-                        for (auto&& i : collisionCallbacks) {
-                            i();
-                        }
-                        collisionCallbacks.clear();
-                    }
-
                     scene.GetWorld().GetSystem<Transform, RigidBody>().ForEach([&](Transform& transform, RigidBody& rigidBody) {
                         rigidBody.OnUpdate(transform);
                     });
@@ -1532,8 +1543,58 @@ class AdHoc {
                     script.Call("FixedUpdate");
                     script.fixedUpdateAcculumator = {};
                 }
+
+                auto ee = static_cast<std::uint64_t>(ent);
+                for (std::size_t i{}; i != collisionCallbacks2.size(); ++i) {
+                    bool call = false;
+                    std::uint64_t rhs;
+                    if (collisionCallbacks2[i].e[0] == ee) {
+                        rhs  = collisionCallbacks2[i].e[1];
+                        call = true;
+                    } else if (collisionCallbacks2[i].e[1] == ee) {
+                        rhs  = collisionCallbacks2[i].e[0];
+                        call = true;
+                    }
+
+                    if (call) {
+                        switch (collisionCallbacks2[i].type) {
+                        case CollisionEvent::Type::eCollisionEnter:
+                            {
+                                script.Call("OnCollisionEnter", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eCollisionPersist:
+                            {
+                                script.Call("OnCollisionPersist", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eCollisionExit:
+                            {
+                                script.Call("OnCollisionExit", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eTriggerEnter:
+                            {
+                                script.Call("OnTriggerEnter", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eTriggerPersist:
+                            {
+                                script.Call("OnTriggerPersist", rhs);
+                                break;
+                            }
+                        case CollisionEvent::Type::eTriggerExit:
+                            {
+                                script.Call("OnTriggerExit", rhs);
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 script.Unbind();
             });
+            collisionCallbacks2.clear();
         }
     }
 
