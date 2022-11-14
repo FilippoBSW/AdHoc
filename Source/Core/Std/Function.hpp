@@ -79,7 +79,7 @@ namespace adh {
             Clear();
         }
 
-        ReturnType operator()(Args&&... args) noexcept {
+        ReturnType operator()(Args... args) noexcept {
             return m_Invoke(m_Data, Forward<Args>(args)...);
         }
 

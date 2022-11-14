@@ -86,11 +86,12 @@ const xmm::Matrix lightSpaceBias{
     0.5f, 0.5f, 0.0f, 1.0f
 };
 
-Vector3D sunPosition{ 6.0f, 10.0f, -10.0f };
+Vector3D sunPosition{ 6.0f, 20.0f, -10.0f };
 
 struct FragmentData {
     alignas(16) Vector3D ambient;
     alignas(16) Vector3D cameraPosition;
+    alignas(4) int shadowPCF;
 } fragmentUbo;
 
 struct AspectRatio {
@@ -1215,7 +1216,10 @@ class AdHoc {
     HDRDraw hdrDraw;
     GaussianBlur gaussianBlur;
 
-    float* floats[6];
+    float* floats[7];
+
+    int shadowPCF        = 0;
+    float floatShadowPCF = 0;
 
     AudioDevice audioDevice;
 
@@ -1348,7 +1352,8 @@ class AdHoc {
         sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
 
         shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
-        shadowMap.m_Extent   = { 2048 * 2, 2048 * 2 };
+        shadowMap.m_Extent   = { 2048, 2048 };
+        // shadowMap.m_Extent = { 1024, 1024 };
         shadowMap.Create(renderPass, sampler);
         lightSpace = lightSpaceBias * shadowMap.lightSpace;
 
@@ -1390,6 +1395,7 @@ class AdHoc {
         floats[3] = &gaussianBlur.ubo.blurStrength;
         floats[4] = &directionalLight.intensity;
         floats[5] = &hdrDraw.intensity[1];
+        floats[6] = &floatShadowPCF;
 
         audioDevice.Create();
 
@@ -1612,6 +1618,9 @@ class AdHoc {
 
         auto cmd = commandBuffer.Begin(currentFrame);
 
+        fragmentUbo.shadowPCF = (int)floatShadowPCF;
+        fragDataBuffer.Update(imageIndex);
+
         // TODO: problem with fullscreen
         if (g_DrawEditor) {
             directionalLight.direction = sunPosition;
@@ -1667,67 +1676,67 @@ class AdHoc {
         }
 
         // End shadowmap
+        if (!g_DrawEditor) {
+            // Draw hdr texture
+            {
+                hdrBuffer.m_RenderPass.Begin(cmd, hdrBuffer.m_Framebuffer);
+                hdrBuffer.graphicsPipeline.Bind(cmd);
+                descriptorSet.Bind(cmd, imageIndex);
 
-        // Draw hdr texture
-        {
-            hdrBuffer.m_RenderPass.Begin(cmd, hdrBuffer.m_Framebuffer);
-            hdrBuffer.graphicsPipeline.Bind(cmd);
-            descriptorSet.Bind(cmd, imageIndex);
+                viewport.Update(swapchain.GetExtent(), false);
+                viewport.Set(cmd);
 
-            viewport.Update(swapchain.GetExtent(), false);
-            viewport.Set(cmd);
+                scissor.Update(swapchain.GetExtent());
+                scissor.Set(cmd);
 
-            scissor.Update(swapchain.GetExtent());
-            scissor.Set(cmd);
+                float depthBiasConstant = 1.25f;
+                float depthBiasSlope    = 1.75f;
+                vkCmdSetDepthBias(cmd, 0, 0.0f, 0);
+                // vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
 
-            float depthBiasConstant = 1.25f;
-            float depthBiasSlope    = 1.75f;
-            vkCmdSetDepthBias(cmd, 0, 0.0f, 0);
-            // vkCmdSetDepthBias(cmd, depthBiasConstant, 0.0f, depthBiasSlope);
+                scene.GetWorld().GetSystem<Transform, Mesh, Material>().ForEach([&](ecs::Entity e, Transform& transform, Mesh& mesh, Material& material) {
+                    if (mesh.toDraw) {
+                        xmm::Matrix transformMatrix;
+                        if (!g_IsPlaying) {
+                            transformMatrix = transform.GetXmm();
+                        } else if (g_IsPlaying && scene.GetWorld().Contains<RigidBody>(e)) {
+                            transformMatrix = transform.GetXmmPhysics();
+                        } else {
+                            transformMatrix = transform.GetXmm();
+                        }
+                        vkCmdPushConstants(
+                            cmd,
+                            pipelineLayout,
+                            VK_SHADER_STAGE_VERTEX_BIT,
+                            0u,
+                            sizeof(transformMatrix), &transformMatrix);
 
-            scene.GetWorld().GetSystem<Transform, Mesh, Material>().ForEach([&](ecs::Entity e, Transform& transform, Mesh& mesh, Material& material) {
-                if (mesh.toDraw) {
-                    xmm::Matrix transformMatrix;
-                    if (!g_IsPlaying) {
-                        transformMatrix = transform.GetXmm();
-                    } else if (g_IsPlaying && scene.GetWorld().Contains<RigidBody>(e)) {
-                        transformMatrix = transform.GetXmmPhysics();
-                    } else {
-                        transformMatrix = transform.GetXmm();
+                        vkCmdPushConstants(
+                            cmd,
+                            pipelineLayout,
+                            VK_SHADER_STAGE_FRAGMENT_BIT,
+                            64u,
+                            sizeof(material), &material);
+
+                        if (mesh.GetIndexCount() > 0) {
+                            mesh.Bind(cmd);
+                            vkCmdDrawIndexed(cmd, mesh.GetIndexCount(), 1u, 0u, 0, 0u);
+                        }
                     }
-                    vkCmdPushConstants(
-                        cmd,
-                        pipelineLayout,
-                        VK_SHADER_STAGE_VERTEX_BIT,
-                        0u,
-                        sizeof(transformMatrix), &transformMatrix);
+                });
 
-                    vkCmdPushConstants(
-                        cmd,
-                        pipelineLayout,
-                        VK_SHADER_STAGE_FRAGMENT_BIT,
-                        64u,
-                        sizeof(material), &material);
+                hdrBuffer.m_RenderPass.End(cmd);
+            }
+            // End  hdr texture
 
-                    if (mesh.GetIndexCount() > 0) {
-                        mesh.Bind(cmd);
-                        vkCmdDrawIndexed(cmd, mesh.GetIndexCount(), 1u, 0u, 0, 0u);
-                    }
-                }
-            });
+            // Gaussian blur
+            {
+                vkCmdSetDepthBias(cmd, 0, 0, 0);
 
-            hdrBuffer.m_RenderPass.End(cmd);
+                gaussianBlur.Draw(cmd, imageIndex, viewport, scissor);
+            }
+            // Gaussian blur
         }
-        // End  hdr texture
-
-        // Gaussian blur
-        {
-            vkCmdSetDepthBias(cmd, 0, 0, 0);
-
-            gaussianBlur.Draw(cmd, imageIndex, viewport, scissor);
-        }
-        // Gaussian blur
-
         if (g_DrawEditor) {
             for (std::uint32_t i{}; i != 2u; ++i) {
                 editor.BeginRenderPass(cmd, imageIndex, i);

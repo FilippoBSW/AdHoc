@@ -130,7 +130,7 @@ namespace adh {
 
         physx::PxTriangleMesh* triMesh = m_Cooking->createTriangleMesh(meshDesc, m_Physics->getPhysicsInsertionCallback());
         auto shape{ PxRigidActorExt::createExclusiveShape(*actor, PxTriangleMeshGeometry(triMesh), *material) };
-        triMesh->release();
+        // triMesh->release();
         return shape;
     }
 
@@ -149,7 +149,7 @@ namespace adh {
 
         physx::PxConvexMesh* convMesh = m_Cooking->createConvexMesh(meshDesc, m_Physics->getPhysicsInsertionCallback());
         auto shape                    = PxRigidActorExt::createExclusiveShape(*actor, PxConvexMeshGeometry(convMesh), *material);
-        convMesh->release();
+        // convMesh->release();
         return shape;
     }
 

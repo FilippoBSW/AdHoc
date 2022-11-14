@@ -78,9 +78,14 @@ namespace adh {
                     rigidBody.SetGeometry(physx::PxBoxGeometry{ rigidBody.scale.x, rigidBody.scale.y, rigidBody.scale.z });
                 }
             } else if (rigidBody.colliderShape == PhysicsColliderShape::eSphere) {
+                rigidBody.radius = (transform.scale[0] + transform.scale[1] + transform.scale[2]) / 3;
                 rigidBody.SetGeometry(physx::PxSphereGeometry{ rigidBody.radius });
             } else if (rigidBody.colliderShape == PhysicsColliderShape::eCapsule) {
+                rigidBody.radius = (transform.scale[0] + transform.scale[1] + transform.scale[2]) / 3;
                 rigidBody.SetGeometry(physx::PxCapsuleGeometry{ rigidBody.radius, rigidBody.halfHeight });
+            } else if (rigidBody.colliderShape == PhysicsColliderShape::eMesh || rigidBody.colliderShape == PhysicsColliderShape::eConvexMesh) {
+                rigidBody.scale = transform.scale;
+                rigidBody.UpdateGeometry();
             }
             rigidBody.SetTrigger(rigidBody.isTrigger);
 

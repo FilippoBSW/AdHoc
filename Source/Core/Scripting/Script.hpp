@@ -399,10 +399,10 @@ namespace adh {
 
             inline static std::string typeName;
             inline static std::string metatableName;
-            inline static std::atomic<std::function<int(lua_State*)>*> toCall;
-            inline static std::unordered_map<std::string, std::pair<std::function<void(lua_State* L, T* ptr)>, std::function<void(lua_State* L, T* ptr)>>> indexMap;
-            inline static std::unordered_map<std::string, std::function<int(lua_State*)>> methodsMap;
-            inline static std::unordered_map<std::string, std::function<int(lua_State*)>> constructorsMap;
+            inline static std::atomic<Function<int(lua_State*)>*> toCall;
+            inline static std::unordered_map<std::string, std::pair<Function<void(lua_State* L, T* ptr)>, Function<void(lua_State* L, T* ptr)>>> indexMap;
+            inline static std::unordered_map<std::string, Function<int(lua_State*)>> methodsMap;
+            inline static std::unordered_map<std::string, Function<int(lua_State*)>> constructorsMap;
             inline static std::unordered_map<void*, bool> toDestroy;
         };
 
@@ -733,7 +733,7 @@ namespace adh {
 
           private:
             lua_State* m_State;
-            inline static std::unordered_map<std::string, std::function<int(lua_State*)>> m_GlobalFunctions;
+            inline static std::unordered_map<std::string, Function<int(lua_State*)>> m_GlobalFunctions;
             Array<UniquePtr<BaseType>> m_Types;
             inline static std::uint64_t uniqueId;
         };

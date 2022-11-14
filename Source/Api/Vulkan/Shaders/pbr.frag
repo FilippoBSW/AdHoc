@@ -39,6 +39,7 @@
  layout (set = 1, binding = 0) uniform Data {
 	vec3 ambient;
     vec3 cameraPosition;
+	int pcf2;
  } ubo;
 
  layout (set = 1, binding = 1) uniform DataPoint {
@@ -150,8 +151,10 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
     vec3 projCoords    = shadowCoords.xyz / shadowCoords.w;
     float currentDepth = projCoords.z;
 
-    // float closestDepth = texture(shadowMap, projCoords.xy).r;
-	// return  currentDepth > closestDepth ? 1.0f : 0.0f;
+	if (pcf == 0){
+    	float closestDepth = texture(shadowMap, projCoords.xy).r;
+		return  currentDepth > closestDepth ? 1.0f : 0.0f;
+	} else {
 
 	float shadow = 0.0;
 	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
@@ -169,6 +172,7 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
 
 	shadow /= retDiv;
     return shadow;
+	}
 } 
 
  void main() {
@@ -179,7 +183,7 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
 	vec3 reflectance  = vec3(0.0f);
 
 	// float bias = max(0.05 * (1.0 - dot(inNormals, inLightPosition.xyz)), 0.001);  
-	float shadow      = ShadowCalculation(inLightPosition, 6, 0.001);
+	float shadow      = ShadowCalculation(inLightPosition, ubo.pcf2, 0.001);
 
 	reflectance += (1.0f - shadow) * CalculateDirectionalLights(N, V, reflectivity, directionalLight);
 

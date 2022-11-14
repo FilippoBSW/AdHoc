@@ -335,6 +335,20 @@ namespace adh {
             SetGeometry(physx::PxSphereGeometry{ radius });
         } else if (colliderShape == PhysicsColliderShape::eCapsule) {
             SetGeometry(physx::PxCapsuleGeometry{ radius, halfHeight });
+
+        } else if (colliderShape == PhysicsColliderShape::eMesh) {
+            physx::PxTriangleMeshGeometry geometry2;
+            shape->getTriangleMeshGeometry(geometry2);
+            physx::PxMeshScale s(physx::PxVec3(scale[0], scale[1], scale[2]), physx::PxQuat(physx::PxIdentity));
+            shape->setGeometry(physx::PxTriangleMeshGeometry(geometry2.triangleMesh, s));
+            // SetGeometry(physx::PxTriangleMeshGeometry(geometry2.triangleMesh, s));
+
+        } else if (colliderShape == PhysicsColliderShape::eConvexMesh) {
+            physx::PxConvexMeshGeometry geometry2;
+            shape->getConvexMeshGeometry(geometry2);
+            physx::PxMeshScale s(physx::PxVec3(scale[0], scale[1], scale[2]), physx::PxQuat(physx::PxIdentity));
+            shape->setGeometry(physx::PxConvexMeshGeometry(geometry2.convexMesh, s));
+            // SetGeometry(physx::PxConvexMeshGeometry(geometry2.convexMesh, s));
         }
     }
 
@@ -346,8 +360,8 @@ namespace adh {
                 static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eACCELERATION);
                 static_cast<physx::PxRigidDynamic*>(actor)->clearForce(physx::PxForceMode::eVELOCITY_CHANGE);
                 static_cast<physx::PxRigidDynamic*>(actor)->clearTorque();
-                static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{0.0f,0.0f,0.0f}, false);
-                static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{0.0f,0.0f,0.0f}, false);
+                static_cast<physx::PxRigidDynamic*>(actor)->setLinearVelocity(physx::PxVec3{ 0.0f, 0.0f, 0.0f }, false);
+                static_cast<physx::PxRigidDynamic*>(actor)->setAngularVelocity(physx::PxVec3{ 0.0f, 0.0f, 0.0f }, false);
                 velocity        = {};
                 angularVelocity = {};
             }
