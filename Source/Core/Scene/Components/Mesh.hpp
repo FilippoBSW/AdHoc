@@ -37,6 +37,7 @@ namespace adh {
         vk::IndexBuffer index;
         vk::VertexBuffer vertex;
         Array<Vertex> vertices;
+        Array<Vector3D> vertices2;
         Array<std::uint32_t> indices;
         std::string meshName;
         std::string meshFilePath;

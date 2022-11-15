@@ -544,7 +544,7 @@ namespace adh {
                                      1.0f,
                                      isStatic ? PhysicsBodyType::eStatic : PhysicsBodyType::eDynamic,
                                      1.0f,
-                                     false,
+                                     true,
                                      false,
                                      true,
                                      colliderShape,

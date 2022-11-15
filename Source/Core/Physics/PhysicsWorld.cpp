@@ -117,40 +117,47 @@ namespace adh {
     [[nodiscard]] physx::PxShape* PhysicsWorld::CreateMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
         auto&& meshBuffer{ mesh.Get() };
         PxTriangleMeshDesc meshDesc;
-        meshDesc.setToDefault();
-        meshDesc.points.data      = meshBuffer->vertices.GetData();
-        meshDesc.points.stride    = sizeof(meshBuffer->vertices[0]);
-        meshDesc.points.count     = static_cast<physx::PxU32>(meshBuffer->vertices.GetSize());
-        meshDesc.triangles.count  = static_cast<physx::PxU32>(meshBuffer->indices.GetSize() / 3u);
+        meshDesc.points.count  = meshBuffer->vertices2.GetSize();
+        meshDesc.points.stride = sizeof(meshBuffer->vertices2[0]);
+        meshDesc.points.data   = meshBuffer->vertices2.GetData();
+
+        meshDesc.triangles.count  = meshBuffer->indices.GetSize() / 3;
         meshDesc.triangles.stride = 3 * sizeof(meshBuffer->indices[0]);
         meshDesc.triangles.data   = meshBuffer->indices.GetData();
-        if (sizeof(meshBuffer->indices[0]) == sizeof(uint16_t)) {
-            meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
-        }
 
-        physx::PxTriangleMesh* triMesh = m_Cooking->createTriangleMesh(meshDesc, m_Physics->getPhysicsInsertionCallback());
-        auto shape{ PxRigidActorExt::createExclusiveShape(*actor, PxTriangleMeshGeometry(triMesh), *material) };
-        // triMesh->release();
-        return shape;
+        PxDefaultMemoryOutputStream writeBuffer;
+        PxTriangleMeshCookingResult::Enum result;
+        bool status = m_Cooking->cookTriangleMesh(meshDesc, writeBuffer, &result);
+        if (!status)
+            return NULL;
+
+        PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+        PxTriangleMesh* aTriangleMesh = m_Physics->createTriangleMesh(readBuffer);
+
+        PxShape* aConvexShape = PxRigidActorExt::createExclusiveShape(*actor, PxTriangleMeshGeometry(aTriangleMesh), *material);
+
+        return aConvexShape;
     }
 
     [[nodiscard]] physx::PxShape* PhysicsWorld::CreateConvexMeshShape(physx::PxRigidActor* actor, physx::PxMaterial* material, const Mesh& mesh) {
         auto&& meshBuffer{ mesh.Get() };
-        PxBoundedData pointdata{};
-        pointdata.count  = static_cast<physx::PxU32>(meshBuffer->vertices.GetSize());
-        pointdata.stride = sizeof(PxVec3);
-        pointdata.data   = meshBuffer->vertices.GetData();
 
-        PxConvexMeshDesc meshDesc;
-        meshDesc.setToDefault();
-        meshDesc.points.count = static_cast<physx::PxU32>(meshBuffer->vertices.GetSize());
-        meshDesc.points       = pointdata;
-        meshDesc.flags        = PxConvexFlag::eCOMPUTE_CONVEX;
+        PxConvexMeshDesc convexDesc;
+        convexDesc.points.count  = meshBuffer->vertices2.GetSize();
+        convexDesc.points.stride = sizeof(meshBuffer->vertices2[0]);
+        convexDesc.points.data   = meshBuffer->vertices2.GetData();
+        convexDesc.flags         = PxConvexFlag::eCOMPUTE_CONVEX;
 
-        physx::PxConvexMesh* convMesh = m_Cooking->createConvexMesh(meshDesc, m_Physics->getPhysicsInsertionCallback());
-        auto shape                    = PxRigidActorExt::createExclusiveShape(*actor, PxConvexMeshGeometry(convMesh), *material);
-        // convMesh->release();
-        return shape;
+        PxDefaultMemoryOutputStream buf;
+        PxConvexMeshCookingResult::Enum result;
+        if (!m_Cooking->cookConvexMesh(convexDesc, buf, &result))
+            return NULL;
+        PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
+        PxConvexMesh* convexMesh = m_Physics->createConvexMesh(input);
+
+        PxShape* aConvexShape = PxRigidActorExt::createExclusiveShape(*actor, PxConvexMeshGeometry(convexMesh), *material);
+
+        return aConvexShape;
     }
 
     [[nodiscard]] physx::PxRigidDynamic* PhysicsWorld::CreateDynamicActor() {
