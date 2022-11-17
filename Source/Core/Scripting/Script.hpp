@@ -493,6 +493,10 @@ namespace adh {
                     lua_pop(m_State, 1);
                 }
                 Unbind();
+
+                for (int i{ lua_gettop(m_State) }; i != 1; --i) {
+                    lua_pop(m_State, 1);
+                }
             }
 
           public:
