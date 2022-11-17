@@ -326,14 +326,14 @@ namespace adh {
         return 0;
     }
 
-    int ScriptHandler::CallScript(lua_State* L) {
-        auto& script = **static_cast<lua::Script**>(lua_touserdata(L, 1));
-        auto func    = lua_tostring(L, 2);
-        script.Bind();
-        script.Call2(func);
-        lua_remove(L, -2);
-        return 1;
-    }
+    // int ScriptHandler::CallScript(lua_State* L) {
+    //     auto& script = **static_cast<lua::Script**>(lua_touserdata(L, 1));
+    //     auto func    = lua_tostring(L, 2);
+    //     script.Bind();
+    //     script.Call2(func);
+    //     lua_remove(L, -2);
+    //     return 1;
+    // }
 
     // TODO:
     int ScriptHandler::SerializeField(lua_State* L) {
@@ -343,7 +343,7 @@ namespace adh {
     void ScriptHandler::RegisterBindings() {
         auto& state = scene->GetState();
 
-        state.AddFunction("CallScript", ScriptHandler::CallScript);
+        // state.AddFunction("CallScript", ScriptHandler::CallScript);
         state.AddFunction("GetScene", ScriptHandler::GetScene);
         state.AddFunction("LoadScene", ScriptHandler::LoadScene);
         state.AddFunction("CreateEntity", ScriptHandler::CreateEntity);

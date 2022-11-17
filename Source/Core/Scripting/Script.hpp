@@ -471,7 +471,8 @@ namespace adh {
             }
 
             // template <typename... Args>
-            void Call2(const char* funcName) {
+            void Call2() {
+                auto funcName = lua_tostring(m_State, 2);
                 Bind();
                 lua_getfield(m_State, -1, funcName);
                 if (lua_isfunction(m_State, -1)) {
