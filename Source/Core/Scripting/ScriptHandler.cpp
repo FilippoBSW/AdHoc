@@ -252,6 +252,11 @@ namespace adh {
                 auto [temp] = scene->GetWorld().Get<Mesh>(entity);
                 return scene->GetState().BindObject(&temp);
             }
+        } else if (!std::strcmp(name, "Script")) {
+            if (scene->GetWorld().Contains<lua::Script>(entity)) {
+                auto [temp] = scene->GetWorld().Get<lua::Script>(entity);
+                return scene->GetState().BindObject(&temp);
+            }
         } else if (!std::strcmp(name, "Tag")) {
             if (scene->GetWorld().Contains<Tag>(entity)) {
                 auto [temp] = scene->GetWorld().Get<Tag>(entity);
@@ -512,5 +517,8 @@ namespace adh {
         // state.RegisterTypeFunction<Audio>("Resume", &Audio::Resume);
         state.RegisterTypeFunction<Audio>("Loop", &Audio::Loop);
         state.RegisterTypeFunction<Audio>("IsPlaying", &Audio::IsPlaying);
+
+        state.RegisterType<lua::Script>("Script");
+        state.RegisterTypeFunction<lua::Script>("Call", &lua::Script::Call2);
     }
 } // namespace adh

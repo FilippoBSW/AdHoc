@@ -470,8 +470,9 @@ namespace adh {
                 }
             }
 
-            template <typename... Args>
+            // template <typename... Args>
             void Call2(const char* funcName) {
+                Bind();
                 lua_getfield(m_State, -1, funcName);
                 if (lua_isfunction(m_State, -1)) {
                     auto temp = lua_gettop(m_State) - 4;
@@ -490,6 +491,7 @@ namespace adh {
                 } else {
                     lua_pop(m_State, 1);
                 }
+                Unbind();
             }
 
           public:
