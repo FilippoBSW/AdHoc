@@ -520,5 +520,6 @@ namespace adh {
 
         state.RegisterType<lua::Script>("Script");
         state.RegisterTypeFunction<lua::Script>("Call", &lua::Script::Call2);
+        state.RegisterTypeFunction<lua::Script>("Get", &lua::Script::Get);
     }
 } // namespace adh

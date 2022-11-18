@@ -322,7 +322,7 @@ namespace adh {
                         std::apply(
                             method, std::tuple_cat(std::forward_as_tuple(*p),
                                                    std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
-                        return 0;
+                        return 1;
                     } else {
                         auto&& retVal = std::apply(
                             method, std::tuple_cat(std::forward_as_tuple(*p),
@@ -360,7 +360,7 @@ namespace adh {
                         std::apply(
                             method, std::tuple_cat(std::forward_as_tuple(*p),
                                                    std::forward_as_tuple(static_cast<Args>(GetType<Args>()(L, index))...)));
-                        return 0;
+                        return 1;
                     } else {
                         auto&& retVal = std::apply(
                             method, std::tuple_cat(std::forward_as_tuple(*p),
@@ -470,13 +470,15 @@ namespace adh {
                 }
             }
 
-            // template <typename... Args>
             void Call2() {
                 auto funcName = lua_tostring(m_State, 2);
                 Bind();
                 lua_getfield(m_State, -1, funcName);
+
+                int remove = 0;
                 if (lua_isfunction(m_State, -1)) {
-                    auto temp = lua_gettop(m_State) - 4;
+                    auto test1 = lua_gettop(m_State);
+                    auto temp  = lua_gettop(m_State) - 4;
                     for (int i{}; i != temp; ++i) {
                         lua_pushvalue(m_State, 3 + i);
                     }
@@ -489,13 +491,32 @@ namespace adh {
                         errorText           = "File: " + filename + " - Function: " + funcName + " -> " + err + "\n ";
                         Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eError, errorText.data());
                     }
+                    auto test2 = lua_gettop(m_State);
+                    if (test1 == test2) {
+                        remove = 1;
+                    }
                 } else {
                     lua_pop(m_State, 1);
                 }
-                Unbind();
 
-                for (int i{ lua_gettop(m_State) }; i != 1; --i) {
-                    lua_pop(m_State, 1);
+                if (!remove) {
+                    lua_pop(m_State, 3);
+                } else {
+                    lua_remove(m_State, -2);
+                    lua_remove(m_State, -2);
+                }
+            }
+
+            void Get() noexcept {
+                auto valueName = lua_tostring(m_State, 2);
+                Bind();
+                if (!lua_getfield(m_State, -1, valueName)) {
+                    std::string s = std::string(valueName) + ": Invalid value name!\n";
+                    Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eError, s.data());
+                    lua_pop(m_State, 3);
+                } else {
+                    lua_remove(m_State, -2);
+                    lua_remove(m_State, -2);
                 }
             }
 
