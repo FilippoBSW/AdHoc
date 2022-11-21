@@ -23,6 +23,7 @@
 // *********************************************************************************
 
 #include "Mesh.hpp"
+#include <Event/Event.hpp>
 #include <Math/Math.hpp>
 #include <Utility.hpp>
 #include <Vulkan/Context.hpp>
@@ -33,21 +34,20 @@
 namespace adh {
     // FIXME: Assimp fails with big .obj files
     void Mesh::Load(const std::string& meshPath) {
-        bufferData = Mesh::meshes[meshPath];
+        Assimp::Importer imp;
+        auto pModel = imp.ReadFile(
+            meshPath.data(),
+            aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
 
-        if (!bufferData) {
-            bufferData             = MakeShared<MeshBufferData>();
-            Mesh::meshes[meshPath] = bufferData;
+        ADH_THROW(pModel, imp.GetErrorString());
 
-            Assimp::Importer imp;
+        if (pModel) {
+            bufferData = Mesh::meshes[meshPath];
 
-            auto pModel = imp.ReadFile(
-                meshPath.data(),
-                aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
+            if (!bufferData) {
+                bufferData             = MakeShared<MeshBufferData>();
+                Mesh::meshes[meshPath] = bufferData;
 
-            ADH_THROW(pModel, imp.GetErrorString());
-
-            if (pModel) {
                 auto pMesh = pModel->mMeshes[0];
 
                 bufferData->vertices.Reserve(pMesh->mNumVertices);
@@ -75,6 +75,9 @@ namespace adh {
                 bufferData->meshName     = meshPath.substr(p + 1);
                 bufferData->meshFilePath = meshPath;
             }
+        } else {
+            std::string s{ "[" + meshPath + "] " + "Model does not exit!" };
+            Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eError, s.data());
         }
     }
 
