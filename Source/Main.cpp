@@ -22,6 +22,11 @@
 // SOFTWARE.
 // *********************************************************************************
 
+// TODO: ot
+// Notes:
+// Texture as Components
+// Texture lighing
+
 #include <Audio/Audio.hpp>
 #include <Editor/Editor.hpp>
 #include <Entity/Entity.hpp>
@@ -55,6 +60,7 @@
 #include <Vulkan/VertexBuffer.hpp>
 #include <Vulkan/VertexLayout.hpp>
 #include <Vulkan/Viewport.hpp>
+#include <Vulkan/Texture2D.hpp>
 #include <Window.hpp>
 
 #include <fstream>
@@ -225,6 +231,7 @@ struct ShadowMap2D {
         vertexLayout.AddBinding(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
         vertexLayout.AddAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, position));
         vertexLayout.AddAttribute(1, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, normals));
+        vertexLayout.AddAttribute(2, 0, VK_FORMAT_R32G32_SFLOAT, ADH_OFFSET(Vertex, textureCoords));
         vertexLayout.Create();
 
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
@@ -399,6 +406,7 @@ struct HDRBuffer {
         vertexLayout.AddBinding(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
         vertexLayout.AddAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, position));
         vertexLayout.AddAttribute(1, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, normals));
+        vertexLayout.AddAttribute(2, 0, VK_FORMAT_R32G32_SFLOAT, ADH_OFFSET(Vertex, textureCoords));
         vertexLayout.Create();
 
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
@@ -408,6 +416,7 @@ struct HDRBuffer {
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
         pipelineLayout.AddPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(xmm::Matrix), 0);
@@ -1223,6 +1232,8 @@ class AdHoc {
 
     AudioDevice audioDevice;
 
+    Texture2D testTexture;
+
   public:
     ~AdHoc() {
         auto device{ Context::Get()->GetDevice() };
@@ -1357,6 +1368,9 @@ class AdHoc {
         shadowMap.Create(renderPass, sampler);
         lightSpace = lightSpaceBias * shadowMap.lightSpace;
 
+        // TODO: Textures
+        testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "link.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
+
         InitializePipeline();
         InitializeDescriptorSets();
         InitializeEditorDescriptorSets();
@@ -1398,6 +1412,7 @@ class AdHoc {
         floats[6] = &floatShadowPCF;
 
         audioDevice.Create();
+
 
         renderingReady = true;
     }
@@ -2019,6 +2034,7 @@ class AdHoc {
         vertexLayout.AddBinding(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
         vertexLayout.AddAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, position));
         vertexLayout.AddAttribute(1, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, normals));
+        vertexLayout.AddAttribute(2, 0, VK_FORMAT_R32G32_SFLOAT, ADH_OFFSET(Vertex, textureCoords));
         vertexLayout.Create();
 
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
@@ -2028,6 +2044,7 @@ class AdHoc {
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
         pipelineLayout.AddPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(xmm::Matrix), 0);
@@ -2050,7 +2067,7 @@ class AdHoc {
 
         descriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
         descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4);
-        descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+        descriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2);
         descriptorSet.Create(pipelineLayout.GetSetLayout());
 
         viewProjectionBuffer.Create(&viewProjection, sizeof(viewProjection), swapchain.GetImageViewCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -2101,6 +2118,16 @@ class AdHoc {
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
         );
+
+        // TODO: Texture!!
+        descriptorSet.Update(
+            testTexture.GetDescriptor(),
+            1u,                                       // descriptor index
+            3u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
     }
 
     void InitializeEditorDescriptorSets() {
@@ -2112,7 +2139,7 @@ class AdHoc {
         {
             editorDescriptorSet.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
             editorDescriptorSet.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4);
-            editorDescriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+            editorDescriptorSet.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2);
             editorDescriptorSet.Create(pipelineLayout.GetSetLayout());
 
             editorViewProjectionBuffer.Create(&editorViewProjection, sizeof(editorViewProjection),
@@ -2161,11 +2188,20 @@ class AdHoc {
                 1u,                                       // array count
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
+            // TODO: Texture!!
+            editorDescriptorSet.Update(
+                testTexture.GetDescriptor(),
+                1u,                                       // descriptor index
+                3u,                                       // binding
+                0u,                                       // array element
+                1u,                                       // array count
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            );
         }
         {
             editorDescriptorSet2.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
             editorDescriptorSet2.AddPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 4);
-            editorDescriptorSet2.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+            editorDescriptorSet2.AddPool(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2);
             editorDescriptorSet2.Create(pipelineLayout.GetSetLayout());
 
             editorViewProjectionBuffer2.Create(&editorViewProjection2, sizeof(editorViewProjection2),
@@ -2210,6 +2246,15 @@ class AdHoc {
                 shadowMap.descriptor,
                 1u,                                       // descriptor index
                 2u,                                       // binding
+                0u,                                       // array element
+                1u,                                       // array count
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            );
+            // TODO: Texture!!
+            editorDescriptorSet.Update(
+                testTexture.GetDescriptor(),
+                1u,                                       // descriptor index
+                3u,                                       // binding
                 0u,                                       // array element
                 1u,                                       // array count
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -2344,6 +2389,7 @@ class AdHoc {
         vertexLayout.AddBinding(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
         vertexLayout.AddAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, position));
         vertexLayout.AddAttribute(1, 0, VK_FORMAT_R32G32B32_SFLOAT, ADH_OFFSET(Vertex, normals));
+        vertexLayout.AddAttribute(2, 0, VK_FORMAT_R32G32_SFLOAT, ADH_OFFSET(Vertex, textureCoords));
         vertexLayout.Create();
 
         Shader shader("pbr.vert", "editor_pbr.frag");

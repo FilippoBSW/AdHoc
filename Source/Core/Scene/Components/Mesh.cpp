@@ -55,7 +55,8 @@ namespace adh {
                 for (std::size_t i{}; i != pMesh->mNumVertices; ++i) {
                     bufferData->vertices.EmplaceBack(
                         Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z },
-                        Vector3D{ pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z });
+                        Vector3D{ pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z },
+                        Vector2D{ pMesh->mTextureCoords[0][i].x, pMesh->mTextureCoords[0][i].y });
                     bufferData->vertices2.EmplaceBack(Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z });
                 }
 

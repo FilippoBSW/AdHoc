@@ -30,10 +30,12 @@
 
 layout (location = 0) in vec3 inPosition;
 layout (location = 1) in vec3 inNormals;
+layout (location = 2) in vec2 inTextureCoords;
 
 layout(location = 0) out vec3 outNormals;
-layout(location = 1) out vec3 outWorldPosition;
-layout(location = 2) out vec4 outLightPosition;
+layout(location = 1) out vec2 outTextureCoords;
+layout(location = 2) out vec3 outWorldPosition;
+layout(location = 3) out vec4 outLightPosition;
 
 layout(set = 0, binding = 0) uniform UBO  {
 	mat4 projView;
@@ -55,5 +57,6 @@ void main() {
 	outNormals       = mat3(transpose(inverse(model))) * inNormals;
 	outWorldPosition = vec3(model * vec4(inPosition, 1.0f));
 	outLightPosition = lightSpace * vec4(outWorldPosition, 1.0f);
+    outTextureCoords = inTextureCoords;
 	gl_Position      = projView * vec4(outWorldPosition, 1.0f);
 }

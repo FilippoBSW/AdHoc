@@ -31,8 +31,9 @@
 #include "pbr_functions.glsl"
 
  layout(location = 0) in vec3 inNormals;
- layout(location = 1) in vec3 inWorldPosition;
- layout(location = 2) in vec4 inLightPosition;
+ layout(location = 1) in vec2 inTextureCoords;
+ layout(location = 2) in vec3 inWorldPosition;
+ layout(location = 3) in vec4 inLightPosition;
 
  layout(location = 0) out vec4 outFragColor;
 
@@ -48,6 +49,7 @@
 
 // layout (set = 1, binding = 2) uniform samplerCube cubeShadowMap[1];
 layout (set = 1, binding = 2) uniform sampler2D shadowMap;
+layout (set = 1, binding = 3) uniform sampler2D texture1;
 
  layout(push_constant) uniform Materials {
 	layout(offset = 64) Material material;
@@ -193,5 +195,7 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
 	color      = color / (color + vec3(1.0f));
 	color      = pow(color, vec3(1.0f / 2.2f));
 
-	outFragColor = vec4(color, material.transparency);
+	/* outFragColor = vec4(color, material.transparency); */
+	vec4 tex = texture(texture1, inTextureCoords);
+	outFragColor = vec4(color * tex.rgb, tex.a);
 }
