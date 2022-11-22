@@ -55,12 +55,12 @@
 #include <Vulkan/Shader.hpp>
 #include <Vulkan/Subpass.hpp>
 #include <Vulkan/Swapchain.hpp>
+#include <Vulkan/Texture2D.hpp>
 #include <Vulkan/Tools.hpp>
 #include <Vulkan/UniformBuffer.hpp>
 #include <Vulkan/VertexBuffer.hpp>
 #include <Vulkan/VertexLayout.hpp>
 #include <Vulkan/Viewport.hpp>
-#include <Vulkan/Texture2D.hpp>
 #include <Window.hpp>
 
 #include <fstream>
@@ -1413,7 +1413,6 @@ class AdHoc {
 
         audioDevice.Create();
 
-
         renderingReady = true;
     }
 
@@ -2251,7 +2250,7 @@ class AdHoc {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
             // TODO: Texture!!
-            editorDescriptorSet.Update(
+            editorDescriptorSet2.Update(
                 testTexture.GetDescriptor(),
                 1u,                                       // descriptor index
                 3u,                                       // binding
