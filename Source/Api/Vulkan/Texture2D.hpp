@@ -135,6 +135,8 @@ namespace adh {
 
             static void InitializeDefaultSamplers();
 
+            static void CleanUpDefaultSamplers();
+
           private:
             VkImageUsageFlagBits SelectImageUsage(VkImageUsageFlagBits imageUsage, VkBool32 generateMinMap) noexcept;
 

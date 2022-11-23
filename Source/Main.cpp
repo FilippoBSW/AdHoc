@@ -1245,6 +1245,7 @@ class AdHoc {
             vkDestroyFence(device, fence1[i], nullptr);
         }
         Mesh::Clear(); // TODO: temp
+        Texture2D::CleanUpDefaultSamplers();
     }
 
     void OnCollisionEvent(CollisionEvent* event) {
@@ -1393,7 +1394,7 @@ class AdHoc {
 
         sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
 
-        Texture2D::InitializeDefaultSamplers();
+        // Texture2D::InitializeDefaultSamplers();
 
         shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
         shadowMap.m_Extent   = { 2048, 2048 };
@@ -1403,7 +1404,7 @@ class AdHoc {
 
         // TODO: Textures
         testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "link.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
-        testTexture2.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "default_texture.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
+        testTexture2.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "wall.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
 
         InitializePipeline();
         InitializeDescriptorSets();

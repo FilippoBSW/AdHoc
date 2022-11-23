@@ -154,6 +154,10 @@ namespace adh {
             }
         }
 
+        void Texture2D::CleanUpDefaultSamplers() {
+            m_DefaultSamplers.Clear();
+        }
+
         VkImage Texture2D::GetImage() noexcept {
             return m_Image.GetImage();
         }
