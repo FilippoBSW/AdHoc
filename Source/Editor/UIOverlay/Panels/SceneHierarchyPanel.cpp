@@ -156,6 +156,12 @@ namespace adh {
                 std::string filePath = vk::Context::Get()->GetDataDirectory() + "Assets/Scripts/" + script.fileName;
                 world.Add<lua::Script>(e, currentScene->GetState().CreateScript(filePath));
             }
+            if (world.Contains<vk::Texture2D>(entity)) {
+                auto [texture2d]     = world.Get<vk::Texture2D>(entity);
+                std::string filePath = vk::Context::Get()->GetDataDirectory() + "Assets/Textures/" + texture2d.mFileName;
+                auto [t]             = world.Add<vk::Texture2D>(e, vk::Texture2D{});
+                t.Create(filePath.data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
+            }
         }
     }
 } // namespace adh

@@ -1244,6 +1244,7 @@ class AdHoc {
             vkDestroyFence(device, fence1[i], nullptr);
         }
         Mesh::Clear(); // TODO: temp
+        testTexture.Destroy();
         Texture2D::CleanUpDefaultSamplers();
     }
 
