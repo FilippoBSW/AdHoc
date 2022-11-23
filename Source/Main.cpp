@@ -1355,6 +1355,36 @@ class AdHoc {
         event->isHandled = true;
     }
 
+    void UpdateTexture(const Texture2D& t) {
+        // TODO: Texture!!
+        descriptorSet.Update(
+            t.GetDescriptor(),
+            1u,                                       // descriptor index
+            3u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        // TODO: Texture!!
+        editorDescriptorSet.Update(
+            t.GetDescriptor(),
+            1u,                                       // descriptor index
+            3u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        // TODO: Texture!!
+        editorDescriptorSet2.Update(
+            t.GetDescriptor(),
+            1u,                                       // descriptor index
+            3u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+    }
+
     void Initialize(const char* path) {
         window.Create(name, 1200, 800, true, false);
         context.Create(window, "AdHoc", path);
@@ -1362,6 +1392,8 @@ class AdHoc {
         InitializeRenderPass();
 
         sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
+
+        Texture2D::InitializeDefaultSamplers();
 
         shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
         shadowMap.m_Extent   = { 2048, 2048 };
@@ -1415,36 +1447,7 @@ class AdHoc {
 
         audioDevice.Create();
 
-        // TODO: Texture!!
-        descriptorSet.Update(
-            testTexture2.GetDescriptor(),
-            1u,                                       // descriptor index
-            3u,                                       // binding
-            0u,                                       // array element
-            1u,                                       // array count
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        );
-        // TODO: Texture!!
-        editorDescriptorSet.Update(
-            testTexture2.GetDescriptor(),
-            1u,                                       // descriptor index
-            3u,                                       // binding
-            0u,                                       // array element
-            1u,                                       // array count
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        );
-        // TODO: Texture!!
-        editorDescriptorSet2.Update(
-            testTexture2.GetDescriptor(),
-            1u,                                       // descriptor index
-            3u,                                       // binding
-            0u,                                       // array element
-            1u,                                       // array count
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        );
-
-
-
+        UpdateTexture(testTexture2);
 
         renderingReady = true;
     }

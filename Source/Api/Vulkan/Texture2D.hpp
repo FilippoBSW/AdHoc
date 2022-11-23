@@ -26,6 +26,9 @@
 #include "Image.hpp"
 #include "Sampler.hpp"
 #include "UniformBuffer.hpp"
+
+#include <Std/Array.hpp>
+
 #include <vulkan/vulkan.h>
 
 namespace adh {
@@ -55,6 +58,13 @@ namespace adh {
                 VkImageUsageFlagBits imageUsage,
                 VkImageLayout imageLayout,
                 const Sampler* sampler,
+                VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
+
+            Texture2D(
+                const char* filePath,
+                VkImageUsageFlagBits imageUsage,
+                VkFilter filter,
+                VkBool32 generateMinMap   = VK_FALSE,
                 VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
 
             Texture2D(const Texture2D& rhs) = delete;
@@ -90,6 +100,13 @@ namespace adh {
                 const Sampler* sampler,
                 VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
 
+            void Create(
+                const char* filePath,
+                VkImageUsageFlagBits imageUsage,
+                VkFilter filter,
+                VkBool32 generateMinMap   = VK_FALSE,
+                VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
+
             VkImage GetImage() noexcept;
 
             const VkImage GetImage() const noexcept;
@@ -115,6 +132,8 @@ namespace adh {
             operator VkImageView() noexcept;
 
             operator const VkImageView() const noexcept;
+
+            static void InitializeDefaultSamplers();
 
           private:
             VkImageUsageFlagBits SelectImageUsage(VkImageUsageFlagBits imageUsage, VkBool32 generateMinMap) noexcept;
@@ -149,6 +168,8 @@ namespace adh {
             VkDescriptorImageInfo m_Descriptor;
             VkExtent2D m_Extent;
             std::uint32_t m_MipLevels;
+
+            static Array<Sampler> m_DefaultSamplers;
         };
     } // namespace vk
 } // namespace adh

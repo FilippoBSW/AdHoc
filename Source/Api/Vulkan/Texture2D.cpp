@@ -63,6 +63,15 @@ namespace adh {
             Create(extent, imageUsage, imageLayout, sampler, sharingMode);
         }
 
+        Texture2D::Texture2D(
+            const char* filePath,
+            VkImageUsageFlagBits imageUsage,
+            VkFilter filter,
+            VkBool32 generateMinMap,
+            VkSharingMode sharingMode) {
+            Create(filePath, imageUsage, filter, generateMinMap, sharingMode);
+        }
+
         Texture2D::Texture2D(Texture2D&& rhs) noexcept {
             MoveConstruct(Move(rhs));
         }
@@ -126,6 +135,23 @@ namespace adh {
             SelectImageLayout(imageUsage);
             CreateImage(imageUsage, imageLayout, sharingMode);
             InitializeDescriptor(sampler);
+        }
+
+        void Texture2D::Create(
+            const char* filePath,
+            VkImageUsageFlagBits imageUsage,
+            VkFilter filter,
+            VkBool32 generateMinMap,
+            VkSharingMode sharingMode) {
+            auto samplerId = filter == VK_FILTER_NEAREST ? 0 : 1;
+            Create(filePath, imageUsage, &m_DefaultSamplers[samplerId], generateMinMap, sharingMode);
+        }
+
+        void Texture2D::InitializeDefaultSamplers() {
+            if (m_DefaultSamplers.IsEmpty()) {
+                m_DefaultSamplers.EmplaceBack(VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
+                m_DefaultSamplers.EmplaceBack(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
+            }
         }
 
         VkImage Texture2D::GetImage() noexcept {
