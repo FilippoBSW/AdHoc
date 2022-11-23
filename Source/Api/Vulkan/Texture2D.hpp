@@ -169,7 +169,7 @@ namespace adh {
             VkExtent2D m_Extent;
             std::uint32_t m_MipLevels;
 
-            static Array<Sampler> m_DefaultSamplers;
+            inline static Array<Sampler> m_DefaultSamplers;
         };
     } // namespace vk
 } // namespace adh

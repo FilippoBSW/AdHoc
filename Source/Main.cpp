@@ -1403,7 +1403,7 @@ class AdHoc {
 
         // TODO: Textures
         testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "link.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
-        testTexture2.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "wall.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
+        testTexture2.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "default_texture.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
 
         InitializePipeline();
         InitializeDescriptorSets();
