@@ -1233,6 +1233,7 @@ class AdHoc {
     AudioDevice audioDevice;
 
     Texture2D testTexture;
+    Texture2D testTexture2;
 
   public:
     ~AdHoc() {
@@ -1370,6 +1371,7 @@ class AdHoc {
 
         // TODO: Textures
         testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "link.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
+        testTexture2.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "wall.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
 
         InitializePipeline();
         InitializeDescriptorSets();
@@ -1412,6 +1414,37 @@ class AdHoc {
         floats[6] = &floatShadowPCF;
 
         audioDevice.Create();
+
+        // TODO: Texture!!
+        descriptorSet.Update(
+            testTexture2.GetDescriptor(),
+            1u,                                       // descriptor index
+            3u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        // TODO: Texture!!
+        editorDescriptorSet.Update(
+            testTexture2.GetDescriptor(),
+            1u,                                       // descriptor index
+            3u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+        // TODO: Texture!!
+        editorDescriptorSet2.Update(
+            testTexture2.GetDescriptor(),
+            1u,                                       // descriptor index
+            3u,                                       // binding
+            0u,                                       // array element
+            1u,                                       // array count
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        );
+
+
+
 
         renderingReady = true;
     }

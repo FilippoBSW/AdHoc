@@ -121,25 +121,25 @@ namespace YAML {
     };
 } // namespace YAML
 
-YAML::Emitter& operator<<(YAML::Emitter& out, const adh::Vector2D& rhs) {
+inline YAML::Emitter& operator<<(YAML::Emitter& out, const adh::Vector2D& rhs) {
     out << YAML::Flow;
     out << YAML::BeginSeq << rhs.x << rhs.y << YAML::EndSeq;
     return out;
 }
 
-YAML::Emitter& operator<<(YAML::Emitter& out, const adh::Vector3D& rhs) {
+inline YAML::Emitter& operator<<(YAML::Emitter& out, const adh::Vector3D& rhs) {
     out << YAML::Flow;
     out << YAML::BeginSeq << rhs.x << rhs.y << rhs.z << YAML::EndSeq;
     return out;
 }
 
-YAML::Emitter& operator<<(YAML::Emitter& out, const adh::Vector4D& rhs) {
+inline YAML::Emitter& operator<<(YAML::Emitter& out, const adh::Vector4D& rhs) {
     out << YAML::Flow;
     out << YAML::BeginSeq << rhs.x << rhs.y << rhs.z << rhs.w << YAML::EndSeq;
     return out;
 }
 
-YAML::Emitter& operator<<(YAML::Emitter& out, const adh::xmm::Vector& rhs) {
+inline YAML::Emitter& operator<<(YAML::Emitter& out, const adh::xmm::Vector& rhs) {
     out << YAML::Flow;
     out << YAML::BeginSeq << rhs.x << rhs.y << rhs.z << rhs.w << YAML::EndSeq;
     return out;
