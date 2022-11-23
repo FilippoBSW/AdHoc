@@ -113,7 +113,12 @@ namespace adh {
                     s.Unbind();
                 }
             });
-
+        } else if (!std::strcmp(name, "Texture2D")) {
+            auto file = lua_tostring(L, 3);
+            if (!scene->GetWorld().Contains<vk::Texture2D>(entity)) {
+                auto [texture2d]{ scene->GetWorld().Add<vk::Texture2D>(entity, vk::Texture2D{}) };
+                texture2d.Create((vk::Context::Get()->GetDataDirectory() + "Assets/Textures/" + file).data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
+            }
         } else if (!std::strcmp(name, "RigidBody")) {
             if (!scene->GetWorld().Contains<RigidBody>(entity)) {
                 if (lua_isstring(L, 3)) {
@@ -225,6 +230,10 @@ namespace adh {
                     scene->GetWorld().Remove<lua::Script>(entity);
                 });
             }
+        } else if (!std::strcmp(name, "Texture2D")) {
+            if (scene->GetWorld().Contains<vk::Texture2D>(entity)) {
+                scene->GetWorld().Remove<vk::Texture2D>(entity);
+            }
         } else {
             std::string err = "Component: [" + std::string(name) + "] is invalid!\n";
             Event::Dispatch<EditorLogEvent>(EditorLogEvent::Type::eError, err.data());
@@ -275,11 +284,6 @@ namespace adh {
         } else if (!std::strcmp(name, "RigidBody")) {
             if (scene->GetWorld().Contains<RigidBody>(entity)) {
                 auto [temp] = scene->GetWorld().Get<RigidBody>(entity);
-                return scene->GetState().BindObject(&temp);
-            }
-        } else if (!std::strcmp(name, "Script")) {
-            if (scene->GetWorld().Contains<lua::Script>(entity)) {
-                auto [temp] = scene->GetWorld().Get<lua::Script>(entity);
                 return scene->GetState().BindObject(&temp);
             }
         } else {
@@ -428,6 +432,7 @@ namespace adh {
         state.RegisterTypeVariable<Material>("roughness", &Material::roughness);
         state.RegisterTypeVariable<Material>("metallicness", &Material::metallicness);
         state.RegisterTypeVariable<Material>("transparency", &Material::transparency);
+        state.RegisterTypeVariable<Material>("hasTexture", &Material::hasTexture);
         state.RegisterTypeVariable<Material>("albedo", &Material::albedo);
 
         state.RegisterType<Mesh>("Mesh");

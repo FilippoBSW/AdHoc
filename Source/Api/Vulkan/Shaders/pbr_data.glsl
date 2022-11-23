@@ -45,6 +45,7 @@ struct Material {
 	float roughness;
 	float metallicness;
 	float transparency;
+	int hasTexture;
 	vec3  albedo;
 };
 

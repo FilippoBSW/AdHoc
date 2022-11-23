@@ -334,6 +334,58 @@ namespace adh {
             },
             currentScene);
 
+        DrawComponent<vk::Texture2D>(
+            "Texture2D", entity, [](auto& component) {
+                std::string buffer;
+                buffer.resize(256);
+
+                auto&& textureBuffer{ component.GetFilePath() };
+
+                auto pos = textureBuffer.find_last_of('/');
+                buffer   = textureBuffer.substr(pos + 1, textureBuffer.size());
+
+                static bool linearFilter = true;
+                ImGui::Checkbox("Linear filter", &linearFilter);
+                ImGui::SameLine();
+
+                component.UpdateSampler(linearFilter);
+
+                namespace ui = ImGui;
+                ImGuiTreeNodeFlags flags{ ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Bullet };
+                bool opened{ ui::TreeNodeEx(reinterpret_cast<void*>(0), flags, buffer.data()) };
+
+                if (opened) {
+                    ui::TreePop();
+                }
+
+                if (ImGui::BeginDragDropTarget()) {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL")) {
+                        buffer = (const char*)payload->Data;
+#if defined(ADH_WINDOWS)
+                        for (std::size_t i{}; i != buffer.size(); ++i) {
+                            if (buffer[i] == '\\') {
+                                buffer[i] = '/';
+                            }
+                        }
+#endif
+                        if (textureBuffer != buffer) {
+                            auto pos{ buffer.find_last_of('.') };
+
+                            auto type{ buffer.substr(pos + 1) };
+                            if (type == "tga") {
+                                component.Destroy();
+                                component.Create(buffer.data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
+                                linearFilter = true;
+                                component.UpdateSampler(linearFilter);
+                            }
+                        }
+                    }
+
+                    ImGui::EndDragDropTarget();
+                }
+            },
+            currentScene, true, false);
+
         DrawComponent<Camera2D>(
             "Camera2D", entity, [](auto& component) {
                 DrawTransform("Eye Position", component.eyePosition);
@@ -479,6 +531,13 @@ namespace adh {
                 if (!currentScene->GetWorld().Contains<Mesh>(entity)) {
                     auto [mesh]{ currentScene->GetWorld().Add<Mesh>(entity, Mesh{}) };
                     mesh.Load(vk::Context::Get()->GetDataDirectory() + "Assets/Models/cube.obj");
+                }
+            }
+
+            if (ImGui::MenuItem("Texture2D")) {
+                if (!currentScene->GetWorld().Contains<vk::Texture2D>(entity)) {
+                    auto [texture2d]{ currentScene->GetWorld().Add<vk::Texture2D>(entity, vk::Texture2D{}) };
+                    texture2d.Create((vk::Context::Get()->GetDataDirectory() + "Assets/Textures/default_texture.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
                 }
             }
 

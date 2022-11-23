@@ -1233,7 +1233,6 @@ class AdHoc {
     AudioDevice audioDevice;
 
     Texture2D testTexture;
-    Texture2D testTexture2;
 
   public:
     ~AdHoc() {
@@ -1394,7 +1393,7 @@ class AdHoc {
 
         sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
 
-        // Texture2D::InitializeDefaultSamplers();
+        Texture2D::InitializeDefaultSamplers();
 
         shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
         shadowMap.m_Extent   = { 2048, 2048 };
@@ -1403,8 +1402,7 @@ class AdHoc {
         lightSpace = lightSpaceBias * shadowMap.lightSpace;
 
         // TODO: Textures
-        testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "link.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
-        testTexture2.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "wall.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
+        testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "default_texture.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
 
         InitializePipeline();
         InitializeDescriptorSets();
@@ -1415,6 +1413,8 @@ class AdHoc {
 
         InitializeScripting();
         CreateEditor();
+
+        UpdateTexture(testTexture);
 
         auto runtimeCamera = scene.GetWorld().CreateEntity();
         scene.GetWorld().Add<Tag>(runtimeCamera, "Runtime Camera");
@@ -1447,8 +1447,6 @@ class AdHoc {
         floats[6] = &floatShadowPCF;
 
         audioDevice.Create();
-
-        UpdateTexture(testTexture2);
 
         renderingReady = true;
     }
@@ -1762,6 +1760,16 @@ class AdHoc {
                             0u,
                             sizeof(transformMatrix), &transformMatrix);
 
+                        // FIXME: Do not update if same texture
+                        if (scene.GetWorld().Contains<Texture2D>(e)) {
+                            auto [t] = scene.GetWorld().Get<Texture2D>(e);
+                            UpdateTexture(t);
+                            material.hasTexture = 1;
+                        } else {
+                            UpdateTexture(testTexture);
+                            material.hasTexture = 0;
+                        }
+
                         vkCmdPushConstants(
                             cmd,
                             pipelineLayout,
@@ -1826,6 +1834,16 @@ class AdHoc {
                             VK_SHADER_STAGE_VERTEX_BIT,
                             0u,
                             sizeof(transformMatrix), &transformMatrix);
+
+                        // FIXME: Do not update if same texture
+                        if (scene.GetWorld().Contains<Texture2D>(e)) {
+                            auto [t] = scene.GetWorld().Get<Texture2D>(e);
+                            UpdateTexture(t);
+                            material.hasTexture = 1;
+                        } else {
+                            UpdateTexture(testTexture);
+                            material.hasTexture = 0;
+                        }
 
                         vkCmdPushConstants(
                             cmd,
@@ -2156,14 +2174,14 @@ class AdHoc {
         );
 
         // TODO: Texture!!
-        descriptorSet.Update(
-            testTexture.GetDescriptor(),
-            1u,                                       // descriptor index
-            3u,                                       // binding
-            0u,                                       // array element
-            1u,                                       // array count
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-        );
+        // descriptorSet.Update(
+        //     testTexture.GetDescriptor(),
+        //     1u,                                       // descriptor index
+        //     3u,                                       // binding
+        //     0u,                                       // array element
+        //     1u,                                       // array count
+        //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+        // );
     }
 
     void InitializeEditorDescriptorSets() {
@@ -2225,14 +2243,14 @@ class AdHoc {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
             // TODO: Texture!!
-            editorDescriptorSet.Update(
-                testTexture.GetDescriptor(),
-                1u,                                       // descriptor index
-                3u,                                       // binding
-                0u,                                       // array element
-                1u,                                       // array count
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            );
+            // editorDescriptorSet.Update(
+            //     testTexture.GetDescriptor(),
+            //     1u,                                       // descriptor index
+            //     3u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
         }
         {
             editorDescriptorSet2.Initialize(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, swapchain.GetImageViewCount());
@@ -2287,14 +2305,14 @@ class AdHoc {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
             );
             // TODO: Texture!!
-            editorDescriptorSet2.Update(
-                testTexture.GetDescriptor(),
-                1u,                                       // descriptor index
-                3u,                                       // binding
-                0u,                                       // array element
-                1u,                                       // array count
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
-            );
+            // editorDescriptorSet2.Update(
+            //     testTexture.GetDescriptor(),
+            //     1u,                                       // descriptor index
+            //     3u,                                       // binding
+            //     0u,                                       // array element
+            //     1u,                                       // array count
+            //     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
+            // );
         }
     }
 

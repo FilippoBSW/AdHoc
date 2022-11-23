@@ -101,6 +101,10 @@ namespace adh {
                 sharingMode);
 
             InitializeDescriptor(sampler);
+
+            mFilePath = filePath;
+            auto pos  = mFilePath.find_last_of('/');
+            mFileName = mFilePath.substr(pos + 1, mFilePath.size());
         }
 
         void Texture2D::Create(const void* data,
@@ -143,14 +147,14 @@ namespace adh {
             VkFilter filter,
             VkBool32 generateMinMap,
             VkSharingMode sharingMode) {
-            auto samplerId = filter == VK_FILTER_NEAREST ? 0 : 1;
+            auto samplerId = filter == VK_FILTER_LINEAR ? 0 : 1;
             Create(filePath, imageUsage, &m_DefaultSamplers[samplerId], generateMinMap, sharingMode);
         }
 
         void Texture2D::InitializeDefaultSamplers() {
             if (m_DefaultSamplers.IsEmpty()) {
-                m_DefaultSamplers.EmplaceBack(VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
                 m_DefaultSamplers.EmplaceBack(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
+                m_DefaultSamplers.EmplaceBack(VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
             }
         }
 
@@ -435,9 +439,10 @@ namespace adh {
 
         void Texture2D::Clear() noexcept {
             m_Image.Destroy();
-            m_Descriptor = {};
-            m_Extent     = {};
-            m_MipLevels  = 0u;
+            m_Descriptor    = {};
+            m_Extent        = {};
+            m_MipLevels     = 0u;
+            mIsLinearFilter = true;
         }
     } // namespace vk
 } // namespace adh

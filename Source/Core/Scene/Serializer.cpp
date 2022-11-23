@@ -90,6 +90,7 @@ namespace adh {
                     out << YAML::Key << "roughness" << YAML::Value << material.roughness;
                     out << YAML::Key << "metallicness" << YAML::Value << material.metallicness;
                     out << YAML::Key << "transparency" << YAML::Value << material.transparency;
+                    out << YAML::Key << "hasTexture" << YAML::Value << material.hasTexture;
                     out << YAML::Key << "albedo" << YAML::Value << material.albedo;
                 });
             }
@@ -98,6 +99,13 @@ namespace adh {
                 SerializeComponent(out, "Script", [&]() {
                     auto [script] = m_Scene->m_World.Get<lua::Script>(entity);
                     out << YAML::Key << "name" << YAML::Value << script.fileName;
+                });
+            }
+
+            if (m_Scene->m_World.Contains<vk::Texture2D>(entity)) {
+                SerializeComponent(out, "Texture2D", [&]() {
+                    auto [texture] = m_Scene->m_World.Get<vk::Texture2D>(entity);
+                    out << YAML::Key << "name" << YAML::Value << texture.mFileName.data();
                 });
             }
 
@@ -221,17 +229,34 @@ namespace adh {
 
                 auto material = i["Material"];
                 if (material) {
-                    world.Add<Material>(e,
-                                        Material(material["roughness"].as<float>(),
-                                                 material["metallicness"].as<float>(),
-                                                 material["transparency"].as<float>(),
-                                                 material["albedo"].as<Vector3D>()));
+                    if (material["hasTexture"]) {
+                        world.Add<Material>(e,
+                                            Material(material["roughness"].as<float>(),
+                                                     material["metallicness"].as<float>(),
+                                                     material["transparency"].as<float>(),
+                                                     material["hasTexture"].as<int>(),
+                                                     material["albedo"].as<Vector3D>()));
+                    } else {
+                        world.Add<Material>(e,
+                                            Material(material["roughness"].as<float>(),
+                                                     material["metallicness"].as<float>(),
+                                                     material["transparency"].as<float>(),
+                                                     0,
+                                                     material["albedo"].as<Vector3D>()));
+                    }
                 }
 
                 auto script = i["Script"];
                 if (script) {
                     std::string filePath = vk::Context::Get()->GetDataDirectory() + "Assets/Scripts/" + script["name"].as<std::string>();
                     world.Add<lua::Script>(e, m_Scene->m_State.CreateScript(filePath));
+                }
+
+                auto texture2d = i["Texture2D"];
+                if (texture2d) {
+                    std::string filePath = vk::Context::Get()->GetDataDirectory() + "Assets/Textures/" + texture2d["name"].as<std::string>();
+                    auto [t]             = world.Add<vk::Texture2D>(e, vk::Texture2D{});
+                    t.Create(filePath.data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
                 }
 
                 auto rigidbody = i["RigidBody"];

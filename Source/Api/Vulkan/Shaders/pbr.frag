@@ -197,6 +197,13 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
 	// color      = pow(color, vec3(1.0f / 2.2f));
 
 	//outFragColor = vec4(color, material.transparency);
-	vec4 tex = texture(texture1, inTextureCoords);
-	outFragColor = vec4(color * tex.rgb, tex.a);
+	// vec4 tex = texture(texture1, inTextureCoords);
+	// outFragColor = vec4(color * tex.rgb, tex.a);
+
+	if(material.hasTexture == 1){
+		vec4 tex = texture(texture1, inTextureCoords);
+		outFragColor = vec4(color * tex.rgb, tex.a);
+	} else {
+		outFragColor = vec4(color, material.transparency);
+	}
 }

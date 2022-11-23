@@ -31,6 +31,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <string>
+
 namespace adh {
     namespace vk {
         class Texture2D {
@@ -127,6 +129,17 @@ namespace adh {
 
             std::uint32_t GetMipLevels() const noexcept;
 
+            std::string& GetFilePath() noexcept {
+                return mFilePath;
+            }
+
+            void UpdateSampler(bool isLinearFilter) {
+                if (mIsLinearFilter != isLinearFilter) {
+                    mIsLinearFilter      = isLinearFilter;
+                    m_Descriptor.sampler = m_DefaultSamplers[!mIsLinearFilter];
+                }
+            }
+
             void Destroy() noexcept;
 
             operator VkImageView() noexcept;
@@ -165,11 +178,17 @@ namespace adh {
 
             void Clear() noexcept;
 
+          public:
+            std::string mFileName;
+
           private:
             Image m_Image;
             VkDescriptorImageInfo m_Descriptor;
             VkExtent2D m_Extent;
             std::uint32_t m_MipLevels;
+
+            std::string mFilePath;
+            bool mIsLinearFilter{ true };
 
             inline static Array<Sampler> m_DefaultSamplers;
         };
