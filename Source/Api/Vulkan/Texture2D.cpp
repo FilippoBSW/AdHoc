@@ -28,6 +28,9 @@
 #include "Memory.hpp"
 #include <Std/TGALoader.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <Std/stb_image.h>
+
 #include <cmath>
 
 namespace adh {
@@ -88,9 +91,13 @@ namespace adh {
                                const Sampler* sampler,
                                VkBool32 generateMinMap,
                                VkSharingMode sharingMode) {
-            TGALoader tga(filePath);
-            m_Extent = { static_cast<std::uint32_t>(tga.GetWidth()), static_cast<std::uint32_t>(tga.GetHeight()) };
-            UniformBuffer staging{ tga.GetData(), tga.GetSize(), 1u, VK_BUFFER_USAGE_TRANSFER_SRC_BIT };
+            int texWidth, texHeight, texChannels;
+            stbi_set_flip_vertically_on_load(true);
+            stbi_uc* pixels        = stbi_load(filePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+            VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+            m_Extent = { static_cast<std::uint32_t>(texWidth), static_cast<std::uint32_t>(texHeight) };
+            UniformBuffer staging{ pixels, imageSize, 1u, VK_BUFFER_USAGE_TRANSFER_SRC_BIT };
             auto usageFlag{ SelectImageUsage(imageUsage, generateMinMap) };
             SelectImageLayout(imageUsage);
 
@@ -105,6 +112,8 @@ namespace adh {
             mFilePath = filePath;
             auto pos  = mFilePath.find_last_of('/');
             mFileName = mFilePath.substr(pos + 1, mFilePath.size());
+
+            stbi_image_free(pixels);
         }
 
         void Texture2D::Create(const void* data,
@@ -242,7 +251,7 @@ namespace adh {
                                     VkSharingMode sharingMode) {
             m_Image.Create(
                 { m_Extent.width, m_Extent.height, 1u },
-                VK_FORMAT_B8G8R8A8_UNORM,
+                VK_FORMAT_R8G8B8A8_UNORM,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_IMAGE_TYPE_2D,
                 (VkImageCreateFlagBits)0,
@@ -293,7 +302,7 @@ namespace adh {
         void Texture2D::CreateImage(VkImageUsageFlagBits usageFlag, VkImageLayout imageLayout, VkSharingMode sharingMode) {
             m_Image.Create(
                 { m_Extent.width, m_Extent.height, 1u },
-                VK_FORMAT_B8G8R8A8_UNORM,
+                VK_FORMAT_R8G8B8A8_UNORM,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_IMAGE_TYPE_2D,
                 (VkImageCreateFlagBits)0,
