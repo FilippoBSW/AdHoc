@@ -256,7 +256,7 @@ namespace adh {
                 if (texture2d) {
                     std::string filePath = vk::Context::Get()->GetDataDirectory() + "Assets/Textures/" + texture2d["name"].as<std::string>();
                     auto [t]             = world.Add<vk::Texture2D>(e, vk::Texture2D{});
-                    t.Create(filePath.data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
+                    t.Create(filePath.data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR, true);
                 }
 
                 auto rigidbody = i["RigidBody"];
