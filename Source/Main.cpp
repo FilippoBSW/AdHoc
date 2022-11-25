@@ -22,11 +22,6 @@
 // SOFTWARE.
 // *********************************************************************************
 
-// TODO: ot
-// Notes:
-// Texture as Components
-// Texture lighing
-
 #include <Audio/Audio.hpp>
 #include <Editor/Editor.hpp>
 #include <Entity/Entity.hpp>
@@ -416,7 +411,9 @@ struct HDRBuffer {
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-        pipelineLayout.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.CreateSet();
+
+        pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
         pipelineLayout.AddPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(xmm::Matrix), 0);
@@ -1246,6 +1243,7 @@ class AdHoc {
         Mesh::Clear(); // TODO: temp
         testTexture.Destroy();
         Texture2D::CleanUpDefaultSamplers();
+        TextureDescriptors::CleanUp();
     }
 
     void OnCollisionEvent(CollisionEvent* event) {
@@ -1360,8 +1358,8 @@ class AdHoc {
         // TODO: Texture!!
         descriptorSet.Update(
             t.GetDescriptor(),
-            1u,                                       // descriptor index
-            3u,                                       // binding
+            2u,                                       // descriptor index
+            0u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -1369,8 +1367,8 @@ class AdHoc {
         // TODO: Texture!!
         editorDescriptorSet.Update(
             t.GetDescriptor(),
-            1u,                                       // descriptor index
-            3u,                                       // binding
+            2u,                                       // descriptor index
+            0u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -1378,8 +1376,8 @@ class AdHoc {
         // TODO: Texture!!
         editorDescriptorSet2.Update(
             t.GetDescriptor(),
-            1u,                                       // descriptor index
-            3u,                                       // binding
+            2u,                                       // descriptor index
+            0u,                                       // binding
             0u,                                       // array element
             1u,                                       // array count
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER // type
@@ -1394,6 +1392,7 @@ class AdHoc {
 
         sampler.Create(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_MIPMAP_MODE_LINEAR, VK_COMPARE_OP_NEVER, VK_FALSE, VK_TRUE);
 
+        TextureDescriptors::Initialize(2, 0);
         Texture2D::InitializeDefaultSamplers();
 
         shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
@@ -1403,7 +1402,6 @@ class AdHoc {
         lightSpace = lightSpaceBias * shadowMap.lightSpace;
 
         // TODO: Textures
-        testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "default_texture.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
 
         InitializePipeline();
         InitializeDescriptorSets();
@@ -1415,6 +1413,7 @@ class AdHoc {
         InitializeScripting();
         CreateEditor();
 
+        testTexture.Create((Context::Get()->GetDataDirectory() + "Assets/Textures/" + "default_texture.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, &sampler);
         UpdateTexture(testTexture);
 
         auto runtimeCamera = scene.GetWorld().CreateEntity();
@@ -1731,7 +1730,7 @@ class AdHoc {
             {
                 hdrBuffer.m_RenderPass.Begin(cmd, hdrBuffer.m_Framebuffer);
                 hdrBuffer.graphicsPipeline.Bind(cmd);
-                descriptorSet.Bind(cmd, imageIndex);
+                // descriptorSet.Bind(cmd, imageIndex);
 
                 viewport.Update(swapchain.GetExtent(), false);
                 viewport.Set(cmd);
@@ -1764,10 +1763,29 @@ class AdHoc {
                         // FIXME: Do not update if same texture
                         if (scene.GetWorld().Contains<Texture2D>(e)) {
                             auto [t] = scene.GetWorld().Get<Texture2D>(e);
-                            UpdateTexture(t);
+                            // UpdateTexture(t);
+                            DescriptorSet* descSet = &descriptorSet;
+
+                            auto count{ descSet->m_DescriptorSets.GetSize() / descSet->m_SwapChainImageViews };
+                            VkDescriptorSet* sets{ static_cast<VkDescriptorSet*>(ADH_STACK_ALLOC(count * sizeof(VkDescriptorSet))) };
+                            ADH_THROW(sets, "Failed to allocate memory for descriptor sets!");
+
+                            for (std::uint32_t i{}; i != count - 1; ++i) {
+                                sets[i] = descSet->GetSet(i, imageIndex);
+                            }
+                            sets[count - 1] = TextureDescriptors::GetDescriptor(t.GetDescriptorID());
+                            vkCmdBindDescriptorSets(cmd,
+                                                    descSet->m_BindPoint,
+                                                    descSet->m_PipelineLayout,
+                                                    0u,
+                                                    count,
+                                                    sets,
+                                                    0u,
+                                                    nullptr);
+
                             material.hasTexture = 1;
                         } else {
-                            UpdateTexture(testTexture);
+                            descriptorSet.Bind(cmd, imageIndex);
                             material.hasTexture = 0;
                         }
 
@@ -1807,11 +1825,11 @@ class AdHoc {
                 scissor.Update(swapchain.GetExtent());
                 scissor.Set(cmd);
 
-                if (!i) {
-                    editorDescriptorSet.Bind(cmd, imageIndex);
-                } else {
-                    editorDescriptorSet2.Bind(cmd, imageIndex);
-                }
+                // if (!i) {
+                //     editorDescriptorSet.Bind(cmd, imageIndex);
+                // } else {
+                //     editorDescriptorSet2.Bind(cmd, imageIndex);
+                // }
 
                 float depthBiasConstant = 1.25f;
                 float depthBiasSlope    = 1.75f;
@@ -1839,10 +1857,40 @@ class AdHoc {
                         // FIXME: Do not update if same texture
                         if (scene.GetWorld().Contains<Texture2D>(e)) {
                             auto [t] = scene.GetWorld().Get<Texture2D>(e);
-                            UpdateTexture(t);
+                            // UpdateTexture(t);
+                            DescriptorSet* descSet;
+                            if (!i) {
+                                descSet = &editorDescriptorSet;
+                            } else {
+                                descSet = &editorDescriptorSet2;
+                            }
+
+                            auto count{ descSet->m_DescriptorSets.GetSize() / descSet->m_SwapChainImageViews };
+                            VkDescriptorSet* sets{ static_cast<VkDescriptorSet*>(ADH_STACK_ALLOC(count * sizeof(VkDescriptorSet))) };
+                            ADH_THROW(sets, "Failed to allocate memory for descriptor sets!");
+
+                            for (std::uint32_t i{}; i != count - 1; ++i) {
+                                sets[i] = descSet->GetSet(i, imageIndex);
+                            }
+                            sets[count - 1] = TextureDescriptors::GetDescriptor(t.GetDescriptorID());
+                            vkCmdBindDescriptorSets(cmd,
+                                                    descSet->m_BindPoint,
+                                                    descSet->m_PipelineLayout,
+                                                    0u,
+                                                    count,
+                                                    sets,
+                                                    0u,
+                                                    nullptr);
+
                             material.hasTexture = 1;
                         } else {
-                            UpdateTexture(testTexture);
+                            // UpdateTexture(testTexture);
+                            if (!i) {
+                                editorDescriptorSet.Bind(cmd, imageIndex);
+                            } else {
+                                editorDescriptorSet2.Bind(cmd, imageIndex);
+                            }
+
                             material.hasTexture = 0;
                         }
 
@@ -2099,7 +2147,9 @@ class AdHoc {
         pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-        pipelineLayout.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayout.CreateSet();
+
+        pipelineLayout.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayout.CreateSet();
 
         pipelineLayout.AddPushConstant(VK_SHADER_STAGE_VERTEX_BIT, sizeof(xmm::Matrix), 0);

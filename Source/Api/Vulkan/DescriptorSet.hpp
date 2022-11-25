@@ -26,6 +26,99 @@
 #include <Std/Array.hpp>
 #include <vulkan/vulkan.h>
 
+#include <Vulkan/Context.hpp>
+
+#include <Std/Utility.hpp>
+#include <Utility.hpp>
+#include <Vulkan/Initializers.hpp>
+
+namespace adh {
+    namespace vk {
+        class TextureDescriptors {
+          public:
+            static void Initialize(
+                uint32_t descriptorIndex,
+                uint32_t bindingIndex) {
+
+                mDescriptorIndex = descriptorIndex;
+                mBindingIndex    = bindingIndex;
+
+                VkDescriptorSetLayoutBinding uboLayoutBinding{};
+                uboLayoutBinding.binding            = bindingIndex;
+                uboLayoutBinding.descriptorCount    = 1;
+                uboLayoutBinding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                uboLayoutBinding.pImmutableSamplers = nullptr;
+                uboLayoutBinding.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                layoutInfo.bindingCount = 1;
+                layoutInfo.pBindings    = &uboLayoutBinding;
+
+                ADH_THROW(vkCreateDescriptorSetLayout(Context::Get()->GetDevice(), &layoutInfo, nullptr, &setLayout) == VK_SUCCESS,
+                          "Failed to create set layout!");
+
+                VkDescriptorPoolSize poolSize{};
+                poolSize.type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                poolSize.descriptorCount = 255;
+
+                VkDescriptorPoolCreateInfo info{};
+                info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                info.maxSets       = 255;
+                info.poolSizeCount = 1;
+                info.pPoolSizes    = &poolSize;
+
+                ADH_THROW(vkCreateDescriptorPool(Context::Get()->GetDevice(), &info, nullptr, &mPool) == VK_SUCCESS,
+                          "Failed to create descriptor pool!");
+            }
+
+            static uint32_t GetDescriptorID(VkDescriptorImageInfo imageInfo) {
+                VkDescriptorSetAllocateInfo info{};
+                info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                info.descriptorPool     = mPool;
+                info.descriptorSetCount = 1;
+                info.pSetLayouts        = &setLayout;
+
+                auto& set = mDescriptorSets.EmplaceBack();
+
+                ADH_THROW(vkAllocateDescriptorSets(vk::Context::Get()->GetDevice(), &info, &set) == VK_SUCCESS,
+                          "Failed to allocate descriptor sets!");
+
+                VkWriteDescriptorSet writeSets = initializers::WriteDescriptorSet(
+                    set,
+                    mBindingIndex,
+                    0,
+                    1,
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    &imageInfo,
+                    nullptr,
+                    nullptr);
+
+                vkUpdateDescriptorSets(Context::Get()->GetDevice(), 1, &writeSets, 0, nullptr);
+
+                return mDescriptorSets.GetSize() - 1;
+            }
+
+            static VkDescriptorSet GetDescriptor(uint32_t index) {
+                return mDescriptorSets[index];
+            }
+
+            static void CleanUp() {
+                auto device{ Context::Get()->GetDevice() };
+                vkDestroyDescriptorSetLayout(device, setLayout, nullptr);
+                vkDestroyDescriptorPool(device, mPool, nullptr);
+            }
+
+          private:
+            inline static VkDescriptorPool mPool;
+            inline static VkDescriptorSetLayout setLayout;
+            inline static Array<VkDescriptorSet> mDescriptorSets;
+            inline static uint32_t mDescriptorIndex;
+            inline static uint32_t mBindingIndex;
+        };
+    } // namespace vk
+} // namespace adh
+
 namespace adh {
     namespace vk {
         class DescriptorSet {
@@ -123,7 +216,7 @@ namespace adh {
 
             void Clear() noexcept;
 
-          private:
+          public:
             VkDescriptorPool m_Pool;
             VkPipelineLayout m_PipelineLayout;
             VkPipelineBindPoint m_BindPoint;

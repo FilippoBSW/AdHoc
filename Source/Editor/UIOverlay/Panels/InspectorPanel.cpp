@@ -374,7 +374,7 @@ namespace adh {
                             auto type{ buffer.substr(pos + 1) };
                             if (type == "tga") {
                                 component.Destroy();
-                                component.Create(buffer.data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
+                                component.Create(buffer.data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR, true);
                                 linearFilter = true;
                                 component.UpdateSampler(linearFilter);
                             }
@@ -537,7 +537,10 @@ namespace adh {
             if (ImGui::MenuItem("Texture2D")) {
                 if (!currentScene->GetWorld().Contains<vk::Texture2D>(entity)) {
                     auto [texture2d]{ currentScene->GetWorld().Add<vk::Texture2D>(entity, vk::Texture2D{}) };
-                    texture2d.Create((vk::Context::Get()->GetDataDirectory() + "Assets/Textures/default_texture.tga").data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
+                    texture2d.Create((vk::Context::Get()->GetDataDirectory() + "Assets/Textures/default_texture.tga").data(),
+                                     VK_IMAGE_USAGE_SAMPLED_BIT,
+                                     VK_FILTER_LINEAR,
+                                     true);
                 }
             }
 

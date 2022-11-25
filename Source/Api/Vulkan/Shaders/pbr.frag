@@ -49,7 +49,7 @@
 
 // layout (set = 1, binding = 2) uniform samplerCube cubeShadowMap[1];
 layout (set = 1, binding = 2) uniform sampler2D shadowMap;
-layout (set = 1, binding = 3) uniform sampler2D texture1;
+layout (set = 2, binding = 0) uniform sampler2D texture1;
 
  layout(push_constant) uniform Materials {
 	layout(offset = 64) Material material;
@@ -80,7 +80,8 @@ vec3 CalculateDirectionalLights(vec3 N, vec3 V, vec3 reflectivity, DirectionalLi
 	vec3 specular = D * G * F;
 	specular /= 4.0f * NdotV * NdotL;
 
-	return ((diffuse * material.albedo / PI + specular) * radiance * NdotL);
+	vec3 materialAlbedo = vec3(material.albedo) / 4;
+	return ((diffuse * materialAlbedo / PI + specular) * radiance * NdotL);
 }
 
 vec3 CalculatePointLights(vec3 N, vec3 V, vec3 reflectivity, PointLight light) {
@@ -111,7 +112,8 @@ vec3 CalculatePointLights(vec3 N, vec3 V, vec3 reflectivity, PointLight light) {
 	vec3 specular = D * G * F;
 	specular /= 4.0f * NdotV * NdotL;
 
-	return (diffuse * material.albedo / PI + specular) * radiance * NdotL;
+	vec3 materialAlbedo = vec3(material.albedo) / 4;
+	return (diffuse * materialAlbedo / PI + specular) * radiance * NdotL;
 }
 
 vec3 CalculateSpotLights(vec3 N, vec3 V, vec3 reflectivity, SpotLight light) {
@@ -146,7 +148,8 @@ vec3 CalculateSpotLights(vec3 N, vec3 V, vec3 reflectivity, SpotLight light) {
 	vec3 specular = D * G * F;
 	specular /= 4.0f * NdotV * NdotL;
 
-	return ((diffuse * material.albedo / PI + specular) * radiance * NdotL) * intensity;
+	vec3 materialAlbedo = vec3(material.albedo) / 4;
+	return ((diffuse * materialAlbedo / PI + specular) * radiance * NdotL) * intensity;
 }
 
 float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
@@ -180,8 +183,10 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
  void main() {
  	vec3 N = normalize(inNormals);
 	vec3 V = normalize(ubo.cameraPosition - inWorldPosition);
+
+	vec3 materialAlbedo = vec3(material.albedo) / 4;
 	
-	vec3 reflectivity = mix(vec3(0.04f), material.albedo, material.metallicness);
+	vec3 reflectivity = mix(vec3(0.04f), materialAlbedo, material.metallicness);
 	vec3 reflectance  = vec3(0.0f);
 
 	// float bias = max(0.05 * (1.0 - dot(inNormals, inLightPosition.xyz)), 0.001);  
@@ -189,8 +194,8 @@ float ShadowCalculation(vec4 shadowCoords, int pcf, float bias) {
 
 	reflectance += (1.0f - shadow) * CalculateDirectionalLights(N, V, reflectivity, directionalLight);
 
-	/* vec3 ambient = ubo.ambient * material.albedo; */
-	vec3 ambient = ubo.ambient * texture(texture1, inTextureCoords).rgb;
+	vec3 ambient = ubo.ambient * materialAlbedo;
+	/* vec3 ambient = ubo.ambient * texture(texture1, inTextureCoords).rgb; */
 
 	vec3 color = ambient + reflectance;
 	// color      = color / (color + vec3(1.0f));

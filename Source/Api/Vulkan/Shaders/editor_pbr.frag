@@ -49,7 +49,7 @@
 
 // layout (set = 1, binding = 2) uniform samplerCube cubeShadowMap[1];
 layout (set = 1, binding = 2) uniform sampler2D shadowMap;
-layout (set = 1, binding = 3) uniform sampler2D texture1;
+layout (set = 2, binding = 0) uniform sampler2D texture1;
 
  layout(push_constant) uniform Materials {
 	layout(offset = 64) Material material;

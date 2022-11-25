@@ -33,6 +33,8 @@
 
 #include <cmath>
 
+#include <Vulkan/DescriptorSet.hpp>
+
 namespace adh {
     namespace vk {
         Texture2D::Texture2D() noexcept : m_Descriptor{},
@@ -43,9 +45,10 @@ namespace adh {
         Texture2D::Texture2D(const char* filePath,
                              VkImageUsageFlagBits imageUsage,
                              const Sampler* sampler,
+                             bool isEntityComponent,
                              VkBool32 generateMinMap,
                              VkSharingMode sharingMode) {
-            Create(filePath, imageUsage, sampler, generateMinMap, sharingMode);
+            Create(filePath, imageUsage, sampler, isEntityComponent, generateMinMap, sharingMode);
         }
 
         Texture2D::Texture2D(const void* data,
@@ -70,9 +73,10 @@ namespace adh {
             const char* filePath,
             VkImageUsageFlagBits imageUsage,
             VkFilter filter,
+            bool isEntityComponent,
             VkBool32 generateMinMap,
             VkSharingMode sharingMode) {
-            Create(filePath, imageUsage, filter, generateMinMap, sharingMode);
+            Create(filePath, imageUsage, filter, isEntityComponent, generateMinMap, sharingMode);
         }
 
         Texture2D::Texture2D(Texture2D&& rhs) noexcept {
@@ -89,6 +93,7 @@ namespace adh {
         void Texture2D::Create(const char* filePath,
                                VkImageUsageFlagBits imageUsage,
                                const Sampler* sampler,
+                               bool isEntityComponent,
                                VkBool32 generateMinMap,
                                VkSharingMode sharingMode) {
             int texWidth, texHeight, texChannels;
@@ -107,12 +112,11 @@ namespace adh {
                 usageFlag,
                 sharingMode);
 
-            InitializeDescriptor(sampler);
-
             mFilePath = filePath;
             auto pos  = mFilePath.find_last_of('/');
             mFileName = mFilePath.substr(pos + 1, mFilePath.size());
 
+            InitializeDescriptor(sampler, isEntityComponent);
             stbi_image_free(pixels);
         }
 
@@ -154,10 +158,11 @@ namespace adh {
             const char* filePath,
             VkImageUsageFlagBits imageUsage,
             VkFilter filter,
+            bool isEntityComponent,
             VkBool32 generateMinMap,
             VkSharingMode sharingMode) {
             auto samplerId = filter == VK_FILTER_LINEAR ? 0 : 1;
-            Create(filePath, imageUsage, &m_DefaultSamplers[samplerId], generateMinMap, sharingMode);
+            Create(filePath, imageUsage, &m_DefaultSamplers[samplerId], isEntityComponent, generateMinMap, sharingMode);
         }
 
         void Texture2D::InitializeDefaultSamplers() {
@@ -425,13 +430,17 @@ namespace adh {
                            VK_FILTER_LINEAR);
         }
 
-        void Texture2D::InitializeDescriptor(const Sampler* sampler) noexcept {
+        void Texture2D::InitializeDescriptor(const Sampler* sampler, bool isEntityComponent) noexcept {
             if (sampler) {
                 m_Descriptor.sampler = sampler->Get();
             } else {
                 m_Descriptor.sampler = nullptr;
             }
             m_Descriptor.imageView = m_Image.GetImageView();
+
+            if (isEntityComponent) {
+                mDescriptorSetID = TextureDescriptors::GetDescriptorID(m_Descriptor);
+            }
         }
 
         void Texture2D::MoveConstruct(Texture2D&& rhs) noexcept {
@@ -440,6 +449,11 @@ namespace adh {
             m_Descriptor = rhs.m_Descriptor;
             m_Extent     = rhs.m_Extent;
             m_MipLevels  = rhs.m_MipLevels;
+
+            mDescriptorSetID = rhs.mDescriptorSetID;
+            mFileName        = rhs.mFileName;
+            mFilePath        = rhs.mFilePath;
+            mIsLinearFilter  = rhs.mIsLinearFilter;
 
             rhs.m_Descriptor = {};
             rhs.m_Extent     = {};

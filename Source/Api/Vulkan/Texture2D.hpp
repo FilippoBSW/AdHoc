@@ -43,6 +43,7 @@ namespace adh {
                 const char* filePath,
                 VkImageUsageFlagBits imageUsage,
                 const Sampler* sampler,
+                bool isEntityComponent = false,
                 VkBool32 generateMinMap   = VK_FALSE,
                 VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
 
@@ -66,6 +67,7 @@ namespace adh {
                 const char* filePath,
                 VkImageUsageFlagBits imageUsage,
                 VkFilter filter,
+                bool isEntityComponent = false,
                 VkBool32 generateMinMap   = VK_FALSE,
                 VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
 
@@ -83,6 +85,7 @@ namespace adh {
                 const char* filePath,
                 VkImageUsageFlagBits imageUsage,
                 const Sampler* sampler,
+                bool isEntityComponent = false,
                 VkBool32 generateMinMap   = VK_FALSE,
                 VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
 
@@ -106,6 +109,7 @@ namespace adh {
                 const char* filePath,
                 VkImageUsageFlagBits imageUsage,
                 VkFilter filter,
+                bool isEntityComponent = false,
                 VkBool32 generateMinMap   = VK_FALSE,
                 VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE);
 
@@ -140,6 +144,10 @@ namespace adh {
                 }
             }
 
+            uint32_t GetDescriptorID() {
+                return mDescriptorSetID;
+            }
+
             void Destroy() noexcept;
 
             operator VkImageView() noexcept;
@@ -172,7 +180,7 @@ namespace adh {
 
             void BlitImage(VkCommandBuffer commandBuffer, std::int32_t index, std::int32_t mipWidth, std::int32_t mipHeight) noexcept;
 
-            void InitializeDescriptor(const Sampler* sampler) noexcept;
+            void InitializeDescriptor(const Sampler* sampler, bool isEntityComponent = false) noexcept;
 
             void MoveConstruct(Texture2D&& rhs) noexcept;
 
@@ -191,6 +199,8 @@ namespace adh {
             bool mIsLinearFilter{ true };
 
             inline static Array<Sampler> m_DefaultSamplers;
+
+            uint32_t mDescriptorSetID = 0;
         };
     } // namespace vk
 } // namespace adh

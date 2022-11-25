@@ -117,7 +117,7 @@ namespace adh {
             auto file = lua_tostring(L, 3);
             if (!scene->GetWorld().Contains<vk::Texture2D>(entity)) {
                 auto [texture2d]{ scene->GetWorld().Add<vk::Texture2D>(entity, vk::Texture2D{}) };
-                texture2d.Create((vk::Context::Get()->GetDataDirectory() + "Assets/Textures/" + file).data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR);
+                texture2d.Create((vk::Context::Get()->GetDataDirectory() + "Assets/Textures/" + file).data(), VK_IMAGE_USAGE_SAMPLED_BIT, VK_FILTER_LINEAR, true);
             }
         } else if (!std::strcmp(name, "RigidBody")) {
             if (!scene->GetWorld().Contains<RigidBody>(entity)) {
