@@ -34,9 +34,11 @@ function build {
       USE_PLATFORM="Mac"
       cmake -DUSE_PLATFORM=$USE_PLATFORM\
 		  -DCMAKE_BUILD_TYPE=$2\
-	    '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'\
+	    '-DCMAKE_OSX_ARCHITECTURES=x86_64'\
 	    -DASSIMP_BUILD_TESTS=OFF\
 	    -DASSIMP_BUILD_ASSIMP_TOOLS=OFF\
+		  -DCMAKE_CXX_FLAGS=-w\
+		  -DCMAKE_C_FLAGS=-w\
 	    -DYAML_CPP_BUILD_TOOLS=OFF\
 		  -DBUILD_TESTING=OFF\
       -DALSOFT_EXAMPLES=OFF\
@@ -44,7 +46,7 @@ function build {
       -DSDL2MAIN_LIBRARY=""\
       -DSDL2_CORE_LIBRARY=""\
       -DSDL2_INCLUDE_DIR=""\
-	    '-DPHYSX_CXX_FLAGS=-w -arch arm64' ..
+	    '-DPHYSX_CXX_FLAGS=-w' ..
     elif [ "$1" == "Linux" ]; then
       USE_PLATFORM="Linux"
       CXX=clang++ cmake -DUSE_PLATFORM=$USE_PLATFORM\
