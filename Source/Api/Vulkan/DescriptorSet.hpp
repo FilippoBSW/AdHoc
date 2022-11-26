@@ -63,6 +63,7 @@ namespace adh {
                 poolSize.descriptorCount = 255;
 
                 VkDescriptorPoolCreateInfo info{};
+                info.flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
                 info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                 info.maxSets       = 255;
                 info.poolSizeCount = 1;
@@ -103,6 +104,19 @@ namespace adh {
                 return mDescriptorSets[index];
             }
 
+            static void FreeDescriptor(uint32_t id) {
+                clearDescriptors.EmplaceBack(id);
+            }
+
+            static void Flush() {
+                if (!clearDescriptors.IsEmpty()) {
+                    for (int i{}; i != clearDescriptors.GetSize(); ++i) {
+                        vkFreeDescriptorSets(Context::Get()->GetDevice(), mPool, 1, &mDescriptorSets[clearDescriptors[i]]);
+                    }
+                    clearDescriptors.Clear();
+                }
+            }
+
             static void CleanUp() {
                 auto device{ Context::Get()->GetDevice() };
                 vkDestroyDescriptorSetLayout(device, setLayout, nullptr);
@@ -115,6 +129,8 @@ namespace adh {
             inline static Array<VkDescriptorSet> mDescriptorSets;
             inline static uint32_t mDescriptorIndex;
             inline static uint32_t mBindingIndex;
+
+            inline static Array<uint32_t> clearDescriptors;
         };
     } // namespace vk
 } // namespace adh

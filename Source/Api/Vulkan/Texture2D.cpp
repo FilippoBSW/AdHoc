@@ -466,6 +466,7 @@ namespace adh {
             m_Extent        = {};
             m_MipLevels     = 0u;
             mIsLinearFilter = true;
+            // TextureDescriptors::FreeDescriptor(mDescriptorSetID);
         }
     } // namespace vk
 } // namespace adh

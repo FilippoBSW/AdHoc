@@ -2067,6 +2067,7 @@ class AdHoc {
         currentFrame = ++currentFrame % swapchain.GetImageViewCount();
         if (currentFrame % swapchain.GetImageViewCount()) {
             Allocator::Flush();
+            TextureDescriptors::Flush();
         }
     }
 
