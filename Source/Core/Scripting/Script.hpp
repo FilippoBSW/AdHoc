@@ -520,6 +520,14 @@ namespace adh {
                 }
             }
 
+            void Set() noexcept {
+                auto valueName = lua_tostring(m_State, 2);
+                Bind();
+                lua_pushvalue(m_State, 3);
+                lua_setfield(m_State, -2, valueName);
+                lua_pop(m_State, 3);
+            }
+
           public:
             std::string fileName;
             std::string filePath;
