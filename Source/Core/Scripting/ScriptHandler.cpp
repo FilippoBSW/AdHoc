@@ -410,6 +410,9 @@ namespace adh {
         state.RegisterTypeVariable<Vector3D>("z", &Vector3D::z);
         state.RegisterTypeFunction<Vector3D>("Cross", &Vector3D::Cross);
 
+        // Type, return type, arguments
+        state.RegisterTypeFunction<Vector3D, Vector3D&, const Vector3D&>("Rotate", &Vector3D::Rotate);
+
         state.RegisterType<Vector4D>("Vector4D");
         state.RegisterTypeConstructor<Vector4D>("new");
         state.RegisterTypeVariable<Vector4D>("x", &Vector4D::x);
