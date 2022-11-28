@@ -337,11 +337,12 @@ namespace adh {
             if (tag.tag == t) {
                 found = true;
                 lua_pushinteger(L, (uint64_t)e);
+                return 1;
             } });
         if (!found) {
             lua_pushinteger(L, 0u);
+            return 1;
         }
-        return 1;
     }
 
     // int ScriptHandler::CallScript(lua_State* L) {
