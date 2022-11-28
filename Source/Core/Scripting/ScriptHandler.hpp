@@ -64,6 +64,8 @@ namespace adh {
 
         static int SetGravity(lua_State* L);
 
+        static int FindEntity(lua_State* L);
+
         static int CallScript(lua_State* L);
 
         static int SerializeField(lua_State* L);

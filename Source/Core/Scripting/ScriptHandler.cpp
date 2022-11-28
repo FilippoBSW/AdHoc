@@ -330,6 +330,20 @@ namespace adh {
         return 0;
     }
 
+    int ScriptHandler::FindEntity(lua_State* L) {
+        std::string t = lua_tostring(L, 1);
+        bool found    = false;
+        scene->GetWorld().GetSystem<Tag>().ForEach([&](ecs::Entity e, Tag& tag) {
+            if (tag.tag == t) {
+                found = true;
+                lua_pushinteger(L, (uint64_t)e);
+            } });
+        if (!found) {
+            lua_pushinteger(L, 0u);
+        }
+        return 1;
+    }
+
     // int ScriptHandler::CallScript(lua_State* L) {
     //     auto& script = **static_cast<lua::Script**>(lua_touserdata(L, 1));
     //     auto func    = lua_tostring(L, 2);
@@ -362,6 +376,7 @@ namespace adh {
         state.AddFunction("DeltaTime", ScriptHandler::DeltaTime);
         state.AddFunction("Raycast", ScriptHandler::Raycast);
         state.AddFunction("SetGravity", ScriptHandler::SetGravity);
+        state.AddFunction("FindEntity", ScriptHandler::FindEntity);
         state.AddFunction("SerializeField", ScriptHandler::SerializeField);
 
         state.RegisterType<Input>("Input");
