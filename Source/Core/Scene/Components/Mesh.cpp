@@ -42,14 +42,6 @@ namespace adh {
 
         ADH_THROW(pModel, imp.GetErrorString());
 
-        // FIXME: Blender temp fbx import fix
-        auto pos       = meshPath.find_last_of('.');
-        auto buffer    = meshPath.substr(pos + 1, meshPath.size());
-        bool rotateFbx = false;
-        if (buffer == "fbx") {
-            rotateFbx = true;
-        }
-
         if (pModel) {
             bufferData = Mesh::meshes[meshPath];
 
@@ -62,19 +54,11 @@ namespace adh {
                 bufferData->vertices.Reserve(pMesh->mNumVertices);
 
                 for (std::size_t i{}; i != pMesh->mNumVertices; ++i) {
-                    if (rotateFbx) {
-                        bufferData->vertices.EmplaceBack(
-                            Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z }.Rotate(Vector3D{ ToRadians(90.0f), 0.0f, 0.0f }),
-                            Vector3D{ pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z }.Rotate(Vector3D{ ToRadians(90.0f), 0.0f, 0.0f }),
-                            Vector2D{ pMesh->mTextureCoords[0][i].x, pMesh->mTextureCoords[0][i].y });
-                        bufferData->vertices2.EmplaceBack(Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z }.Rotate(Vector3D{ ToRadians(90.0f), 0.0f, 0.0f }));
-                    } else{
-                        bufferData->vertices.EmplaceBack(
-                            Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z },
-                            Vector3D{ pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z },
-                            Vector2D{ pMesh->mTextureCoords[0][i].x, pMesh->mTextureCoords[0][i].y });
-                        bufferData->vertices2.EmplaceBack(Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z });
-                    }
+                    bufferData->vertices.EmplaceBack(
+                        Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z },
+                        Vector3D{ pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z },
+                        Vector2D{ pMesh->mTextureCoords[0][i].x, pMesh->mTextureCoords[0][i].y });
+                    bufferData->vertices2.EmplaceBack(Vector3D{ pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z });
                 }
 
                 bufferData->indices.Reserve(pMesh->mNumFaces * 3);
