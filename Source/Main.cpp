@@ -1224,8 +1224,8 @@ class AdHoc {
 
     float* floats[7];
 
-    int shadowPCF        = 0;
-    float floatShadowPCF = 0;
+    int shadowPCF        = 2;
+    float floatShadowPCF = 2;
 
     AudioDevice audioDevice;
 
@@ -1396,7 +1396,7 @@ class AdHoc {
         Texture2D::InitializeDefaultSamplers();
 
         shadowMap.lightSpace = xmm::PerspectiveLH(ToRadians(140.0f), 1.0f, 1.0f, 1000.0f) * xmm::LookAtLH(sunPosition, { 0, 0, 0 }, { 0, 1, 0 });
-        shadowMap.m_Extent   = { 2048, 2048 };
+        shadowMap.m_Extent   = { 2048 * 2, 2048 * 2 };
         // shadowMap.m_Extent = { 1024, 1024 };
         shadowMap.Create(renderPass, sampler);
         lightSpace = lightSpaceBias * shadowMap.lightSpace;

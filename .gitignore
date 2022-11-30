@@ -7,4 +7,5 @@ dbuild
 
 # Files
 .DS_Store
+Todo.org
 compile_commands.json
