@@ -57,7 +57,10 @@ namespace adh {
 #if defined(ADH_DEBUG)
             validationLayers.EmplaceBack("VK_LAYER_KHRONOS_validation");
 #endif
-            Array<const char*> instanceExtentions{ "VK_KHR_surface", ADH_VK_PLATFORM_SURFACE };
+            Array<const char*> instanceExtentions{
+		    "VK_KHR_surface",
+		    ADH_VK_PLATFORM_SURFACE,
+	    	"VK_KHR_portability_enumeration" };
             auto instanceCreateInfo{ initializers::InstanceCreateInfo(applicationInfo, instanceExtentions, validationLayers) };
             ADH_THROW(vkCreateInstance(&instanceCreateInfo, nullptr, &m_Instance) == VK_SUCCESS,
                       "Failed to create VkInstance!");

@@ -57,7 +57,7 @@ namespace adh {
                 VkInstanceCreateInfo info{
                     .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
                     .pNext                   = nullptr,
-                    .flags                   = 0u,
+                    .flags                   = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
                     .pApplicationInfo        = &applicationInfo,
                     .enabledLayerCount       = static_cast<std::uint32_t>(validationLayers.GetSize()),
                     .ppEnabledLayerNames     = validationLayers.GetData(),
