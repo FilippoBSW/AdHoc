@@ -1,31 +1,3 @@
-// *********************************************************************************
-// MIT License
-//
-// Copyright (c) 2021-2022 Filippo-BSW
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-// *********************************************************************************
-
-#include <Event/Event.hpp>
-#include <Window.hpp>
-
-#include <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
 #include <GameController/GCExtern.h>
@@ -358,130 +330,130 @@ namespace adh {
                 static int xStatus[max_controllers];
                 [PullController   GetKey:profile.buttonX.isPressed
                                         :&xStatus[i]
-                                        : 0    
+                                        : 0
                                         : i];
                 static int yStatus[max_controllers];
                 [PullController   GetKey:profile.buttonY.isPressed
                                         :&yStatus[i]
-                                        : 1    
+                                        : 1
                                         : i];
                 static int bStatus[max_controllers];
                 [PullController   GetKey:profile.buttonB.isPressed
                                         :&bStatus[i]
-                                        : 2    
+                                        : 2
                                         : i];
                 static int aStatus[max_controllers];
                 [PullController   GetKey:profile.buttonA.isPressed
                                         :&aStatus[i]
-                                        : 3    
+                                        : 3
                                         : i];
                 // Dpad
                 static int dpadUp[max_controllers];
                 [PullController   GetKey:profile.dpad.up.isPressed
                                         :&dpadUp[i]
-                                        : 4    
+                                        : 4
                                         : i];
                 static int dpadDown[max_controllers];
                 [PullController   GetKey:profile.dpad.down.isPressed
                                         :&dpadDown[i]
-                                        : 5    
+                                        : 5
                                         : i];
                 static int dpadLeft[max_controllers];
                 [PullController   GetKey:profile.dpad.left.isPressed
                                         :&dpadLeft[i]
-                                        : 6    
+                                        : 6
                                         : i];
                 static int dpadRight[max_controllers];
                 [PullController   GetKey:profile.dpad.right.isPressed
                                         :&dpadRight[i]
-                                        : 7    
+                                        : 7
                                         : i];
 
                 // Shoulders
                 static int rShoulder[max_controllers];
                 [PullController   GetKey:profile.rightShoulder.isPressed
                                         :&rShoulder[i]
-                                        : 8  
+                                        : 8
                                         : i];
                 static int lShoulder[max_controllers];
                 [PullController   GetKey:profile.leftShoulder.isPressed
                                         :&lShoulder[i]
-                                        : 9    
+                                        : 9
                                         : i];
                 static int lTrigger[max_controllers];
                 [PullController   GetKey:profile.leftTrigger.isPressed
                                         :&lTrigger[i]
-                                        : 10    
+                                        : 10
                                         : i];
                 static int rTrigger[max_controllers];
                 [PullController   GetKey:profile.rightTrigger.isPressed
                                         :&rTrigger[i]
-                                        : 11    
+                                        : 11
                                         : i];
 
                 // Other
                 static int start[max_controllers];
                 [PullController   GetKey:profile.buttonMenu.isPressed
                                         :&start[i]
-                                        : 12  
+                                        : 12
                                         : i];
                 static int back[max_controllers];
                 [PullController   GetKey:profile.buttonOptions.isPressed
                                         :&back[i]
-                                        : 13    
+                                        : 13
                                         : i];
                 static int lThumb[max_controllers];
                 [PullController   GetKey:profile.leftThumbstickButton.isPressed
                                         :&lThumb[i]
-                                        : 14  
-                                        : i];  
+                                        : 14
+                                        : i];
                 static int rThumb[max_controllers];
                 [PullController   GetKey:profile.rightThumbstickButton.isPressed
                                         :&rThumb[i]
-                                        : 15    
+                                        : 15
                                         : i];
 
                 // Thumbsticks
                 // static int leftThumbstickUp[max_controllers];
                 // [PullController   GetKey:profile.leftThumbstick.up.isPressed
                 //                         :&leftThumbstickUp[i]
-                //                         : 16  
+                //                         : 16
                 //                         : i];
                 // static int leftThumbstickDown[max_controllers];
                 // [PullController   GetKey:profile.leftThumbstick.down.isPressed
                 //                         :&leftThumbstickDown[i]
-                //                         : 17  
+                //                         : 17
                 //                         : i];
                 // static int leftThumbstickRight[max_controllers];
                 // [PullController   GetKey:profile.leftThumbstick.right.isPressed
                 //                         :&leftThumbstickRight[i]
-                //                         : 18  
+                //                         : 18
                 //                         : i];
                 // static int leftThumbstickLeft[max_controllers];
                 // [PullController   GetKey:profile.leftThumbstick.left.isPressed
                 //                         :&leftThumbstickLeft[i]
-                //                         : 19  
+                //                         : 19
                 //                         : i];
 
                 // static int rightThumbstickUp[max_controllers];
                 // [PullController   GetKey:profile.rightThumbstick.up.isPressed
                 //                         :&rightThumbstickUp[i]
-                //                         : 24  
+                //                         : 24
                 //                         : i];
                 // static int rightThumbstickDown[max_controllers];
                 // [PullController   GetKey:profile.rightThumbstick.down.isPressed
                 //                         :&rightThumbstickDown[i]
-                //                         : 25  
+                //                         : 25
                 //                         : i];
                 // static int rightThumbstickRight[max_controllers];
                 // [PullController   GetKey:profile.rightThumbstick.right.isPressed
                 //                         :&rightThumbstickRight[i]
-                //                         : 26  
+                //                         : 26
                 //                         : i];
                 // static int rightThumbstickLeft[max_controllers];
                 // [PullController   GetKey:profile.rightThumbstick.left.isPressed
                 //                         :&rightThumbstickLeft[i]
-                //                         : 27  
+                //                         : 27
                 //                         : i];
 
                 //std::cout << profile.leftThumbstick.xAxis.value << std::endl;

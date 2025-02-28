@@ -1,27 +1,3 @@
-#*********************************************************************************
-#MIT License
-#
-#Copyright(c) 2021 - 2022 Filippo - BSW
-#
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files(the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
-#
-#The above copyright notice and this permission notice shall be included in all
-#copies or substantial portions of the Software.
-#
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#SOFTWARE.
-#*********************************************************************************
-
 cmake_minimum_required(VERSION 3.20)
 
 set(PROJECT_NAME AdHoc)
@@ -61,10 +37,12 @@ elseif(USE_PLATFORM STREQUAL "Linux")
 	set(EXE_PATH "Exe")
     target_compile_features(${PROJECT_NAME} PRIVATE c_std_17)
 	find_package(Threads REQUIRED)
-	set(CMAKE_CXX_FLAGS "-pthread")
+    set(CMAKE_CXX_FLAGS "-pthread -ftrivial-auto-var-init=zero -g")
 endif()
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
+target_precompile_headers(${PROJECT_NAME} PRIVATE <stdint.h>)
+
 
 if(USE_PLATFORM STREQUAL "Mac")
 	set(TARGET_BUILD_PLATFORM "mac")
@@ -135,9 +113,9 @@ set(PHYSX_LIBRARIES
 	PhysXCommon
 	PhysXFoundation)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-	Lua 
-	ImGui 
+target_link_libraries(${PROJECT_NAME} PRIVATE
+	Lua
+	ImGui
     ImGuizmo
     assimp
     yaml-cpp
@@ -147,10 +125,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 if(USE_PLATFORM STREQUAL "Linux")
 	target_link_libraries(${PROJECT_NAME} PRIVATE X11 xcb X11-xcb)
 endif()
-     
+
 if(USE_PLATFORM STREQUAL "Mac")
-    target_link_libraries(${PROJECT_NAME} PUBLIC 
-        "-framework AppKit" 
+    target_link_libraries(${PROJECT_NAME} PUBLIC
+        "-framework AppKit"
         "-framework QuartzCore"
         "-framework Cocoa"
         "-framework GameController")
@@ -162,15 +140,15 @@ if(APPLE OR UNIX)
 endif()
 
 set_target_properties(
-	${PROJECT_NAME} 
+	${PROJECT_NAME}
 	Lua
-	ImGui 
+	ImGui
     ImGuizmo
-	assimp 
+	assimp
 	yaml-cpp
     OpenAL
 	${PHYSX_LIBRARIES}
-    PROPERTIES 
+    PROPERTIES
 	ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIB_PATH}"
 	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${LIB_PATH}"
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${EXE_PATH}")
@@ -190,8 +168,8 @@ add_custom_target(copy_assets
 				${PROJECT_BINARY_DIR}/${DATA_PATH}/Assets/Scripts
 		COMMAND ${CMAKE_COMMAND} -E copy_directory
 				${CMAKE_SOURCE_DIR}/Source/Core/Scripting/Scripts
-				${PROJECT_BINARY_DIR}/${DATA_PATH}/Resources/Scripts)  
-add_dependencies(${PROJECT_NAME} copy_assets) 
+				${PROJECT_BINARY_DIR}/${DATA_PATH}/Resources/Scripts)
+add_dependencies(${PROJECT_NAME} copy_assets)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Debug>:ADH_DEBUG>")
 target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Release>:ADH_RELEASE>")
@@ -250,7 +228,7 @@ endif()
 #**********************************************
 #Add source
 #**********************************************
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
 	${CMAKE_SOURCE_DIR}/Source/Main.cpp
     ${CMAKE_SOURCE_DIR}/Source/Window.hpp
     ${CMAKE_SOURCE_DIR}/Source/Utility.hpp
@@ -276,9 +254,9 @@ if(Vulkan_FOUND)
         target_compile_definitions(${PROJECT_NAME} PRIVATE VK_USE_PLATFORM_XCB_KHR)
         target_compile_definitions(${PROJECT_NAME} PRIVATE "ADH_VK_PLATFORM_SURFACE=VK_KHR_XCB_SURFACE_EXTENSION_NAME")
     endif()
- 
+
 	set(VULKAN_API_SRC ${CMAKE_SOURCE_DIR}/Source/Api/Vulkan)
-    target_sources(${PROJECT_NAME} PRIVATE 
+    target_sources(${PROJECT_NAME} PRIVATE
     ${VULKAN_API_SRC}/Initializers.hpp
     ${VULKAN_API_SRC}/Tools.hpp
     ${VULKAN_API_SRC}/Instance.hpp
@@ -352,7 +330,7 @@ endif()
 #**********************************************
 #Template library
 #**********************************************
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Entity/Entity.hpp
     ${ADH_CORE_SRC}/Event/Event.hpp
     ${ADH_CORE_SRC}/Event/Event.cpp
@@ -386,7 +364,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #**********************************************
 #Math library
 #**********************************************
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Math/Math.hpp
     ${ADH_CORE_SRC}/Math/source/Matrix.hpp
     ${ADH_CORE_SRC}/Math/source/Matrix.inl
@@ -415,7 +393,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #**********************************************
 #Scene
 #**********************************************
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Scene/Scene.hpp
     ${ADH_CORE_SRC}/Scene/Scene.cpp
 	${ADH_CORE_SRC}/Scene/Serializer.hpp
@@ -435,7 +413,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #**********************************************
 #Scripting
 #**********************************************
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
 	${ADH_CORE_SRC}/Scripting/Script.hpp
 	${ADH_CORE_SRC}/Scripting/ScriptHandler.hpp
 	${ADH_CORE_SRC}/Scripting/ScriptHandler.cpp)
@@ -443,7 +421,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #**********************************************
 #Audio
 #**********************************************
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
 	${ADH_CORE_SRC}/Audio/LoadWav.hpp
 	${ADH_CORE_SRC}/Audio/Audio.hpp
 	${ADH_CORE_SRC}/Audio/Audio.cpp)
@@ -451,7 +429,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #**********************************************
 #Input
 #**********************************************
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
     ${ADH_CORE_SRC}/Input/Input.hpp
     ${ADH_CORE_SRC}/Input/Input.cpp
     ${ADH_CORE_SRC}/Input/Controller.hpp
@@ -467,7 +445,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 #Editor
 #**********************************************
 set(ADH_EDITOR_SRC ${CMAKE_SOURCE_DIR}/Source/Editor)
-target_sources(${PROJECT_NAME} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE
 	${ADH_EDITOR_SRC}/Editor.hpp
 	${ADH_EDITOR_SRC}/Editor.cpp
 	${ADH_EDITOR_SRC}/Api/Vulkan/VulkanImGui.hpp
