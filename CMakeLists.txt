@@ -37,12 +37,11 @@ elseif(USE_PLATFORM STREQUAL "Linux")
 	set(EXE_PATH "Exe")
     target_compile_features(${PROJECT_NAME} PRIVATE c_std_17)
 	find_package(Threads REQUIRED)
-    set(CMAKE_CXX_FLAGS "-pthread -ftrivial-auto-var-init=zero -g")
+    set(CMAKE_CXX_FLAGS "-pthread -ftrivial-auto-var-init=zero")
+    target_precompile_headers(${PROJECT_NAME} PRIVATE <stdint.h>)
 endif()
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
-target_precompile_headers(${PROJECT_NAME} PRIVATE <stdint.h>)
-
 
 if(USE_PLATFORM STREQUAL "Mac")
 	set(TARGET_BUILD_PLATFORM "mac")

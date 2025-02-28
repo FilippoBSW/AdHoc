@@ -3,6 +3,9 @@
 #include <GameController/GCExtern.h>
 #include <GameController/GameController.h>
 #include <QuartzCore/CAMetalLayer.h>
+#include <Foundation/Foundation.h>
+
+#include <Window.hpp>
 
 using namespace adh;
 

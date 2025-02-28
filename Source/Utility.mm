@@ -1,3 +1,11 @@
+#include <Carbon/Carbon.h>
+#include <Cocoa/Cocoa.h>
+#include <GameController/GCExtern.h>
+#include <GameController/GameController.h>
+#include <QuartzCore/CAMetalLayer.h>
+#include <Foundation/Foundation.h>
+
+#include <Window.hpp>
 
 #if defined(ADH_APPLE)
 namespace adh {
