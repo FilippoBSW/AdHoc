@@ -1,4 +1,5 @@
 * AdHoc Engine
+Game engine developed mainly between 2021-2022 as a student project.
 
 ** On Windows
 #+begin_src org :eval never-export
